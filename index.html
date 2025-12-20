@@ -74,7 +74,7 @@
     /* Tabs */
     .tab-btn {
         padding: 0.5rem 1.5rem;
-        border-radius: 9999px;
+        border-radius: 0.375rem; 
         font-weight: 600;
         border: 2px solid #f97316;
         color: #f97316;
@@ -110,6 +110,19 @@
     .category-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    /*About Us*/
+    .letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(-50px);
+    transition: all 0.5s ease;
+    }
+
+    .letter.show {
+    opacity: 1;
+    transform: translateY(0);
     }
 
   </style>
@@ -218,156 +231,269 @@
     </div>
   </section>
 
-  <!-- ================= SHOP BY CATEGORY ================= -->
-<section class="py-32 px-6 bg-gray-100">
-  <div class="max-w-7xl mx-auto">
+    <!-- ================= SHOP BY CATEGORY ================= -->
+    <section class="py-40 px-6 bg-gray-100">
+    <div class="max-w-7xl mx-auto">
 
-    <!-- Header + Tabs -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12">
-      <h2 class="text-4xl font-bold mb-6 md:mb-0">
-        Shop by Category
+        <!-- Header + Tabs -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
+        <h2 class="text-4xl font-bold mb-6 md:mb-0">
+            Shop by Category
+        </h2>
+
+        <!-- Tabs -->
+        <div class="flex gap-2">
+            <button class="tab-btn active-tab" data-tab="bestseller">Bestseller</button> 
+            <button class="tab-btn" data-tab="promo">Promo</button>
+        </div>
+        </div>
+
+        <!-- ================= TAB CONTENT ================= -->
+
+        <!-- ===== BESTSELLER ===== -->
+        <div id="bestseller" class="tab-content grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+
+        <!-- Product -->
+        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
+            <img src="assets/products/hammer.webp" alt="Steel Hammer"
+                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
+            <h3 class="font-semibold text-lg leading-tight mb-1">
+            Steel Hammer 16oz
+            </h3>
+            <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
+
+            <div class="mt-auto flex items-center justify-between">
+            <div class="flex text-orange-400 text-sm">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star-half"></i>
+            </div>
+            <span class="font-bold text-lg">RM 29.90</span>
+            </div>
+        </div>
+
+        <!-- Product -->
+        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
+            <img src="assets/products/screwdriver.jpg" alt="Screwdriver Set"
+                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
+            <h3 class="font-semibold text-lg leading-tight mb-1">
+            Screwdriver Set (6pcs)
+            </h3>
+            <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
+
+            <div class="mt-auto flex items-center justify-between">
+            <div class="flex text-orange-400 text-sm">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bx-star"></i>
+            </div>
+            <span class="font-bold text-lg">RM 45.00</span>
+            </div>
+        </div>
+
+        <!-- Product -->
+        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
+            <img src="assets/products/drill.jpg" alt="Electric Drill"
+                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
+            <h3 class="font-semibold text-lg leading-tight mb-1">
+            Electric Drill 500W
+            </h3>
+            <p class="text-sm text-gray-500 mb-3">Power Tools</p>
+
+            <div class="mt-auto flex items-center justify-between">
+            <div class="flex text-orange-400 text-sm">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+            </div>
+            <span class="font-bold text-lg">RM 189.00</span>
+            </div>
+        </div>
+
+        </div>
+
+        <!-- ===== PROMO ===== -->
+        <div id="promo" class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+
+        <!-- Promo Product -->
+        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden relative">
+            <span class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+            SALE
+            </span>
+
+            <img src="assets/products/wrench.jpg" alt="Adjustable Wrench"
+                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
+
+            <h3 class="font-semibold text-lg leading-tight mb-1">
+            Adjustable Wrench 12"
+            </h3>
+            <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
+
+            <div class="mt-auto flex items-center justify-between">
+            <div class="flex text-orange-400 text-sm">
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+                <i class="bx bx-star"></i>
+            </div>
+
+            <div class="text-right">
+                <span class="block text-sm text-gray-400 line-through">
+                RM 39.90
+                </span>
+                <span class="font-bold text-lg text-red-600">
+                RM 29.90
+                </span>
+            </div>
+            </div>
+        </div>
+
+        </div>
+
+    </div>
+    </section>
+
+  <!-- ================= ABOUT SECTION ================= -->
+<section id="about" class="relative py-32 px-6 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
+  <!-- Decorative background shapes -->
+  <div class="absolute -top-20 -left-20 w-80 h-80 bg-orange-200 rounded-full opacity-20"></div>
+  <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-blue-200 rounded-full opacity-20"></div>
+
+  <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 relative z-10">
+
+    <!-- Image -->
+    <div class="w-full lg:w-1/2 relative">
+      <img src="assets/About1.jpg" alt="Yung Sun's daughter as a baby with her mother" 
+           class="rounded-2xl shadow-2xl w-full object-cover transform transition-transform duration-500 hover:scale-105">
+      <!-- Overlay badge -->
+      <div class="absolute bottom-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold">
+        22+ Years of Family Legacy
+      </div>
+    </div>
+
+    <!-- Text -->
+    <div class="w-full lg:w-1/2">
+      <!-- Animated title -->
+      <h2 id="about-title" class="text-5xl font-extrabold mb-6 text-gray-800">
+        About Us
       </h2>
 
-      <!-- Tabs -->
-      <div class="flex gap-3">
-        <button class="tab-btn active-tab" data-tab="bestseller">Bestseller</button>
+      <p class="text-gray-700 mb-6 leading-relaxed text-lg">
+        What started over 22 years ago as a small local hardware shop by <span class="font-semibold">Yung Sun</span> has grown into a trusted hub 
+        for professionals and homeowners alike. Each tool, each nail, each screw has carried the spirit of hard work and dedication.
+      </p>
 
-        <button class="tab-btn" data-tab="promo">Promo</button>
-      </div>
-    </div>
+      <p class="text-gray-700 mb-6 leading-relaxed text-lg">
+        This photo captures a special memory: Yung Sun’s daughter, a baby, in the shop with her mother. 
+        Even then, surrounded by the warmth of family and the spirit of entrepreneurship, the foundation was laid.
+      </p>
 
-    <!-- ================= TAB CONTENT ================= -->
+      <p class="text-gray-700 mb-6 leading-relaxed text-lg">
+        Today, we continue this legacy — combining quality, reliability, and personal service. 
+        Yung Sun Hardware isn’t just a store; it’s a story of <span class="font-semibold text-orange-500">family, community, and trust</span>.
+      </p>
 
-    <!-- ===== BESTSELLER ===== -->
-    <div id="bestseller" class="tab-content grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-
-      <!-- Product -->
-      <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
-        <img src="assets/products/hammer.webp" alt="Steel Hammer"
-             class="h-56 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-        <h3 class="font-semibold text-lg leading-tight mb-1">
-          Steel Hammer 16oz
-        </h3>
-        <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
-
-        <div class="mt-auto flex items-center justify-between">
-          <div class="flex text-orange-400 text-sm">
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star-half"></i>
-          </div>
-          <span class="font-bold text-lg">RM 29.90</span>
-        </div>
-      </div>
-
-      <!-- Product -->
-      <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
-        <img src="assets/products/screwdriver.jpg" alt="Screwdriver Set"
-             class="h-56 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-        <h3 class="font-semibold text-lg leading-tight mb-1">
-          Screwdriver Set (6pcs)
-        </h3>
-        <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
-
-        <div class="mt-auto flex items-center justify-between">
-          <div class="flex text-orange-400 text-sm">
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bx-star"></i>
-          </div>
-          <span class="font-bold text-lg">RM 45.00</span>
-        </div>
-      </div>
-
-      <!-- Product -->
-      <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
-        <img src="assets/products/drill.jpg" alt="Electric Drill"
-             class="h-56 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-        <h3 class="font-semibold text-lg leading-tight mb-1">
-          Electric Drill 500W
-        </h3>
-        <p class="text-sm text-gray-500 mb-3">Power Tools</p>
-
-        <div class="mt-auto flex items-center justify-between">
-          <div class="flex text-orange-400 text-sm">
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-          </div>
-          <span class="font-bold text-lg">RM 189.00</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ===== PROMO ===== -->
-    <div id="promo" class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-
-      <!-- Promo Product -->
-      <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden relative">
-        <span class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-          SALE
-        </span>
-
-        <img src="assets/products/wrench.jpg" alt="Adjustable Wrench"
-             class="h-56 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-
-        <h3 class="font-semibold text-lg leading-tight mb-1">
-          Adjustable Wrench 12"
-        </h3>
-        <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
-
-        <div class="mt-auto flex items-center justify-between">
-          <div class="flex text-orange-400 text-sm">
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-            <i class="bx bx-star"></i>
-          </div>
-
-          <div class="text-right">
-            <span class="block text-sm text-gray-400 line-through">
-              RM 39.90
-            </span>
-            <span class="font-bold text-lg text-red-600">
-              RM 29.90
-            </span>
-          </div>
-        </div>
-      </div>
-
+      <!-- CTA Button -->
+      <a href="shop.html" class="inline-block mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300">
+        Explore Our Store
+      </a>
     </div>
 
   </div>
 </section>
 
-
-  <!-- ================= ABOUT SECTION ================= -->
-  <section id="about" class="py-20 px-6 max-w-7xl mx-auto">
-    <h2 class="text-4xl font-bold mb-6">About Us</h2>
-    <p class="text-gray-600 max-w-3xl leading-relaxed">
-        Yung Sun Hardware has been supplying high-quality tools and materials
-        to professionals and homeowners for years. Reliability, quality,
-        and trust are our foundation. We are committed to providing dependable
-        products and knowledgeable service to support every project.
-    </p>
-  </section>
-
   <!-- ================= CONTACT SECTION ================= -->
-  <section id="contact" class="py-20 bg-gray-900 text-white">
-    <div class="max-w-7xl mx-auto px-6">
-      <h2 class="text-4xl font-bold mb-6">Contact Us</h2>
-      <p>Email: contact@yungsunhardware.com</p>
-      <p>Phone: +60 12-345 6789</p>
+<section id="contact" class="py-40 bg-white text-gray-800">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col gap-12">
+
+    <!-- Company Name -->
+    <h1 class="text-6xl md:text-7xl font-extrabold leading-tight">
+      <span class="text-[#f8941e]">Yung Sun</span>
+      <br>
+      <span class="text-[#023f88]">Hardware Enterprise</span>
+    </h1>
+
+    <!-- Info Row: Address + Contact -->
+    <div class="flex flex-col md:flex-row md:justify-between items-start gap-8">
+
+      <!-- Address & Operating Info -->
+      <div class="flex flex-col gap-4">
+        <p class="text-gray-700 text-lg md:text-xl leading-relaxed">
+          Sarawak, KUCHING<br>
+          LOT 33, BLOCK 7, 19TH MILE TAMAN DURANDA EMAS BAZAAR<br>
+          Postcode: 94200
+        </p>
+        <div class="flex gap-8 flex-wrap">
+          <div>
+            <span class="text-[#f8941e] font-semibold uppercase tracking-wide">Operating Days:</span>
+            <span class="text-gray-700">Everyday</span>
+          </div>
+          <div>
+            <span class="text-[#023f88] font-semibold uppercase tracking-wide">Hours:</span>
+            <span class="text-gray-700">7am - 6pm</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Info (aligned to top) -->
+      <div class="flex flex-col gap-4 text-right self-start">
+        <div>
+          <span class="text-[#f8941e] font-bold text-lg md:text-xl">Phone:</span>
+          <span class="text-gray-800 text-lg md:text-xl">+60 12-345 6789</span>
+        </div>
+        <div>
+          <span class="text-[#023f88] font-bold text-lg md:text-xl">Email:</span>
+          <span class="text-gray-800 text-lg md:text-xl">contact@yungsunhardware.com</span>
+        </div>
+      </div>
+
     </div>
-  </section>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-gray-50 text-gray-800 py-16">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-12">
+
+    <!-- Brand & Copyright -->
+    <div class="flex flex-col gap-4">
+      <h3 class="text-2xl font-bold text-[#f8941e]">Yung Sun Hardware Enterprise</h3>
+      <p class="text-gray-600 text-sm md:text-base">
+        © 2025 Jean | Angel | Ivy | Chloe | Yao Yee, Inc. All rights reserved.
+      </p>
+    </div>
+
+    <!-- Footer Links -->
+    <div class="flex flex-col md:flex-row gap-12">
+      
+      <!-- Section Links -->
+      <div class="flex flex-col gap-2">
+        <h4 class="font-semibold text-[#023f88] mb-2">Pages</h4>
+        <a href="#hero" class="hover:text-[#f8941e] transition-colors">Home</a>
+        <a href="#about" class="hover:text-[#f8941e] transition-colors">About Us</a>
+        <a href="#contact" class="hover:text-[#f8941e] transition-colors">Contact</a>
+        <a href="shop.html" class="hover:text-[#f8941e] transition-colors">Shop</a>
+      </div>
+
+      <!-- Optional Extra Links -->
+      <div class="flex flex-col gap-2">
+        <h4 class="font-semibold text-[#023f88] mb-2">Resources</h4>
+        <a href="#" class="hover:text-[#f8941e] transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-[#f8941e] transition-colors">Terms of Service</a>
+        <a href="#" class="hover:text-[#f8941e] transition-colors">FAQ</a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+
 
   <!-- ================= JS ================= -->
   <script>
@@ -448,6 +574,56 @@
         document.getElementById(btn.dataset.tab).classList.remove("hidden");
     });
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const title = document.getElementById("about-title");
+    const text = title.textContent.trim();
+    title.textContent = ""; // clear original
+
+    // Wrap each letter in a span
+    const letters = text.split("").map(char => {
+        const span = document.createElement("span");
+        span.textContent = char;
+        span.classList.add("letter");
+        title.appendChild(span);
+        return span;
+    });
+
+    const middle = Math.floor(letters.length / 2);
+
+    // Animation order: start from center outward
+    let order = [middle];
+    for (let i = 1; i <= middle; i++) {
+        if (middle - i >= 0) order.push(middle - i);
+        if (middle + i < letters.length) order.push(middle + i);
+    }
+
+    function animateLetters() {
+        order.forEach((index, i) => {
+        setTimeout(() => {
+            letters[index].classList.add("show");
+        }, i * 100);
+        });
+    }
+
+    function resetLetters() {
+        letters.forEach(letter => letter.classList.remove("show"));
+    }
+
+    // Animate whenever section comes into view
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            animateLetters();
+        } else {
+            resetLetters(); // reset when leaving viewport
+        }
+        });
+    }, { threshold: 0.5 });
+
+    observer.observe(title);
+    });
+
   </script>
 
 </body>
