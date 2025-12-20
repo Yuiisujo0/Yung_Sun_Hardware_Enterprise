@@ -19,20 +19,20 @@
       scroll-behavior: smooth;
     }
 
-    @keyframes fadeIn {
+    @keyframes zoomIn {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: scale(0.8);  /* Start smaller */
       }
 
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: scale(1);  /* End at normal size */
       }
     }
 
-    .animate-fadeIn {
-      animation: fadeIn 1.2s ease forwards;
+    .animate-zoomIn {
+      animation: zoomIn 1.2s ease forwards;
     }
 
     .nav-link {
@@ -203,7 +203,7 @@
 
       <!-- Logo -->
       <img src="assets/Yung_Sun_logo2.png" alt="Yung Sun Hardware Logo"
-        class="w-[280px] md:w-[420px] lg:w-[520px] drop-shadow-2xl opacity-0 animate-fadeIn" />
+        class="w-[280px] md:w-[420px] lg:w-[520px] drop-shadow-2xl opacity-0 animate-zoomIn" />
 
       <!-- Tagline / Categories -->
       <div class="mt-6 text-white text-sm md:text-base lg:text-lg font-semibold flex flex-wrap justify-center gap-x-3 gap-y-2">
