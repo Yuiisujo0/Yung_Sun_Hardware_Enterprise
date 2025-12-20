@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Yung Sun Hardware - High-quality tools and materials for professionals and homeowners." />
+  <title>Yung Sun Hardware</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+  <!-- Smooth Scroll + Fade-in Animation -->
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 1.2s ease forwards;
+    }
+
+    .nav-link {
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: #f8941e;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      bottom: -4px;
+      left: 0;
+      background-color: #f8941e;
+      transform: scaleX(0);
+      transform-origin: bottom right;
+      transition: transform 0.3s ease-out;
+    }
+
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: bottom left;
+    }
+
+    /* Mobile menu transition */
+    #mobileMenu {
+      transition: transform 0.3s ease-in-out;
+    }
+
+    #mobileMenu.hidden {
+      transform: translateY(-100%);
+    }
+  </style>
+</head>
+
+<body class="font-sans text-gray-800">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav id="navbar" class="fixed top-0 w-full bg-white z-50 transition-shadow duration-300">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center relative">
+    <!-- Logo with link to Home -->
+    <div class="flex items-center gap-3">
+      <a href="#hero" class="flex items-center gap-3">
+        <img src="assets/Yung_Sun_logo3_round.png" alt="Yung Sun Hardware Logo" class="h-11 md:h-10 w-auto" />
+      </a>
+
+      <!-- Desktop Brand Name (hidden on mobile) -->
+      <a href="#hero" class="hidden md:inline text-xl font-bold whitespace-nowrap">
+        <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
+        <span class="text-[#023f88]"> Hardware Enterprise</span>
+      </a>
+
+      <!-- Mobile Brand Name (only shown on mobile) -->
+      <a href="#hero" class="md:hidden text-xl font-bold whitespace-nowrap">
+        <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
+      </a>
+    </div>
+
+    <!-- Center Menu (Desktop) -->
+    <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+      <div class="relative group">
+        <button class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+          <i class="bx bx-home text-lg"></i> Home
+        </button>
+        <div class="absolute top-8 left-0 bg-white shadow rounded w-40 opacity-0 visibility-hidden group-hover:opacity-100 group-hover:visibility-visible pointer-events-none group-hover:pointer-events-auto transition-all duration-300 ease-in-out delay-100">
+          <a href="#hero" class="block px-4 py-2 hover:bg-gray-100 nav-link">Home</a>
+          <a href="#about" class="block px-4 py-2 hover:bg-gray-100 nav-link">About</a>
+          <a href="#contact" class="block px-4 py-2 hover:bg-gray-100 nav-link">Contact</a>
+        </div>
+      </div>
+      <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+        <i class="bx bx-store text-lg"></i> Shop
+      </a>
+    </div>
+
+    <!-- Right Icons + Hamburger -->
+    <div class="ml-auto flex items-center gap-6 text-xl">
+      <div class="hidden md:flex items-center gap-6">
+        <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="User Profile"></i>
+        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
+      </div>
+      <button id="menuBtn" class="md:hidden text-3xl">
+        <i class="bx bx-menu"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+
+  <!-- ================= MOBILE MENU ================= -->
+  <div id="mobileMenu" class="hidden fixed top-16 w-full bg-white shadow-md md:hidden z-40 overflow-hidden transition-all duration-300 ease-in-out transform -translate-y-full">
+    <!-- Mobile Menu Links with Hover Effects -->
+    <a href="#hero" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Home</a>
+    <a href="#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
+    <a href="#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
+    <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
+  </div>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section id="hero" class="h-screen bg-cover bg-center flex items-center pt-10 md:pt-20 "
+    style="background-image: url('assets/background_01_png.png');">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col items-center justify-center w-full text-center">
+
+      <!-- Logo -->
+      <img src="assets/Yung_Sun_logo2.png" alt="Yung Sun Hardware Logo"
+        class="w-[280px] md:w-[420px] lg:w-[520px] drop-shadow-2xl opacity-0 animate-fadeIn" />
+
+      <!-- Tagline / Categories -->
+      <div class="mt-6 text-white text-sm md:text-base lg:text-lg font-semibold flex flex-wrap justify-center gap-x-3 gap-y-2">
+        <a href="tools.html" class="hover:text-orange-300 transition">Tools</a>
+        <span>|</span>
+        <a href="fasteners.html" class="hover:text-orange-300 transition">Fasteners</a>
+        <span>|</span>
+        <a href="fittings.html" class="hover:text-orange-300 transition">Fittings</a>
+        <span>|</span>
+        <a href="plumbing-electrical.html" class="hover:text-orange-300 transition">
+          Plumbing &amp; Electrical
+        </a>
+        <span>|</span>
+        <a href="building-materials.html" class="hover:text-orange-300 transition">
+          Building Materials
+        </a>
+      </div>
+
+      <!-- Shop Button -->
+      <a href="shop.html"
+        class="mt-8 text-white text-2xl md:text-3xl font-bold underline underline-offset-8 hover:text-orange-300 transition">
+        Shop now →
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ================= ABOUT SECTION ================= -->
+  <section id="about" class="py-20 px-6 max-w-7xl mx-auto">
+    <h2 class="text-4xl font-bold mb-6">About Us</h2>
+    <p class="text-gray-600 max-w-3xl">
+      Yung Sun Hardware has been supplying high-quality tools and materials
+      to professionals and homeowners for years. Reliability, quality,
+      and trust are our foundation.
+    </p>
+  </section>
+
+  <!-- ================= SERVICES / PRODUCTS SECTION ================= -->
+  <section class="py-20 bg-gray-100">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-10">What We Offer</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded shadow">
+          <h3 class="text-xl font-semibold mb-2">Hardware Tools</h3>
+          <p class="text-gray-600">Durable and professional-grade tools.</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+          <h3 class="text-xl font-semibold mb-2">Building Materials</h3>
+          <p class="text-gray-600">High-quality materials for every project.</p>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+          <h3 class="text-xl font-semibold mb-2">Expert Advice</h3>
+          <p class="text-gray-600">Guidance from experienced professionals.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT SECTION ================= -->
+  <section id="contact" class="py-20 bg-gray-900 text-white">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-6">Contact Us</h2>
+      <p>Email: contact@yungsunhardware.com</p>
+      <p>Phone: +60 12-345 6789</p>
+    </div>
+  </section>
+
+  <!-- ================= JS ================= -->
+  <script>
+    const navbar = document.getElementById("navbar");
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const sections = document.querySelectorAll("section");
+    const navLinks = document.querySelectorAll(".nav-link");
+    const dropdownButton = document.querySelector(".group");
+    const dropdownMenu = dropdownButton.querySelector("div");
+
+    // Navbar shadow on scroll
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 10) {
+        navbar.classList.add("shadow-md");
+      } else {
+        navbar.classList.remove("shadow-md");
+      }
+    });
+
+    // Toggle the mobile menu with smooth sliding animation
+    menuBtn.addEventListener("click", () => {
+        // Toggle the hidden class and animation to slide the mobile menu in/out
+        mobileMenu.classList.toggle("hidden");
+        mobileMenu.classList.toggle("-translate-y-full"); // Slide down on toggle
+    });
+
+    // Dropdown hover effects
+    dropdownButton.addEventListener("mouseenter", () => {
+      dropdownMenu.classList.add("opacity-100", "visibility-visible", "pointer-events-auto");
+      dropdownMenu.classList.remove("opacity-0", "visibility-hidden", "pointer-events-none");
+    });
+
+    dropdownButton.addEventListener("mouseleave", () => {
+      setTimeout(() => {
+        if (!dropdownMenu.matches(':hover')) {
+          dropdownMenu.classList.add("opacity-0", "visibility-hidden", "pointer-events-none");
+          dropdownMenu.classList.remove("opacity-100", "visibility-visible", "pointer-events-auto");
+        }
+      }, 100);
+    });
+
+    dropdownMenu.addEventListener("mouseenter", () => {
+      dropdownMenu.classList.add("opacity-100", "visibility-visible", "pointer-events-auto");
+      dropdownMenu.classList.remove("opacity-0", "visibility-hidden", "pointer-events-none");
+    });
+
+    dropdownMenu.addEventListener("mouseleave", () => {
+      dropdownMenu.classList.add("opacity-0", "visibility-hidden", "pointer-events-none");
+      dropdownMenu.classList.remove("opacity-100", "visibility-visible", "pointer-events-auto");
+    });
+
+    // Active link highlight
+    window.addEventListener("scroll", () => {
+      let current = "";
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 120;
+        if (scrollY >= sectionTop) current = section.getAttribute("id");
+      });
+      navLinks.forEach(link => {
+        link.classList.remove("text-orange-600", "font-semibold");
+        if (link.getAttribute("href") === `#${current}`) {
+          link.classList.add("text-orange-600", "font-semibold");
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
