@@ -99,6 +99,13 @@
         <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
           <i class="bx bx-store text-lg"></i> Shop
         </a>
+        <!-- Admin Menu (Hidden by default) -->
+        <a href="admin.html"
+            id="adminMenu"
+            class="hidden flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+            <i class="bx bx-shield-quarter text-lg"></i>
+            Admin
+        </a>
       </div>
 
       <!-- Right Icons -->
@@ -125,6 +132,7 @@
     <a href="index.html#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
     <a href="index.html#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
     <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
+    <a href="admin.html" id="adminMenuMobile" class="hidden block px-6 py-4 hover:bg-gray-100 transition-colors duration-300"><i class="bx bx-shield-quarter mr-2"></i> Admin </a>
     <a href="profile.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a>
   </div>
 
@@ -182,7 +190,7 @@
     </main>
 
   <!-- ================= SUPABASE SCRIPT ================= -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
     const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
@@ -202,6 +210,13 @@
         .select('*')
         .eq('user_id', userId)
         .single();
+
+        // ===== SHOW ADMIN MENU IF ADMIN =====
+        if (data?.role === 'admin') {
+        document.getElementById('adminMenu')?.classList.remove('hidden');
+        document.getElementById('adminMenuMobile')?.classList.remove('hidden');
+        }
+
 
         if (error) {
         console.error('Error loading profile:', error);
@@ -398,7 +413,7 @@
             btn.classList.add("active-tab");
             document.getElementById(btn.dataset.tab).classList.remove("hidden");
         });
-        });
+    });
    </script>
 
   </body>

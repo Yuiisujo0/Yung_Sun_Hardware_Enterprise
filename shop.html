@@ -103,11 +103,18 @@
             <a href="index.html#hero" class="block px-4 py-2 hover:bg-gray-100 nav-link">Home</a>
             <a href="index.html#about" class="block px-4 py-2 hover:bg-gray-100 nav-link">About</a>
             <a href="index.html#contact" class="block px-4 py-2 hover:bg-gray-100 nav-link">Contact</a>
-          </div>
-        </div>
-        <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
-          <i class="bx bx-store text-lg"></i> Shop
-        </a>
+              </div>
+            </div>
+            <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+              <i class="bx bx-store text-lg"></i> Shop
+            </a>
+            <!-- Admin Menu (Hidden by default) -->
+            <a href="admin.html"
+              id="adminMenu"
+              class="hidden flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+              <i class="bx bx-shield-quarter text-lg"></i>
+              Admin
+            </a>
       </div>
 
       <!-- Right Icons + Hamburger -->
@@ -136,6 +143,7 @@
     <a href="index.html#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
     <a href="index.html#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
     <a href="signin.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
+    <a href="admin.html" id="adminMenuMobile" class="hidden block px-6 py-4 hover:bg-gray-100 transition-colors duration-300"><i class="bx bx-shield-quarter mr-2"></i> Admin </a>
     <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
   </div>
 
@@ -196,13 +204,31 @@
     (async () => {
       const { data: { session } } = await client.auth.getSession();
 
-      if (session) {
-        // User is logged in → go to profile page
-        profileLink.setAttribute('href', 'profile.html');
-        profileLink.title = session.user.email; // optional tooltip
-      } else {
-        // User not logged in → go to signin page
+      if (!session) {
         profileLink.setAttribute('href', 'signin.html');
+        return;
+      }
+
+      // Logged in user
+      profileLink.setAttribute('href', 'profile.html');
+      profileLink.title = session.user.email;
+
+      // ===== FETCH USER ROLE =====
+      const { data: profile, error } = await client
+        .from('profiles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error('Failed to load role:', error);
+        return;
+      }
+
+      // ===== SHOW ADMIN MENU IF ADMIN =====
+      if (profile.role === 'admin') {
+        document.getElementById('adminMenu')?.classList.remove('hidden');
+        document.getElementById('adminMenuMobile')?.classList.remove('hidden');
       }
     })();
 

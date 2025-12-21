@@ -171,6 +171,13 @@
       <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
         <i class="bx bx-store text-lg"></i> Shop
       </a>
+      <!-- Admin Menu (Hidden by default) -->
+      <a href="admin.html"
+        id="adminMenu"
+        class="hidden flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+        <i class="bx bx-shield-quarter text-lg"></i>
+        Admin
+      </a>
     </div>
 
     <!-- Right Icons + Hamburger -->
@@ -201,6 +208,7 @@
     <a href="#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
     <a href="#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
     <a href="profile.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
+    <a href="admin.html" id="adminMenuMobile" class="hidden block px-6 py-4 hover:bg-gray-100 transition-colors duration-300"><i class="bx bx-shield-quarter mr-2"></i> Admin </a>
     <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
   </div>
 
@@ -656,6 +664,8 @@
   </div>
 </footer>
 
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- ================= JS ================= -->
   <script>
@@ -790,6 +800,42 @@
     }, { threshold: 0.5 });
 
     observer.observe(title);
+    });
+    
+    /* ==================== GLOBAL AUTH STATE ==================== */
+    const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const profileLink = document.querySelector('[aria-label="User Profile"]')?.parentElement;
+      const adminMenu = document.getElementById("adminMenu");
+      const adminMenuMobile = document.getElementById("adminMenuMobile");
+
+      const { data: { session } } = await client.auth.getSession();
+
+      // ❌ Not logged in
+      if (!session) {
+        profileLink?.setAttribute("href", "signin.html");
+        adminMenu?.classList.add("hidden");
+        adminMenuMobile?.classList.add("hidden");
+        return;
+      }
+
+      // ✅ Logged in
+      profileLink?.setAttribute("href", "profile.html");
+
+      // 🔍 Check role
+      const { data, error } = await client
+        .from("profiles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (!error && data?.role === "admin") {
+        adminMenu?.classList.remove("hidden");
+        adminMenuMobile?.classList.remove("hidden");
+      }
     });
 
   </script>
