@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop - Yung Sun Hardware</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Boxicons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+  <!-- Smooth Scroll + Fade-in Animation -->
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);  /* Start smaller */
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);  /* End at normal size */
+      }
+    }
+
+    .animate-zoomIn {
+      animation: zoomIn 1.2s ease forwards;
+    }
+
+    .nav-link {
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: #f8941e;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      bottom: -4px;
+      left: 0;
+      background-color: #f8941e;
+      transform: scaleX(0);
+      transform-origin: bottom right;
+      transition: transform 0.3s ease-out;
+    }
+
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: bottom left;
+    }
+
+    /* Mobile menu transition */
+    #mobileMenu {
+      transition: transform 0.3s ease-in-out;
+    }
+
+    #mobileMenu.hidden {
+      transform: translateY(-100%);
+    }
+  </style>
+
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav id="navbar" class="fixed top-0 w-full bg-white z-50 transition-shadow duration-300">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center relative">
+      <!-- Logo with link to Home -->
+      <div class="flex items-center gap-3">
+        <a href="#hero" class="flex items-center gap-3">
+          <img src="assets/Yung_Sun_logo3_round.png" alt="Yung Sun Hardware Logo" class="h-11 md:h-10 w-auto" />
+        </a>
+
+        <!-- Desktop Brand Name (hidden on mobile) -->
+        <a href="#hero" class="hidden md:inline text-xl font-bold whitespace-nowrap">
+          <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
+          <span class="text-[#023f88]"> Hardware Enterprise</span>
+        </a>
+
+        <!-- Mobile Brand Name (only shown on mobile) -->
+        <a href="#hero" class="md:hidden text-xl font-bold whitespace-nowrap">
+          <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
+        </a>
+      </div>
+
+      <!-- Center Menu (Desktop) -->
+      <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+        <div class="relative group">
+          <button class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+            <i class="bx bx-home text-lg"></i> Home
+          </button>
+          <div class="absolute top-8 left-0 bg-white shadow rounded w-40 opacity-0 visibility-hidden group-hover:opacity-100 group-hover:visibility-visible pointer-events-none group-hover:pointer-events-auto transition-all duration-300 ease-in-out delay-100">
+            <a href="index.html#hero" class="block px-4 py-2 hover:bg-gray-100 nav-link">Home</a>
+            <a href="index.html#about" class="block px-4 py-2 hover:bg-gray-100 nav-link">About</a>
+            <a href="index.html#contact" class="block px-4 py-2 hover:bg-gray-100 nav-link">Contact</a>
+          </div>
+        </div>
+        <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+          <i class="bx bx-store text-lg"></i> Shop
+        </a>
+      </div>
+
+      <!-- Right Icons + Hamburger -->
+      <div class="ml-auto flex items-center gap-6 text-xl">
+        <div class="hidden md:flex items-center gap-6">
+          <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="User Profile"></i>
+          <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
+        </div>
+        <!-- Mobile Icons: Cart and Hamburger -->
+        <div class="md:hidden flex items-center gap-4">
+          <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
+          <button id="menuBtn" class="text-3xl">
+            <i class="bx bx-menu"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= MOBILE MENU ================= -->
+  <div id="mobileMenu" class="hidden fixed top-16 w-full bg-white shadow-md md:hidden z-40 overflow-hidden transition-all duration-300 ease-in-out transform -translate-y-full">
+    <a href="index.html#hero" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Home</a>
+    <a href="index.html#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
+    <a href="index.html#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
+    <a href="profile.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
+    <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
+  </div>
+
+  <!-- Spacer to avoid content hidden under fixed navbar -->
+  <div class="h-20"></div>
+
+  <!-- Shop Section -->
+  <main class="max-w-7xl mx-auto py-12 px-6">
+    <h2 class="text-4xl font-bold mb-8 text-center">Shop</h2>
+
+    <!-- Product Grid -->
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <!-- Products will be inserted here dynamically -->
+    </div>
+  </main>
+
+  <!-- Load Supabase before your code -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Your custom scripts -->
+  <script>
+    // Initialize Supabase
+    const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const productGrid = document.getElementById('product-grid');
+
+    async function loadProducts() {
+      const { data, error } = await client.from('products').select('*');
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        productGrid.innerHTML = `<p class="text-red-500">Failed to load products.</p>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        productGrid.innerHTML = '<p class="text-gray-600">No products found.</p>';
+        return;
+      }
+
+      productGrid.innerHTML = data.map(p => `
+        <div class="bg-white p-4 rounded shadow flex flex-col items-center">
+          <img src="${p.image_url}" alt="${p.name}" class="h-40 object-contain mb-2 bg-white p-2 rounded-lg">
+          <h3 class="font-bold text-lg">${p.name}</h3>
+          <p class="text-gray-500">${p.category || ''}</p>
+          <p class="font-semibold">RM ${p.price}</p>
+        </div>
+      `).join('');
+    }
+
+    loadProducts();
+
+    // ================= NAVBAR JS =================
+    const navbar = document.getElementById("navbar");
+    const menuBtn = document.getElementById("menuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const sections = document.querySelectorAll("section");
+    const navLinks = document.querySelectorAll(".nav-link");
+    const dropdownButton = document.querySelector(".group");
+    const dropdownMenu = dropdownButton.querySelector("div");
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    // Navbar shadow on scroll
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 10) navbar.classList.add("shadow-md");
+      else navbar.classList.remove("shadow-md");
+    });
+
+    // Toggle mobile menu
+    menuBtn.addEventListener("click", () => {
+      mobileMenu.classList.toggle("hidden");
+      mobileMenu.classList.toggle("-translate-y-full");
+    });
+
+    // Dropdown hover effects
+    dropdownButton.addEventListener("mouseenter", () => {
+      dropdownMenu.classList.add("opacity-100", "visibility-visible", "pointer-events-auto");
+      dropdownMenu.classList.remove("opacity-0", "visibility-hidden", "pointer-events-none");
+    });
+
+    dropdownButton.addEventListener("mouseleave", () => {
+      setTimeout(() => {
+        if (!dropdownMenu.matches(':hover')) {
+          dropdownMenu.classList.add("opacity-0", "visibility-hidden", "pointer-events-none");
+          dropdownMenu.classList.remove("opacity-100", "visibility-visible", "pointer-events-auto");
+        }
+      }, 100);
+    });
+
+    dropdownMenu.addEventListener("mouseenter", () => {
+      dropdownMenu.classList.add("opacity-100", "visibility-visible", "pointer-events-auto");
+      dropdownMenu.classList.remove("opacity-0", "visibility-hidden", "pointer-events-none");
+    });
+
+    dropdownMenu.addEventListener("mouseleave", () => {
+      dropdownMenu.classList.add("opacity-0", "visibility-hidden", "pointer-events-none");
+      dropdownMenu.classList.remove("opacity-100", "visibility-visible", "pointer-events-auto");
+    });
+
+    // Active link highlight
+    window.addEventListener("scroll", () => {
+      let current = "";
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 120;
+        if (scrollY >= sectionTop) current = section.getAttribute("id");
+      });
+      navLinks.forEach(link => {
+        link.classList.remove("text-orange-600", "font-semibold");
+        if (link.getAttribute("href") === `#${current}`) {
+          link.classList.add("text-orange-600", "font-semibold");
+        }
+      });
+    });
+
+    // Tabs (if used)
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active-tab"));
+        tabContents.forEach(c => c.classList.add("hidden"));
+        btn.classList.add("active-tab");
+        document.getElementById(btn.dataset.tab).classList.remove("hidden");
+      });
+    });
+  </script>
+
+</body>
+</html>
