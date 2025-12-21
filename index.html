@@ -237,133 +237,159 @@
   </section>
 
     <!-- ================= SHOP BY CATEGORY ================= -->
-    <section class="py-20 px-6 bg-gray-100">
-    <div class="max-w-7xl mx-auto">
+<section class="py-24 px-6 bg-gray-100">
+  <div class="max-w-7xl mx-auto">
 
-        <!-- Header + Tabs -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10">
-        <h2 class="text-4xl font-bold mb-6 md:mb-0">
-            Shop by Category
+    <!-- ===== HEADER ===== -->
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
+      <div>
+        <h2 class="text-5xl font-extrabold tracking-tight mb-4">
+          Shop by Category
         </h2>
+        <p class="text-gray-500 max-w-md text-lg">
+          Discover our most popular tools and limited-time deals trusted by professionals.
+        </p>
+      </div>
 
-        <!-- Tabs -->
-        <div class="flex gap-2">
-            <button class="tab-btn active-tab" data-tab="bestseller">Bestseller</button> 
-            <button class="tab-btn" data-tab="promo">Promo</button>
+      <!-- Tabs -->
+      <div class="flex gap-3 mt-8 md:mt-0">
+        <button class="tab-btn active-tab" data-tab="bestseller">Bestsellers</button>
+        <button class="tab-btn" data-tab="promo">Promotions</button>
+      </div>
+    </div>
+
+    <!-- ================= TAB CONTENT ================= -->
+
+    <!-- ===== BESTSELLERS ===== -->
+    <div
+      id="bestseller"
+      class="tab-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
+    >
+
+      <!-- PRODUCT CARD -->
+      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden">
+        <!-- Image -->
+        <div class="relative h-64 bg-white flex items-center justify-center">
+          <img
+            src="assets/products/hammer.webp"
+            alt="Steel Hammer 16oz"
+            class="h-44 object-contain transform transition duration-500 group-hover:scale-110"
+          />
+
+          <!-- Hover Actions -->
+          <div class="absolute bottom-4 inset-x-0 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition">
+            <button class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f8941e] hover:text-white transition">
+              Quick View
+            </button>
+            <button class="bg-[#023f88] px-4 py-2 rounded-full text-sm font-semibold text-white hover:bg-blue-900 transition">
+              Add to Cart
+            </button>
+          </div>
         </div>
-        </div>
 
-        <!-- ================= TAB CONTENT ================= -->
-
-        <!-- ===== BESTSELLER ===== -->
-        <div id="bestseller" class="tab-content grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-
-        <!-- Product -->
-        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
-            <img src="assets/products/hammer.webp" alt="Steel Hammer"
-                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-            <h3 class="font-semibold text-lg leading-tight mb-1">
+        <!-- Info -->
+        <div class="p-6 flex flex-col">
+          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">
+            Hand Tools
+          </p>
+          <h3 class="font-bold text-lg mb-2">
             Steel Hammer 16oz
-            </h3>
-            <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
+          </h3>
 
-            <div class="mt-auto flex items-center justify-between">
-            <div class="flex text-orange-400 text-sm">
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star-half"></i>
-            </div>
-            <span class="font-bold text-lg">RM 29.90</span>
-            </div>
-        </div>
+          <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+            <i class="bx bxs-star-half"></i>
+            <span class="text-gray-400 ml-2">(128)</span>
+          </div>
 
-        <!-- Product -->
-        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
-            <img src="assets/products/screwdriver.jpg" alt="Screwdriver Set"
-                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-            <h3 class="font-semibold text-lg leading-tight mb-1">
-            Screwdriver Set (6pcs)
-            </h3>
-            <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
-
-            <div class="mt-auto flex items-center justify-between">
-            <div class="flex text-orange-400 text-sm">
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bx-star"></i>
-            </div>
-            <span class="font-bold text-lg">RM 45.00</span>
-            </div>
-        </div>
-
-        <!-- Product -->
-        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden">
-            <img src="assets/products/drill.jpg" alt="Electric Drill"
-                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-            <h3 class="font-semibold text-lg leading-tight mb-1">
-            Electric Drill 500W
-            </h3>
-            <p class="text-sm text-gray-500 mb-3">Power Tools</p>
-
-            <div class="mt-auto flex items-center justify-between">
-            <div class="flex text-orange-400 text-sm">
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-            </div>
-            <span class="font-bold text-lg">RM 189.00</span>
-            </div>
-        </div>
-
-        </div>
-
-        <!-- ===== PROMO ===== -->
-        <div id="promo" class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-
-        <!-- Promo Product -->
-        <div class="bg-white rounded-xl shadow hover:shadow-xl transition p-6 flex flex-col group overflow-hidden relative">
-            <span class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-            SALE
+          <div class="mt-auto flex items-center justify-between">
+            <span class="text-2xl font-extrabold text-gray-900">
+              RM 29.90
             </span>
+            <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
+              In Stock
+            </span>
+          </div>
+        </div>
+      </div>
 
-            <img src="assets/products/wrench.jpg" alt="Adjustable Wrench"
-                class="h-60 object-contain mx-auto mb-4 transform transition-transform duration-500 group-hover:scale-110">
-
-            <h3 class="font-semibold text-lg leading-tight mb-1">
-            Adjustable Wrench 12"
-            </h3>
-            <p class="text-sm text-gray-500 mb-3">Hand Tools</p>
-
-            <div class="mt-auto flex items-center justify-between">
-            <div class="flex text-orange-400 text-sm">
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-                <i class="bx bx-star"></i>
-            </div>
-
-            <div class="text-right">
-                <span class="block text-sm text-gray-400 line-through">
-                RM 39.90
-                </span>
-                <span class="font-bold text-lg text-red-600">
-                RM 29.90
-                </span>
-            </div>
-            </div>
+      <!-- PRODUCT CARD -->
+      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
+        <div class="relative h-64 bg-white flex items-center justify-center">
+          <img src="assets/products/screwdriver.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
         </div>
 
+        <div class="p-6">
+          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
+          <h3 class="font-bold text-lg mb-3">Screwdriver Set (6pcs)</h3>
+
+          <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+            <i class="bx bx-star"></i>
+          </div>
+
+          <span class="text-2xl font-extrabold">RM 45.00</span>
         </div>
+      </div>
+
+      <!-- PRODUCT CARD -->
+      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
+        <div class="relative h-64 bg-white flex items-center justify-center">
+          <img src="assets/products/drill.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+        </div>
+
+        <div class="p-6">
+          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Power Tools</p>
+          <h3 class="font-bold text-lg mb-3">Electric Drill 500W</h3>
+
+          <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i>
+          </div>
+
+          <span class="text-2xl font-extrabold">RM 189.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROMO ===== -->
+    <div
+      id="promo"
+      class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
+    >
+
+      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden relative">
+        <span class="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full z-10">
+          SALE
+        </span>
+
+        <div class="h-64 bg-white flex items-center justify-center">
+          <img src="assets/products/wrench.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+        </div>
+
+        <div class="p-6">
+          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
+          <h3 class="font-bold text-lg mb-4">Adjustable Wrench 12"</h3>
+
+          <div class="flex items-end justify-between">
+            <div>
+              <span class="block text-sm text-gray-400 line-through">RM 39.90</span>
+              <span class="text-2xl font-extrabold text-red-600">RM 29.90</span>
+            </div>
+            <button class="bg-[#f8941e] hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition">
+              Buy Now
+            </button>
+          </div>
+        </div>
+      </div>
 
     </div>
-    </section>
+  </div>
+</section>
+
 
   <!-- ================= ABOUT SECTION ================= -->
   <section id="about" class="relative py-20 px-6 bg-white overflow-hidden">
@@ -391,7 +417,7 @@
           </p>
 
           <a href="shop.html"
-            class="inline-block bg-[#023f88] hover:bg-blue-900 text-white font-semibold py-4 px-8 rounded-xl transition">
+            class="inline-block bg-[#f8941e] hover:bg-orange-600 text-white font-semibold py-4 px-8 rounded-xl transition">
             Explore Our Products
           </a>
         </div>
