@@ -46,48 +46,65 @@
   </div>
 
   <script>
-    // Initialize Supabase
-    const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // ======= Initialize Supabase =======
+  const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Redirect if already logged in
-    (async () => {
-      const { data: { session } } = await client.auth.getSession();
-      if (session) window.location.href = "shop.html";
-    })();
+  // ======= Redirect if already logged in =======
+  (async () => {
+    const { data: { session } } = await client.auth.getSession();
+    if (session) {
+      // If admin is already logged in manually, you can adjust this if needed
+      window.location.href = "shop.html";
+    }
+  })();
 
-    // Handle login button click
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const messageEl = document.getElementById('message');
+  // ======= Handle Login =======
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const messageEl = document.getElementById('message');
 
-      messageEl.textContent = "";
-      messageEl.className = "text-sm mt-4 text-center";
+  messageEl.textContent = "";
+  messageEl.className = "text-sm mt-4 text-center";
 
-      if (!email || !password) {
-        messageEl.textContent = "Please enter both email and password.";
-        messageEl.classList.add("text-red-500");
-        return;
-      }
+  if (!email || !password) {
+    messageEl.textContent = "Please enter both email and password.";
+    messageEl.classList.add("text-red-500");
+    return;
+  }
 
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
+  try {
+    // Authenticate via Supabase (email & password)
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        messageEl.textContent = error.message;
-        messageEl.classList.add("text-red-500");
-        return;
-      }
+    if (error) {
+      messageEl.textContent = error.message;
+      messageEl.classList.add("text-red-500");
+      return;
+    }
 
+    // Redirect based on user email
+    if (email === 'admin1') {
+      messageEl.textContent = "Admin login successful! Redirecting...";
+      messageEl.classList.add("text-green-600");
+      setTimeout(() => window.location.href = "admin.html", 1000);
+    } else {
       messageEl.textContent = "Login successful! Redirecting...";
       messageEl.classList.add("text-green-600");
+      setTimeout(() => window.location.href = "profile.html", 1000);
+    }
 
-      setTimeout(() => {
-        window.location.href = "profile.html";
-      }, 1000);
-    });
-  </script>
+  } catch (err) {
+    console.error("Unexpected error during login:", err);
+    messageEl.textContent = "Something went wrong. Please try again.";
+    messageEl.classList.add("text-red-500");
+  }
+});
+
+</script>
+
 
 </body>
 </html>
