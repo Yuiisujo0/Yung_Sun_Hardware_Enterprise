@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gradient-to-r from-orange-100 via-white to-orange-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white backdrop-blur-md bg-opacity-80 rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10">
+    
+    <!-- Heading -->
+    <h2 class="text-3xl font-extrabold text-orange-600 mb-6 text-center animate-pulse">Create Account</h2>
+
+    <!-- Profile Picture Upload -->
+    <div class="flex justify-center mb-6">
+    <div class="avatar-container relative cursor-pointer">
+        <!-- Avatar Image -->
+        <img id="avatarPreview" src="assets/Yung_Sun_logo3_round.png" alt="Profile Picture"
+        class="h-24 w-24 rounded-full object-cover border-2 border-gray-300">
+
+        <!-- Always Visible Camera Icon Overlay -->
+        <div class="absolute bottom-0 right-0 bg-black bg-opacity-50 rounded-full p-2 flex justify-center items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 7h4l2-3h6l2 3h4v12H3V7z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 11a3 3 0 100 6 3 3 0 000-6z" />
+        </svg>
+        </div>
+
+        <!-- Hidden File Input -->
+        <input type="file" id="avatarInput" accept="image/*" class="hidden">
+    </div>
+    </div>
+
+    <!-- Form Inputs -->
+    <div class="space-y-4">
+      <input id="fullName" type="text" placeholder="Full Name" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+      <input id="email" type="email" placeholder="Email" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+      <input id="password" type="password" placeholder="Password" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+      <input id="phone" type="tel" placeholder="Mobile Phone" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+      <input id="address" type="text" placeholder="Shipping Address" class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+    </div>
+
+    <button id="signupBtn" class="w-full py-4 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold rounded-xl hover:from-orange-500 hover:to-orange-600 transition duration-300 shadow-lg mt-6">
+      Sign Up
+    </button>
+
+    <p class="text-center mt-6 text-sm text-gray-600">
+      Already have an account? 
+      <a href="signin.html" class="text-orange-500 font-semibold hover:underline">Sign in</a>
+    </p>
+
+    <p id="message" class="text-sm mt-4 text-center"></p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const avatarContainer = document.querySelector('.avatar-container');
+
+    // Click avatar to upload
+    avatarContainer.addEventListener('click', () => avatarInput.click());
+    avatarInput.addEventListener('change', () => {
+      const file = avatarInput.files[0];
+      if (file) {
+        avatarPreview.src = URL.createObjectURL(file);
+      }
+    });
+
+    document.getElementById('signupBtn').addEventListener('click', async () => {
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const phone = document.getElementById('phone').value;
+      const address = document.getElementById('address').value;
+      const messageEl = document.getElementById('message');
+
+      messageEl.textContent = "";
+      messageEl.className = "text-sm mt-4 text-center";
+
+      if (!fullName || !email || !password) {
+        messageEl.textContent = "Please fill out all required fields.";
+        messageEl.classList.add("text-red-500");
+        return;
+      }
+
+      // Sign up user
+      const { data: signUpData, error: signUpError } = await client.auth.signUp({ email, password });
+      if (signUpError) {
+        messageEl.textContent = signUpError.message;
+        messageEl.classList.add("text-red-500");
+        return;
+      }
+
+      const userId = signUpData.user.id;
+      let avatarUrl = null;
+
+      // Upload avatar if selected
+      if (avatarInput.files[0]) {
+        try {
+          const file = avatarInput.files[0];
+          const ext = file.name.split('.').pop();
+          const fileName = `avatar.${ext}`;
+          const filePath = `${userId}/${fileName}`;
+          await client.storage.from('avatars').upload(filePath, file, { upsert: true });
+          const { data: publicData } = client.storage.from('avatars').getPublicUrl(filePath);
+          avatarUrl = publicData.publicUrl;
+        } catch (err) {
+          console.error('Avatar upload failed:', err);
+        }
+      }
+
+      // Insert profile row
+      const { error: profileError } = await client.from('profiles').insert({
+        user_id: userId,
+        full_name: fullName,
+        email,
+        phone,
+        address,
+        avatar_url: avatarUrl
+      });
+
+      if (profileError) {
+        console.error('Error creating profile row:', profileError);
+      }
+
+      // Success
+      messageEl.textContent = "Account created successfully! Redirecting to Sign In...";
+      messageEl.classList.add("text-green-600");
+
+      setTimeout(() => {
+        window.location.href = "signin.html";
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

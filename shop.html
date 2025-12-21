@@ -113,9 +113,12 @@
       <!-- Right Icons + Hamburger -->
       <div class="ml-auto flex items-center gap-6 text-xl">
         <div class="hidden md:flex items-center gap-6">
-          <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="User Profile"></i>
+          <a href="signin.html" aria-label="User Profile">
+            <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
+          </a>
           <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
         </div>
+
         <!-- Mobile Icons: Cart and Hamburger -->
         <div class="md:hidden flex items-center gap-4">
           <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
@@ -132,7 +135,7 @@
     <a href="index.html#hero" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Home</a>
     <a href="index.html#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
     <a href="index.html#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
-    <a href="profile.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
+    <a href="signin.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
     <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
   </div>
 
@@ -152,15 +155,15 @@
   <!-- Load Supabase before your code -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Your custom scripts -->
   <script>
-    // Initialize Supabase
+    // ==================== Supabase Initialization ====================
     const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const productGrid = document.getElementById('product-grid');
 
+    // ==================== Load Products ====================
     async function loadProducts() {
       const { data, error } = await client.from('products').select('*');
 
@@ -187,7 +190,23 @@
 
     loadProducts();
 
-    // ================= NAVBAR JS =================
+    // ==================== Authentication Handling ====================
+    const profileLink = document.querySelector('#navbar .bx-user').parentElement;
+
+    (async () => {
+      const { data: { session } } = await client.auth.getSession();
+
+      if (session) {
+        // User is logged in → go to profile page
+        profileLink.setAttribute('href', 'profile.html');
+        profileLink.title = session.user.email; // optional tooltip
+      } else {
+        // User not logged in → go to signin page
+        profileLink.setAttribute('href', 'signin.html');
+      }
+    })();
+
+    // ==================== Navbar JS ====================
     const navbar = document.getElementById("navbar");
     const menuBtn = document.getElementById("menuBtn");
     const mobileMenu = document.getElementById("mobileMenu");

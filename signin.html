@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gradient-to-r from-orange-100 via-white to-orange-100 min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white backdrop-blur-md bg-opacity-80 rounded-3xl shadow-2xl max-w-md w-full p-8 md:p-10">
+    
+    <!-- Plain Logo (clickable) -->
+    <div class="flex justify-center mb-6">
+        <a href="index.html">
+            <img src="assets/Yung_Sun_logo.png" alt="Yung Sun Logo" class="w-full max-w-sm h-auto cursor-pointer">
+        </a>
+    </div>
+    
+    <!-- Heading -->
+    <h2 class="text-3xl font-extrabold text-orange-600 mb-6 text-center animate-pulse">Welcome Back</h2>
+    
+    <!-- Form Inputs -->
+    <div class="space-y-4">
+      <input id="email" type="email" placeholder="Email"
+        class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+
+      <input id="password" type="password" placeholder="Password"
+        class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+
+      <button id="loginBtn"
+        class="w-full py-4 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold rounded-xl hover:from-orange-500 hover:to-orange-600 transition duration-300 shadow-lg">
+        Sign In
+      </button>
+    </div>
+
+    <!-- Sign up link -->
+    <p class="text-center mt-6 text-sm text-gray-600">
+      Don’t have an account? 
+      <a href="signup.html" class="text-orange-500 font-semibold hover:underline">Sign up</a>
+    </p>
+
+    <!-- Message -->
+    <p id="message" class="text-sm mt-4 text-center"></p>
+  </div>
+
+  <script>
+    // Initialize Supabase
+    const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Redirect if already logged in
+    (async () => {
+      const { data: { session } } = await client.auth.getSession();
+      if (session) window.location.href = "shop.html";
+    })();
+
+    // Handle login button click
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const messageEl = document.getElementById('message');
+
+      messageEl.textContent = "";
+      messageEl.className = "text-sm mt-4 text-center";
+
+      if (!email || !password) {
+        messageEl.textContent = "Please enter both email and password.";
+        messageEl.classList.add("text-red-500");
+        return;
+      }
+
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        messageEl.textContent = error.message;
+        messageEl.classList.add("text-red-500");
+        return;
+      }
+
+      messageEl.textContent = "Login successful! Redirecting...";
+      messageEl.classList.add("text-green-600");
+
+      setTimeout(() => {
+        window.location.href = "profile.html";
+      }, 1000);
+    });
+  </script>
+
+</body>
+</html>
