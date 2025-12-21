@@ -113,6 +113,11 @@
     }
 
     /*About Us*/
+    #about-title {
+      white-space: nowrap; /* Prevents breaking the words */
+      word-spacing: 0.25rem; /* Optional: adjusts space between words */
+    }
+
     .letter {
     display: inline-block;
     opacity: 0;
@@ -232,7 +237,7 @@
   </section>
 
     <!-- ================= SHOP BY CATEGORY ================= -->
-    <section class="py-40 px-6 bg-gray-100">
+    <section class="py-20 px-6 bg-gray-100">
     <div class="max-w-7xl mx-auto">
 
         <!-- Header + Tabs -->
@@ -361,97 +366,231 @@
     </section>
 
   <!-- ================= ABOUT SECTION ================= -->
-<section id="about" class="relative py-32 px-6 bg-gradient-to-b from-gray-50 to-white overflow-hidden">
-  <!-- Decorative background shapes -->
-  <div class="absolute -top-20 -left-20 w-80 h-80 bg-orange-200 rounded-full opacity-20"></div>
-  <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-blue-200 rounded-full opacity-20"></div>
+  <section id="about" class="relative py-20 px-6 bg-white overflow-hidden">
 
-  <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 relative z-10">
+    <!-- Abstract background -->
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
+      <div class="absolute -top-40 -left-40 w-[32rem] h-[32rem] bg-orange-100 rounded-full opacity-30"></div>
+      <div class="absolute top-1/2 -right-40 w-[36rem] h-[36rem] bg-blue-100 rounded-full opacity-30"></div>
+    </div>
 
-    <!-- Image -->
-    <div class="w-full lg:w-1/2 relative">
-      <img src="assets/About1.jpg" alt="Yung Sun's daughter as a baby with her mother" 
-           class="rounded-2xl shadow-2xl w-full object-cover transform transition-transform duration-500 hover:scale-105">
-      <!-- Overlay badge -->
-      <div class="absolute bottom-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-semibold">
-        22+ Years of Family Legacy
+    <div class="max-w-7xl mx-auto relative z-10">
+
+      <!-- ================= HERO INTRO ================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-40">
+
+        <!-- Text -->
+        <div>
+          <h2 id="about-title" class="text-6xl md:text-7xl font-extrabold text-gray-800 leading-tight mb-6">
+            About Us
+          </h2>
+
+          <p class="text-xl text-gray-700 leading-relaxed mb-8">
+            After more than <span class="font-semibold text-[#f8941e]">22 years</span> of serving Kuching,
+            Yung Sun Hardware is expanding online — combining physical reliability with digital convenience.
+          </p>
+
+          <a href="shop.html"
+            class="inline-block bg-[#023f88] hover:bg-blue-900 text-white font-semibold py-4 px-8 rounded-xl transition">
+            Explore Our Products
+          </a>
+        </div>
+
+        <!-- Image collage -->
+        <div class="relative">
+          <img src="assets/about-store1.PNG"
+            class="rounded-3xl shadow-2xl w-full object-cover">
+
+          <img src="assets/about-products.jpg"
+            class="absolute -bottom-16 -left-16 w-2/3 rounded-2xl shadow-xl border-8 border-white hidden md:block">
+
+          <div class="absolute top-6 right-6 bg-[#f8941e] text-white px-5 py-3 rounded-xl text-sm font-semibold">
+            Serving Since 2002
+          </div>
+        </div>
       </div>
+
+      <!-- ================= WHY US ================= -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-24 items-center mb-40">
+
+        <!-- Image -->
+        <div class="relative order-2 md:order-1">
+          <img src="assets/about-warehouse.jpg"
+            class="rounded-3xl shadow-xl w-full object-cover">
+        </div>
+
+        <!-- Content -->
+        <div class="order-1 md:order-2">
+          <h3 class="text-4xl font-bold text-gray-800 mb-6">
+            Why Customers Choose Us
+          </h3>
+
+          <div class="space-y-8">
+            <div class="flex gap-5">
+              <i class="bx bx-check-shield text-4xl text-[#023f88]"></i>
+              <p class="text-lg text-gray-700">
+                Trusted by contractors, builders, and homeowners for decades.
+              </p>
+            </div>
+
+            <div class="flex gap-5">
+              <i class="bx bx-badge-check text-4xl text-[#f8941e]"></i>
+              <p class="text-lg text-gray-700">
+                Carefully curated products — we only sell what we trust ourselves.
+              </p>
+            </div>
+
+            <div class="flex gap-5">
+              <i class="bx bx-user-voice text-4xl text-[#023f88]"></i>
+              <p class="text-lg text-gray-700">
+                Real people, real advice — online and in-store support.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= LOGISTICS & SECURITY ================= -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-16 mb-40">
+
+        <!-- Card 1 -->
+        <div>
+          <img src="assets/about-shipping.jpg"
+            class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
+          <h4 class="text-2xl font-bold mb-3 text-gray-800">
+            Logistics & Delivery
+          </h4>
+          <p class="text-gray-700">
+            Orders are packed directly from our physical store and delivered efficiently
+            with options for local pickup and shipping.
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="lg:translate-y-16">
+          <img src="assets/about-online.jpg"
+            class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
+          <h4 class="text-2xl font-bold mb-3 text-gray-800">
+            Going Digital
+          </h4>
+          <p class="text-gray-700">
+            Our online platform gives customers real-time access to products,
+            pricing, and availability — anytime, anywhere.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div>
+          <img src="assets/about-security.jpg"
+            class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
+          <h4 class="text-2xl font-bold mb-3 text-gray-800">
+            Secure & Reliable
+          </h4>
+          <p class="text-gray-700">
+            We protect customer data and payments using industry-standard
+            security practices — trust is our foundation.
+          </p>
+        </div>
+      </div>
+
+      <!-- ================= STATS ================= -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-12 text-center mb-32">
+
+        <div>
+          <p class="text-6xl font-extrabold text-[#f8941e]">22+</p>
+          <p class="text-gray-700 mt-2">Years in Business</p>
+        </div>
+
+        <div>
+          <p class="text-6xl font-extrabold text-[#023f88]">5K+</p>
+          <p class="text-gray-700 mt-2">Products</p>
+        </div>
+
+        <div>
+          <p class="text-6xl font-extrabold text-[#f8941e]">10K+</p>
+          <p class="text-gray-700 mt-2">Customers Served</p>
+        </div>
+
+        <div>
+          <p class="text-6xl font-extrabold text-[#023f88]">100%</p>
+          <p class="text-gray-700 mt-2">Trusted Suppliers</p>
+        </div>
+
+      </div>
+
+      <!-- ================= FINAL CTA ================= -->
+      <div class="text-center">
+        <a href="shop.html"
+          class="inline-block bg-[#f8941e] hover:bg-orange-600 text-white font-bold py-5 px-12 rounded-2xl text-lg transition">
+          Shop with Confidence
+        </a>
+      </div>
+
     </div>
+  </section>
 
-    <!-- Text -->
-    <div class="w-full lg:w-1/2">
-      <!-- Animated title -->
-      <h2 id="about-title" class="text-5xl font-extrabold mb-6 text-gray-800">
-        About Us
-      </h2>
+  <section id="contact" class="py-20 bg-white text-gray-800">
+  <div class="max-w-7xl mx-auto px-6">
+    
+    <div class="flex flex-col md:flex-row items-start justify-between gap-12">
+      
+      <div class="w-full md:w-1/2 flex flex-col gap-6">
+        
+        <div class="flex flex-col gap-2">
+          <p class="text-gray-700 text-lg md:text-xl leading-relaxed">
+            Sarawak, KUCHING<br>
+            LOT 33, BLOCK 7, 19TH MILE TAMAN DURANDA EMAS BAZAAR<br>
+            Postcode: 94200
+          </p>
+        </div>
 
-      <p class="text-gray-700 mb-6 leading-relaxed text-lg">
-        What started over 22 years ago as a small local hardware shop by <span class="font-semibold">Yung Sun</span> has grown into a trusted hub 
-        for professionals and homeowners alike. Each tool, each nail, each screw has carried the spirit of hard work and dedication.
-      </p>
+        <div class="w-full">
+          <a href="https://www.google.com/maps/place/YUNG+SUN+HARDWARE+ENTERPRISE-Federal+Paints-Krystal+Spray+Paint" target="_blank" class="block group">
+            <div class="overflow-hidden rounded-2xl border border-gray-200">
+              <iframe
+                src="https://www.google.com/maps?q=YUNG+SUN+HARDWARE+ENTERPRISE,Kuching&output=embed"
+                class="w-full h-56 md:h-72"
+                style="border:0;"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+              </iframe>
+            </div>
+            <span class="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-[#023f88] group-hover:text-[#f8941e] transition">
+              <i class="bx bx-map"></i>
+              Open in Google Maps
+            </span>
+          </a>
+        </div>
+      </div>
 
-      <p class="text-gray-700 mb-6 leading-relaxed text-lg">
-        This photo captures a special memory: Yung Sun’s daughter, a baby, in the shop with her mother. 
-        Even then, surrounded by the warmth of family and the spirit of entrepreneurship, the foundation was laid.
-      </p>
+      <div class="w-full md:w-1/2 flex flex-col items-end text-right gap-8">
+        
+        <div class="w-full flex justify-end">
+          <img src="assets/Yung_Sun_logo.png" alt="Yung Sun Logo" class="w-full max-w-md h-auto" /> 
+        </div>
 
-      <p class="text-gray-700 mb-6 leading-relaxed text-lg">
-        Today, we continue this legacy — combining quality, reliability, and personal service. 
-        Yung Sun Hardware isn’t just a store; it’s a story of <span class="font-semibold text-orange-500">family, community, and trust</span>.
-      </p>
+        <div class="flex flex-col gap-3">
+          <div>
+            <span class="text-[#f8941e] font-bold text-lg md:text-xl">Phone:</span>
+            <span class="text-gray-800 text-lg md:text-xl ml-2">+60 12-345 6789</span>
+          </div>
+          <div>
+            <span class="text-[#023f88] font-bold text-lg md:text-xl">Email:</span>
+            <span class="text-gray-800 text-lg md:text-xl ml-2">contact@yungsunhardware.com</span>
+          </div>
+        </div>
 
-      <!-- CTA Button -->
-      <a href="shop.html" class="inline-block mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300">
-        Explore Our Store
-      </a>
-    </div>
-
-  </div>
-</section>
-
-  <!-- ================= CONTACT SECTION ================= -->
-<section id="contact" class="py-40 bg-white text-gray-800">
-  <div class="max-w-7xl mx-auto px-6 flex flex-col gap-12">
-
-    <!-- Company Name -->
-    <h1 class="text-6xl md:text-7xl font-extrabold leading-tight">
-      <span class="text-[#f8941e]">Yung Sun</span>
-      <br>
-      <span class="text-[#023f88]">Hardware Enterprise</span>
-    </h1>
-
-    <!-- Info Row: Address + Contact -->
-    <div class="flex flex-col md:flex-row md:justify-between items-start gap-8">
-
-      <!-- Address & Operating Info -->
-      <div class="flex flex-col gap-4">
-        <p class="text-gray-700 text-lg md:text-xl leading-relaxed">
-          Sarawak, KUCHING<br>
-          LOT 33, BLOCK 7, 19TH MILE TAMAN DURANDA EMAS BAZAAR<br>
-          Postcode: 94200
-        </p>
-        <div class="flex gap-8 flex-wrap">
+        <div class="flex flex-col gap-2 border-t border-gray-100 pt-4 w-full items-end">
           <div>
             <span class="text-[#f8941e] font-semibold uppercase tracking-wide">Operating Days:</span>
-            <span class="text-gray-700">Everyday</span>
+            <span class="text-gray-700 ml-2">Everyday</span>
           </div>
           <div>
             <span class="text-[#023f88] font-semibold uppercase tracking-wide">Hours:</span>
-            <span class="text-gray-700">7am - 6pm</span>
+            <span class="text-gray-700 ml-2">7am - 6pm</span>
           </div>
         </div>
-      </div>
-
-      <!-- Contact Info (aligned to top) -->
-      <div class="flex flex-col gap-4 text-right self-start">
-        <div>
-          <span class="text-[#f8941e] font-bold text-lg md:text-xl">Phone:</span>
-          <span class="text-gray-800 text-lg md:text-xl">+60 12-345 6789</span>
-        </div>
-        <div>
-          <span class="text-[#023f88] font-bold text-lg md:text-xl">Email:</span>
-          <span class="text-gray-800 text-lg md:text-xl">contact@yungsunhardware.com</span>
-        </div>
+        
       </div>
 
     </div>
@@ -576,14 +715,20 @@
     });
 
     document.addEventListener("DOMContentLoaded", () => {
-    const title = document.getElementById("about-title");
-    const text = title.textContent.trim();
-    title.textContent = ""; // clear original
+      const title = document.getElementById("about-title");
+      const text = title.textContent.trim();
+      title.textContent = ""; // clear original
 
     // Wrap each letter in a span
     const letters = text.split("").map(char => {
         const span = document.createElement("span");
-        span.textContent = char;
+        // If the character is a space, insert a non-breaking space (HTML entity)
+        if (char === " ") {
+            span.innerHTML = "&nbsp;";  // Non-breaking space
+        } else {
+            span.textContent = char;
+        }
+
         span.classList.add("letter");
         title.appendChild(span);
         return span;
