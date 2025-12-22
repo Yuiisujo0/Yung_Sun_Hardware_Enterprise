@@ -1,0 +1,37 @@
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Zoom-in animation */
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-zoomIn { animation: zoomIn 1.2s ease forwards; }
+
+/* Navbar links */
+.nav-link {
+  position: relative;
+}
+.nav-link:hover { color: #f8941e; }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #f8941e;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+.nav-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Mobile menu */
+#mobileMenu { transition: transform 0.3s ease-in-out; }
+#mobileMenu.hidden { transform: translateY(-100%); }
