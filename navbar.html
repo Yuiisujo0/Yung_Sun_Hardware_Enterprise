@@ -1,0 +1,75 @@
+<nav id="navbar" class="fixed top-0 w-full bg-white z-50 transition-shadow duration-300">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center relative">
+    <!-- Logo with link to Home -->
+    <div class="flex items-center gap-3">
+      <a href="index.html" class="flex items-center gap-3">
+        <img src="assets/Yung_Sun_logo3_round.png" alt="Yung Sun Hardware Logo" class="h-11 md:h-10 w-auto" />
+      </a>
+
+      <!-- Desktop Brand Name (hidden on mobile) -->
+      <a href="index.html" class="hidden md:inline text-xl font-bold whitespace-nowrap">
+        <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
+        <span class="text-[#023f88]"> Hardware Enterprise</span>
+      </a>
+
+      <!-- Mobile Brand Name (only shown on mobile) -->
+      <a href="index.html" class="md:hidden text-xl font-bold whitespace-nowrap">
+        <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
+      </a>
+    </div>
+
+    <!-- Center Menu (Desktop) -->
+    <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+      <div class="relative group">
+        <button class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+          <i class="bx bx-home text-lg"></i> Home
+        </button>
+        <div class="absolute top-8 left-0 bg-white shadow rounded w-40 opacity-0 visibility-hidden group-hover:opacity-100 group-hover:visibility-visible pointer-events-none group-hover:pointer-events-auto transition-all duration-300 ease-in-out delay-100">
+          <a href="index.html#hero" class="block px-4 py-2 hover:bg-gray-100 nav-link">Home</a>
+          <a href="index.html#about" class="block px-4 py-2 hover:bg-gray-100 nav-link">About</a>
+          <a href="index.html#contact" class="block px-4 py-2 hover:bg-gray-100 nav-link">Contact</a>
+        </div>
+      </div>
+
+      <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+        <i class="bx bx-store text-lg"></i> Shop
+      </a>
+
+      <!-- Admin Menu (Hidden by default) -->
+      <a href="admin.html"
+         id="adminMenu"
+         class="hidden flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+        <i class="bx bx-shield-quarter text-lg"></i>
+        Admin
+      </a>
+    </div>
+
+    <!-- Right Icons + Hamburger -->
+    <div class="ml-auto flex items-center gap-6 text-xl">
+      <div class="hidden md:flex items-center gap-6">
+        <a href="signin.html" aria-label="User Profile">
+          <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
+        </a>
+        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
+      </div>
+
+      <!-- Mobile Icons: Cart and Hamburger -->
+      <div class="md:hidden flex items-center gap-4">
+        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
+        <button id="menuBtn" class="text-3xl">
+          <i class="bx bx-menu"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ================= MOBILE MENU ================= -->
+<div id="mobileMenu" class="hidden fixed top-16 w-full bg-white shadow-md md:hidden z-40 overflow-hidden transition-all duration-300 ease-in-out transform -translate-y-full">
+  <a href="index.html#hero" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Home</a>
+  <a href="index.html#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
+  <a href="index.html#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
+  <a href="signin.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
+  <a href="admin.html" id="adminMenuMobile" class="hidden block px-6 py-4 hover:bg-gray-100 transition-colors duration-300"><i class="bx bx-shield-quarter mr-2"></i> Admin </a>
+  <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
+</div>

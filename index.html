@@ -94,6 +94,14 @@
     color: white;
     }
 
+    /* restore dropdown visibility utility classes used in navbar partial */
+    .visibility-hidden { visibility: hidden; }
+    .visibility-visible { visibility: visible; }
+
+    /* ensure pointer-events utility names exist as used in HTML */
+    .pointer-events-none { pointer-events: none; }
+    .pointer-events-auto { pointer-events: auto; }
+
     /* Category cards */
     .category-card {
     background: white;
@@ -137,82 +145,8 @@
 
 <body class="font-sans text-gray-800">
 
-  <!-- ================= NAVBAR ================= -->
-  <nav id="navbar" class="fixed top-0 w-full bg-white z-50 transition-shadow duration-300">
-  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center relative">
-    <!-- Logo with link to Home -->
-    <div class="flex items-center gap-3">
-      <a href="#hero" class="flex items-center gap-3">
-        <img src="assets/Yung_Sun_logo3_round.png" alt="Yung Sun Hardware Logo" class="h-11 md:h-10 w-auto" />
-      </a>
-
-      <!-- Desktop Brand Name (hidden on mobile) -->
-      <a href="#hero" class="hidden md:inline text-xl font-bold whitespace-nowrap">
-        <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
-        <span class="text-[#023f88]"> Hardware Enterprise</span>
-      </a>
-
-      <!-- Mobile Brand Name (only shown on mobile) -->
-      <a href="#hero" class="md:hidden text-xl font-bold whitespace-nowrap">
-        <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
-      </a>
-    </div>
-
-    <!-- Center Menu (Desktop) -->
-    <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
-      <div class="relative group">
-        <button class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
-          <i class="bx bx-home text-lg"></i> Home
-        </button>
-        <div class="absolute top-8 left-0 bg-white shadow rounded w-40 opacity-0 visibility-hidden group-hover:opacity-100 group-hover:visibility-visible pointer-events-none group-hover:pointer-events-auto transition-all duration-300 ease-in-out delay-100">
-          <a href="#hero" class="block px-4 py-2 hover:bg-gray-100 nav-link">Home</a>
-          <a href="#about" class="block px-4 py-2 hover:bg-gray-100 nav-link">About</a>
-          <a href="#contact" class="block px-4 py-2 hover:bg-gray-100 nav-link">Contact</a>
-        </div>
-      </div>
-      <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
-        <i class="bx bx-store text-lg"></i> Shop
-      </a>
-      <!-- Admin Menu (Hidden by default) -->
-      <a href="admin.html"
-        id="adminMenu"
-        class="hidden flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
-        <i class="bx bx-shield-quarter text-lg"></i>
-        Admin
-      </a>
-    </div>
-
-    <!-- Right Icons + Hamburger -->
-    <div class="ml-auto flex items-center gap-6 text-xl">
-      <div class="hidden md:flex items-center gap-6">
-        <a href="signin.html" aria-label="User Profile">
-          <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
-        </a>
-        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
-      </div>
-
-      <!-- Mobile Icons: Cart and Hamburger -->
-      <div class="md:hidden flex items-center gap-4">
-        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
-        <button id="menuBtn" class="text-3xl">
-          <i class="bx bx-menu"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-</nav>
-
-
-  <!-- ================= MOBILE MENU ================= -->
-  <div id="mobileMenu" class="hidden fixed top-16 w-full bg-white shadow-md md:hidden z-40 overflow-hidden transition-all duration-300 ease-in-out transform -translate-y-full">
-    <!-- Mobile Menu Links with Hover Effects -->
-    <a href="#hero" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Home</a>
-    <a href="#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
-    <a href="#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
-    <a href="profile.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
-    <a href="admin.html" id="adminMenuMobile" class="hidden block px-6 py-4 hover:bg-gray-100 transition-colors duration-300"><i class="bx bx-shield-quarter mr-2"></i> Admin </a>
-    <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
-  </div>
+  <div id="navbar-root"></div>
+  <div class="h-20"></div>
 
   <!-- ================= HERO SECTION ================= -->
   <section id="hero" class="h-screen bg-cover bg-center flex items-center pt-10 md:pt-20 "
@@ -250,159 +184,158 @@
   </section>
 
     <!-- ================= SHOP BY CATEGORY ================= -->
-<section class="py-24 px-6 bg-gray-100">
-  <div class="max-w-7xl mx-auto">
+    <section class="py-24 px-6 bg-gray-100">
+      <div class="max-w-7xl mx-auto">
 
-    <!-- ===== HEADER ===== -->
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
-      <div>
-        <h2 class="text-5xl font-extrabold tracking-tight mb-4">
-          Shop by Category
-        </h2>
-        <p class="text-gray-500 max-w-md text-lg">
-          Discover our most popular tools and limited-time deals trusted by professionals.
-        </p>
-      </div>
+        <!-- ===== HEADER ===== -->
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
+          <div>
+            <h2 class="text-5xl font-extrabold tracking-tight mb-4">
+              Shop by Category
+            </h2>
+            <p class="text-gray-500 max-w-md text-lg">
+              Discover our most popular tools and limited-time deals trusted by professionals.
+            </p>
+          </div>
 
-      <!-- Tabs -->
-      <div class="flex gap-3 mt-8 md:mt-0">
-        <button class="tab-btn active-tab" data-tab="bestseller">Bestsellers</button>
-        <button class="tab-btn" data-tab="promo">Promotions</button>
-      </div>
-    </div>
-
-    <!-- ================= TAB CONTENT ================= -->
-
-    <!-- ===== BESTSELLERS ===== -->
-    <div
-      id="bestseller"
-      class="tab-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
-    >
-
-      <!-- PRODUCT CARD -->
-      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden">
-        <!-- Image -->
-        <div class="relative h-64 bg-white flex items-center justify-center">
-          <img
-            src="assets/products/hammer.webp"
-            alt="Steel Hammer 16oz"
-            class="h-44 object-contain transform transition duration-500 group-hover:scale-110"
-          />
-
-          <!-- Hover Actions -->
-          <div class="absolute bottom-4 inset-x-0 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition">
-            <button class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f8941e] hover:text-white transition">
-              Quick View
-            </button>
-            <button class="bg-[#023f88] px-4 py-2 rounded-full text-sm font-semibold text-white hover:bg-blue-900 transition">
-              Add to Cart
-            </button>
+          <!-- Tabs -->
+          <div class="flex gap-3 mt-8 md:mt-0">
+            <button class="tab-btn active-tab" data-tab="bestseller">Bestsellers</button>
+            <button class="tab-btn" data-tab="promo">Promotions</button>
           </div>
         </div>
 
-        <!-- Info -->
-        <div class="p-6 flex flex-col">
-          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">
-            Hand Tools
-          </p>
-          <h3 class="font-bold text-lg mb-2">
-            Steel Hammer 16oz
-          </h3>
+        <!-- ================= TAB CONTENT ================= -->
 
-          <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-            <i class="bx bxs-star-half"></i>
-            <span class="text-gray-400 ml-2">(128)</span>
-          </div>
+        <!-- ===== BESTSELLERS ===== -->
+        <div
+          id="bestseller"
+          class="tab-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
+        >
 
-          <div class="mt-auto flex items-center justify-between">
-            <span class="text-2xl font-extrabold text-gray-900">
-              RM 29.90
-            </span>
-            <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-              In Stock
-            </span>
-          </div>
-        </div>
-      </div>
+          <!-- PRODUCT CARD -->
+          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden">
+            <!-- Image -->
+            <div class="relative h-64 bg-white flex items-center justify-center">
+              <img
+                src="assets/products/hammer.webp"
+                alt="Steel Hammer 16oz"
+                class="h-44 object-contain transform transition duration-500 group-hover:scale-110"
+              />
 
-      <!-- PRODUCT CARD -->
-      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
-        <div class="relative h-64 bg-white flex items-center justify-center">
-          <img src="assets/products/screwdriver.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
-        </div>
-
-        <div class="p-6">
-          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
-          <h3 class="font-bold text-lg mb-3">Screwdriver Set (6pcs)</h3>
-
-          <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-            <i class="bx bx-star"></i>
-          </div>
-
-          <span class="text-2xl font-extrabold">RM 45.00</span>
-        </div>
-      </div>
-
-      <!-- PRODUCT CARD -->
-      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
-        <div class="relative h-64 bg-white flex items-center justify-center">
-          <img src="assets/products/drill.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
-        </div>
-
-        <div class="p-6">
-          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Power Tools</p>
-          <h3 class="font-bold text-lg mb-3">Electric Drill 500W</h3>
-
-          <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-            <i class="bx bxs-star"></i>
-          </div>
-
-          <span class="text-2xl font-extrabold">RM 189.00</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== PROMO ===== -->
-    <div
-      id="promo"
-      class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
-    >
-
-      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden relative">
-        <span class="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full z-10">
-          SALE
-        </span>
-
-        <div class="h-64 bg-white flex items-center justify-center">
-          <img src="assets/products/wrench.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
-        </div>
-
-        <div class="p-6">
-          <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
-          <h3 class="font-bold text-lg mb-4">Adjustable Wrench 12"</h3>
-
-          <div class="flex items-end justify-between">
-            <div>
-              <span class="block text-sm text-gray-400 line-through">RM 39.90</span>
-              <span class="text-2xl font-extrabold text-red-600">RM 29.90</span>
+              <!-- Hover Actions -->
+              <div class="absolute bottom-4 inset-x-0 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition">
+                <button class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f8941e] hover:text-white transition">
+                  Quick View
+                </button>
+                <button class="bg-[#023f88] px-4 py-2 rounded-full text-sm font-semibold text-white hover:bg-blue-900 transition">
+                  Add to Cart
+                </button>
+              </div>
             </div>
-            <button class="bg-[#f8941e] hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition">
-              Buy Now
-            </button>
+
+            <!-- Info -->
+            <div class="p-6 flex flex-col">
+              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">
+                Hand Tools
+              </p>
+              <h3 class="font-bold text-lg mb-2">
+                Steel Hammer 16oz
+              </h3>
+
+              <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+                <i class="bx bxs-star-half"></i>
+                <span class="text-gray-400 ml-2">(128)</span>
+              </div>
+
+              <div class="mt-auto flex items-center justify-between">
+                <span class="text-2xl font-extrabold text-gray-900">
+                  RM 29.90
+                </span>
+                <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                  In Stock
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRODUCT CARD -->
+          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
+            <div class="relative h-64 bg-white flex items-center justify-center">
+              <img src="assets/products/screwdriver.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+            </div>
+
+            <div class="p-6">
+              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
+              <h3 class="font-bold text-lg mb-3">Screwdriver Set (6pcs)</h3>
+
+              <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+                <i class="bx bx-star"></i>
+              </div>
+
+              <span class="text-2xl font-extrabold">RM 45.00</span>
+            </div>
+          </div>
+
+          <!-- PRODUCT CARD -->
+          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
+            <div class="relative h-64 bg-white flex items-center justify-center">
+              <img src="assets/products/drill.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+            </div>
+
+            <div class="p-6">
+              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Power Tools</p>
+              <h3 class="font-bold text-lg mb-3">Electric Drill 500W</h3>
+
+              <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+                <i class="bx bxs-star"></i>
+              </div>
+
+              <span class="text-2xl font-extrabold">RM 189.00</span>
+            </div>
           </div>
         </div>
+
+        <!-- ===== PROMO ===== -->
+        <div
+          id="promo"
+          class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
+        >
+
+          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden relative">
+            <span class="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full z-10">
+              SALE
+            </span>
+
+            <div class="h-64 bg-white flex items-center justify-center">
+              <img src="assets/products/wrench.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+            </div>
+
+            <div class="p-6">
+              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
+              <h3 class="font-bold text-lg mb-4">Adjustable Wrench 12"</h3>
+
+              <div class="flex items-end justify-between">
+                <div>
+                  <span class="block text-sm text-gray-400 line-through">RM 39.90</span>
+                  <span class="text-2xl font-extrabold text-red-600">RM 29.90</span>
+                </div>
+                <button class="bg-[#f8941e] hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition">
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-
-    </div>
-  </div>
-</section>
-
+    </section>
 
   <!-- ================= ABOUT SECTION ================= -->
   <section id="about" class="relative py-20 px-6 bg-white overflow-hidden">
@@ -666,182 +599,69 @@
   </div>
 </footer>
 
-  <!-- Supabase -->
+    <!-- Supabase (keep this) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- ================= JS ================= -->
+  <!-- Navbar loader & role/caching script (make sure path matches where you saved navbar.js) -->
+  <script src="navbar.js"></script>
+
+  <!-- Page-specific JS: about-title animation + tabs -->
   <script>
-    const navbar = document.getElementById("navbar");
-    const menuBtn = document.getElementById("menuBtn");
-    const mobileMenu = document.getElementById("mobileMenu");
-    const sections = document.querySelectorAll("section");
-    const navLinks = document.querySelectorAll(".nav-link");
-    const dropdownButton = document.querySelector(".group");
-    const dropdownMenu = dropdownButton.querySelector("div");
-    const tabButtons = document.querySelectorAll(".tab-btn");
-    const tabContents = document.querySelectorAll(".tab-content");
-
-    // Navbar shadow on scroll
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 10) {
-        navbar.classList.add("shadow-md");
-      } else {
-        navbar.classList.remove("shadow-md");
-      }
-    });
-
-    // Toggle the mobile menu with smooth sliding animation
-    menuBtn.addEventListener("click", () => {
-        // Toggle the hidden class and animation to slide the mobile menu in/out
-        mobileMenu.classList.toggle("hidden");
-        mobileMenu.classList.toggle("-translate-y-full"); // Slide down on toggle
-    });
-
-    // Dropdown hover effects
-    dropdownButton.addEventListener("mouseenter", () => {
-      dropdownMenu.classList.add("opacity-100", "visibility-visible", "pointer-events-auto");
-      dropdownMenu.classList.remove("opacity-0", "visibility-hidden", "pointer-events-none");
-    });
-
-    dropdownButton.addEventListener("mouseleave", () => {
-      setTimeout(() => {
-        if (!dropdownMenu.matches(':hover')) {
-          dropdownMenu.classList.add("opacity-0", "visibility-hidden", "pointer-events-none");
-          dropdownMenu.classList.remove("opacity-100", "visibility-visible", "pointer-events-auto");
-        }
-      }, 100);
-    });
-
-    dropdownMenu.addEventListener("mouseenter", () => {
-      dropdownMenu.classList.add("opacity-100", "visibility-visible", "pointer-events-auto");
-      dropdownMenu.classList.remove("opacity-0", "visibility-hidden", "pointer-events-none");
-    });
-
-    dropdownMenu.addEventListener("mouseleave", () => {
-      dropdownMenu.classList.add("opacity-0", "visibility-hidden", "pointer-events-none");
-      dropdownMenu.classList.remove("opacity-100", "visibility-visible", "pointer-events-auto");
-    });
-
-    // Active link highlight
-    window.addEventListener("scroll", () => {
-      let current = "";
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop - 120;
-        if (scrollY >= sectionTop) current = section.getAttribute("id");
-      });
-      navLinks.forEach(link => {
-        link.classList.remove("text-orange-600", "font-semibold");
-        if (link.getAttribute("href") === `#${current}`) {
-          link.classList.add("text-orange-600", "font-semibold");
-        }
-      });
-    });
-
-    tabButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        // Remove active state
-        tabButtons.forEach(b => b.classList.remove("active-tab"));
-        tabContents.forEach(c => c.classList.add("hidden"));
-
-        // Activate selected tab
-        btn.classList.add("active-tab");
-        document.getElementById(btn.dataset.tab).classList.remove("hidden");
-    });
-    });
-
+    // About title letter animation + tabs
     document.addEventListener("DOMContentLoaded", () => {
+      // ABOUT TITLE ANIMATION
       const title = document.getElementById("about-title");
-      const text = title.textContent.trim();
-      title.textContent = ""; // clear original
+      if (title) {
+        const text = title.textContent.trim();
+        title.textContent = "";
+        const letters = text.split("").map(char => {
+          const span = document.createElement("span");
+          if (char === " ") span.innerHTML = "&nbsp;";
+          else span.textContent = char;
+          span.classList.add("letter");
+          title.appendChild(span);
+          return span;
+        });
 
-    // Wrap each letter in a span
-    const letters = text.split("").map(char => {
-        const span = document.createElement("span");
-        // If the character is a space, insert a non-breaking space (HTML entity)
-        if (char === " ") {
-            span.innerHTML = "&nbsp;";  // Non-breaking space
-        } else {
-            span.textContent = char;
+        const middle = Math.floor(letters.length / 2);
+        let order = [middle];
+        for (let i = 1; i <= middle; i++) {
+          if (middle - i >= 0) order.push(middle - i);
+          if (middle + i < letters.length) order.push(middle + i);
         }
 
-        span.classList.add("letter");
-        title.appendChild(span);
-        return span;
-    });
-
-    const middle = Math.floor(letters.length / 2);
-
-    // Animation order: start from center outward
-    let order = [middle];
-    for (let i = 1; i <= middle; i++) {
-        if (middle - i >= 0) order.push(middle - i);
-        if (middle + i < letters.length) order.push(middle + i);
-    }
-
-    function animateLetters() {
-        order.forEach((index, i) => {
-        setTimeout(() => {
-            letters[index].classList.add("show");
-        }, i * 100);
-        });
-    }
-
-    function resetLetters() {
-        letters.forEach(letter => letter.classList.remove("show"));
-    }
-
-    // Animate whenever section comes into view
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            animateLetters();
-        } else {
-            resetLetters(); // reset when leaving viewport
+        function animateLetters() {
+          order.forEach((index, i) => {
+            setTimeout(() => letters[index].classList.add("show"), i * 100);
+          });
         }
+        function resetLetters() {
+          letters.forEach(letter => letter.classList.remove("show"));
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) animateLetters();
+            else resetLetters();
+          });
+        }, { threshold: 0.5 });
+
+        observer.observe(title);
+      }
+
+      // TABS
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      const tabContents = document.querySelectorAll(".tab-content");
+      tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabButtons.forEach(b => b.classList.remove("active-tab"));
+          tabContents.forEach(c => c.classList.add("hidden"));
+          btn.classList.add("active-tab");
+          const id = btn.dataset.tab;
+          document.getElementById(id)?.classList.remove("hidden");
         });
-    }, { threshold: 0.5 });
-
-    observer.observe(title);
+      });
     });
-    
-    /* ==================== GLOBAL AUTH STATE ==================== */
-    const SUPABASE_URL = 'https://clhzzjugjttqidiuolrj.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      const profileLink = document.querySelector('[aria-label="User Profile"]')?.parentElement;
-      const adminMenu = document.getElementById("adminMenu");
-      const adminMenuMobile = document.getElementById("adminMenuMobile");
-
-      const { data: { session } } = await client.auth.getSession();
-
-      // ❌ Not logged in
-      if (!session) {
-        profileLink?.setAttribute("href", "signin.html");
-        adminMenu?.classList.add("hidden");
-        adminMenuMobile?.classList.add("hidden");
-        return;
-      }
-
-      // ✅ Logged in
-      profileLink?.setAttribute("href", "profile.html");
-
-      // 🔍 Check role
-      const { data, error } = await client
-        .from("profiles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (!error && data?.role === "admin") {
-        adminMenu?.classList.remove("hidden");
-        adminMenuMobile?.classList.remove("hidden");
-      }
-    });
-
   </script>
-
 </body>
-
 </html>
