@@ -152,13 +152,67 @@
 
   <!-- Shop Section -->
   <main class="max-w-7xl mx-auto py-12 px-6">
-    <h2 class="text-4xl font-bold mb-8 text-center">Shop</h2>
+  <h2 class="text-4xl font-bold mb-10 text-center">Shop</h2>
 
-    <!-- Product Grid -->
-    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-      <!-- Products will be inserted here dynamically -->
-    </div>
-  </main>
+  <!-- Layout Wrapper -->
+  <div class="flex flex-col lg:flex-row gap-8">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="w-full lg:w-64 flex-shrink-0">
+      <div class="bg-white p-6 rounded-xl shadow sticky top-28">
+        <div class="flex items-center gap-2 mb-4 font-bold text-gray-800">
+          <i class="bx bx-filter-alt"></i>
+          <span>Categories</span>
+        </div>
+
+        <ul class="space-y-3 text-gray-600">
+          <li>
+            <button class="w-full text-left px-3 py-2 rounded-lg bg-orange-50 text-orange-600 font-semibold">
+              All
+            </button>
+          </li>
+          <li>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+              Tools
+            </button>
+          </li>
+          <li>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+              Fasteners
+            </button>
+          </li>
+          <li>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+              Fittings
+            </button>
+          </li>
+          <li>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+              Plumbing & Electrical
+            </button>
+          </li>
+          <li>
+            <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100">
+              Building Materials
+            </button>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- ===== PRODUCT GRID ===== -->
+    <section class="flex-1">
+      <div
+        id="product-grid"
+        class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"
+      >
+        <!-- Products will be inserted here dynamically -->
+      </div>
+    </section>
+
+  </div>
+</main>
+
 
   <!-- Load Supabase before your code -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -170,6 +224,8 @@
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const productGrid = document.getElementById('product-grid');
+    let allProducts = []; // Store all products globally for filtering
+
 
     // ==================== Load Products ====================
     async function loadProducts() {
@@ -187,13 +243,55 @@
       }
 
       productGrid.innerHTML = data.map(p => `
-        <div class="bg-white p-4 rounded shadow flex flex-col items-center">
-          <img src="${p.image_url}" alt="${p.name}" class="h-40 object-contain mb-2 bg-white p-2 rounded-lg">
-          <h3 class="font-bold text-lg">${p.name}</h3>
-          <p class="text-gray-500">${p.category || ''}</p>
-          <p class="font-semibold">RM ${p.price}</p>
+        <!-- PRODUCT CARD -->
+        <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
+
+        <!-- Image -->
+        <div class="relative h-64 bg-white flex items-center justify-center">
+          <img
+            src="${p.image_url}"
+            alt="${p.name}"
+            class="h-44 object-contain group-hover:scale-110 transition duration-500">
+      
+        <!--Category badge--> 
+        <span class = "absolute top-4 right-4 bg-orange-500 text-white text-s font-semibolad px-3 py-1 rounded-md shadow">
+            ${p.category|| 'Tools'}
+        </span>
         </div>
-      `).join('');
+        <!-- Content -->
+        <div class="p-6 text-left flex flex-col flex-grow border-t border-gray-150 bg-gray-100/40">
+
+          <!-- Product name -->
+          <h3 class="font-bold text-lg mb-1 text-orange-600 line-clamp-2 min-h-[2rem]">
+            ${p.name}
+          </h3>
+
+          <!-- Rating -->
+            <div class="flex items-center gap-1 text-yellow-400 text-sm mb-2">
+            <i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i>
+            <i class="bx bxs-star"></i>
+            <i class="bx bx-star"></i>
+            <span class="text-gray-400 text-xs ml-2">(4.9)</span>
+          </div>
+
+          <!-- Price + Cart (ALWAYS bottom) -->
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-2xl font-bold text-slate-900">
+              RM ${Number(p.price).toFixed(2)}
+            </span>
+
+            <button
+              class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center
+                    hover:bg-orange-500 hover:text-white transition active:scale-95"
+              title="Add to cart">
+              <i class="bx bx-cart text-xl"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
     }
 
     loadProducts();
