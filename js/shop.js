@@ -20,6 +20,14 @@ if (!window.supabaseClient) {
 const client = window.supabaseClient;
 
 // --- DOM refs ---
+let allProducts = [];
+let currentCategory = 'All';
+let currentSearch = '';
+let currentSort = '';
+
+const urlParams = new URLSearchParams(window.location.search);
+const selectedCategoryFromURL = urlParams.get('category');
+
 const productGrid = document.getElementById('product-grid');
 if (!productGrid) {
   console.error('product-grid element not found.');
@@ -46,27 +54,13 @@ async function loadProducts() {
       return;
     }
 
-    productGrid.innerHTML = data.map(p => `
-      <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
-        <div class="relative h-64 bg-white flex items-center justify-center">
-          <img src="${p.image_url}" alt="${p.name}" class="h-44 object-contain group-hover:scale-110 transition duration-500">
-          <span class="absolute top-4 right-4 bg-orange-500 text-white text-s font-semibold px-3 py-1 rounded-md shadow">${p.category || 'Tools'}</span>
-        </div>
-        <div class="p-6 text-left flex flex-col flex-grow border-t border-gray-150 bg-gray-100/40">
-          <h3 class="font-bold text-lg mb-1 text-orange-600 line-clamp-2 min-h-[2rem]">${p.name}</h3>
-          <div class="flex items-center gap-1 text-yellow-400 text-sm mb-2">
-            <i class="bx bxs-star"></i><i class="bx bxs-star"></i><i class="bx bxs-star"></i><i class="bx bxs-star"></i><i class="bx bx-star"></i>
-            <span class="text-gray-400 text-xs ml-2">(4.9)</span>
-          </div>
-          <div class="flex items-center justify-between mt-auto">
-            <span class="text-2xl font-bold text-slate-900">RM ${Number(p.price).toFixed(2)}</span>
-            <button class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center hover:bg-orange-500 hover:text-white transition active:scale-95" title="Add to cart">
-              <i class="bx bx-cart text-xl"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    allProducts = data;
+    if (selectedCategoryFromURL) {
+    currentCategory = selectedCategoryFromURL;
+    highlightSidebarCategory(selectedCategoryFromURL);
+  }
+  applyFilters();
+
   } catch (err) {
     console.error('loadProducts error:', err);
     productGrid && (productGrid.innerHTML = `<p class="text-red-500">Failed to load products.</p>`);
@@ -74,6 +68,119 @@ async function loadProducts() {
 }
 
 loadProducts();
+
+function applyFilters() {
+  let filtered = [...allProducts];
+
+  // Category filter
+  if (currentCategory !== 'All') {
+    filtered = filtered.filter(p =>
+      p.category &&
+      p.category.toLowerCase() === currentCategory.toLowerCase()
+    );
+  }
+
+  // Search filter
+  if (currentSearch) {
+    filtered = filtered.filter(p =>
+      p.name.toLowerCase().includes(currentSearch)
+    );
+  }
+
+  // Sorting
+  if (currentSort === 'price-asc') {
+    filtered.sort((a, b) => Number(a.price) - Number(b.price));
+  } else if (currentSort === 'price-desc') {
+    filtered.sort((a, b) => Number(b.price) - Number(a.price));
+  }
+
+  renderProducts(filtered);
+}
+
+function renderProducts(products) {
+  productGrid.innerHTML = products.map(p => `
+    <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
+      <div class="relative h-64 bg-white flex items-center justify-center">
+        <img src="${p.image_url}" alt="${p.name}" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+        <span class="absolute top-4 right-4 bg-orange-500 text-white text-s font-semibold px-3 py-1 rounded-md shadow">
+          ${p.category || 'Tools'}
+        </span>
+      </div>
+
+      <div class="p-6 text-left flex flex-col flex-grow border-t border-gray-150 bg-gray-100/40">
+        <h3 class="font-bold text-lg mb-1 text-orange-600 line-clamp-2 min-h-[2rem]">
+          ${p.name}
+        </h3>
+
+        <div class="flex items-center gap-1 text-yellow-400 text-sm mb-2">
+          <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+          <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
+          <i class="bx bx-star"></i>
+          <span class="text-gray-400 text-xs ml-2">(4.9)</span>
+        </div>
+
+        <div class="flex items-center justify-between mt-auto">
+          <span class="text-2xl font-bold text-slate-900">
+            RM ${Number(p.price).toFixed(2)}
+          </span>
+          <button class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center hover:bg-orange-500 hover:text-white transition active:scale-95">
+            <i class="bx bx-cart text-xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+const categoryButtons = document.querySelectorAll('aside button');
+
+categoryButtons.forEach(button => {
+button.addEventListener('click', () => {
+const selectedCategory = button.textContent.trim();
+    currentCategory = selectedCategory;
+
+    categoryButtons.forEach(b =>
+      b.classList.remove('bg-orange-50', 'text-orange-600', 'font-semibold')
+    );
+    button.classList.add('bg-orange-50', 'text-orange-600', 'font-semibold');
+
+    applyFilters();
+  });
+
+});
+
+const searchInput = document.getElementById('searchInput');
+
+if (searchInput) {
+  searchInput.addEventListener('input', e => {
+    currentSearch = e.target.value.toLowerCase();
+    applyFilters();
+  });
+}
+
+const sortSelect = document.getElementById('sortSelect');
+
+if (sortSelect) {
+  sortSelect.addEventListener('change', e => {
+    currentSort = e.target.value;
+    applyFilters();
+  });
+}
+
+function highlightSidebarCategory(category) {
+  const buttons = document.querySelectorAll('aside button');
+
+  buttons.forEach(btn => {
+    const text = btn.textContent.trim();
+
+    btn.classList.remove('bg-orange-50', 'text-orange-600', 'font-semibold');
+
+    if (text.toLowerCase() === category.toLowerCase()) {
+      btn.classList.add('bg-orange-50', 'text-orange-600', 'font-semibold');
+    }
+  });
+}
+
 
 // --- NAVBAR-DEPENDENT FEATURES (defensive) ---
 function initNavbarDependentFeatures() {
