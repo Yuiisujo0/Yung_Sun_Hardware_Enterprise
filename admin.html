@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | Hardware Store</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#023f88',
+            accent: '#f8941e'
+          },
+          boxShadow: {
+            soft: '0 10px 25px rgba(0,0,0,0.08)'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gradient-to-b from-primary to-blue-900 text-white hidden md:flex flex-col shadow-xl">
+    <div class="p-6 text-2xl font-extrabold tracking-wide border-b border-white/20">
+      🛠 Hardware Admin
+    </div>
+    <nav class="flex-1 p-4 space-y-2 text-sm">
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10">
+        📊 <span>Dashboard</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">📦 Products</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">🧾 Orders</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">📉 Inventory</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">👥 Customers</a>
+      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">⚙️ Settings</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold text-primary">Dashboard Overview</h1>
+        <p class="text-gray-500">Welcome back, Admin</p>
+      </div>
+      <button onclick="logout()" class="bg-accent text-white px-5 py-3 rounded-xl font-semibold shadow-soft hover:scale-105 transition">
+        Logout
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
+        <span class="absolute right-4 top-4 text-accent text-3xl">💰</span>
+        <p class="text-gray-500">Total Sales</p>
+        <h2 id="sales" class="text-3xl font-bold text-primary">$0</h2>
+      </div>
+      <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
+        <span class="absolute right-4 top-4 text-primary text-3xl">🧾</span>
+        <p class="text-gray-500">Orders</p>
+        <h2 id="orders" class="text-3xl font-bold text-primary">0</h2>
+      </div>
+      <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
+        <span class="absolute right-4 top-4 text-primary text-3xl">📦</span>
+        <p class="text-gray-500">Products</p>
+        <h2 id="products" class="text-3xl font-bold text-primary">0</h2>
+      </div>
+      <div class="relative bg-gradient-to-br from-accent to-orange-500 rounded-2xl p-6 shadow-soft text-white">
+        <span class="absolute right-4 top-4 text-3xl">⚠️</span>
+        <p class="opacity-90">Low Stock</p>
+        <h2 id="lowStock" class="text-3xl font-extrabold">0</h2>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+      <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-soft">
+        <h3 class="font-semibold text-lg mb-4">Sales Trend</h3>
+        <canvas id="salesChart"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl p-6 shadow-soft">
+        <h3 class="font-semibold text-lg mb-4">Order Status</h3>
+        <canvas id="ordersChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="bg-white rounded-2xl shadow-soft overflow-hidden">
+      <div class="flex items-center justify-between p-6 border-b">
+        <h3 class="font-semibold text-lg">Recent Orders</h3>
+        <span class="text-sm text-gray-400">Last 7 days</span>
+      </div>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-gray-600">
+          <tr>
+            <th class="p-4">Order ID</th>
+            <th class="p-4">Customer</th>
+            <th class="p-4">Total</th>
+            <th class="p-4">Status</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTable"></tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <script>
+    const dashboardData = {
+      sales: 12450,
+      orders: 87,
+      products: 342,
+      lowStock: 12,
+      monthlySales: [3200, 2800, 4100, 2350],
+      orderStatus: [50, 25, 12],
+      recentOrders: [
+        { id: '#1001', customer: 'John Doe', total: '$120', status: 'Completed' },
+        { id: '#1002', customer: 'Jane Smith', total: '$75', status: 'Pending' },
+        { id: '#1003', customer: 'Mike Johnson', total: '$340', status: 'Completed' }
+      ]
+    };
+
+    function loadDashboard() {
+      sales.textContent = `$${dashboardData.sales}`;
+      orders.textContent = dashboardData.orders;
+      products.textContent = dashboardData.products;
+      lowStock.textContent = dashboardData.lowStock;
+
+      const table = document.getElementById('ordersTable');
+      dashboardData.recentOrders.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-t hover:bg-gray-50';
+        tr.innerHTML = `
+          <td class="p-4 font-medium">${o.id}</td>
+          <td class="p-4">${o.customer}</td>
+          <td class="p-4">${o.total}</td>
+          <td class="p-4 font-semibold ${o.status === 'Completed' ? 'text-green-600' : 'text-accent'}">${o.status}</td>
+        `;
+        table.appendChild(tr);
+      });
+
+      new Chart(document.getElementById('salesChart'), {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+          datasets: [{
+            data: dashboardData.monthlySales,
+            borderColor: '#023f88',
+            backgroundColor: 'rgba(2,63,136,0.15)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      new Chart(document.getElementById('ordersChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Pending', 'Cancelled'],
+          datasets: [{
+            data: dashboardData.orderStatus,
+            backgroundColor: ['#023f88', '#f8941e', '#d1d5db']
+          }]
+        },
+        options: {
+          cutout: '70%'
+        }
+      });
+    }
+
+    function logout() { alert('Logged out'); }
+
+    loadDashboard();
+  </script>
+
+</body>
+</html>
