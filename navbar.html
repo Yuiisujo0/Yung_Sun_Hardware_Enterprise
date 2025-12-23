@@ -50,12 +50,18 @@
         <a href="signin.html" aria-label="User Profile">
           <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
         </a>
-        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
-      </div>
+        <div class="relative">
+          <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
+            <span class="cart-badge hidden absolute -top-2 -right-2 bg-red-600 text-white text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+        </div>
+
 
       <!-- Mobile Icons: Cart and Hamburger -->
       <div class="md:hidden flex items-center gap-4">
-        <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110" aria-label="Shopping Cart"></i>
+        <div class="relative">
+          <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
+            <span class="cart-badge hidden absolute -top-2 -right-2 bg-red-600 text-white text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+        </div>
         <button id="menuBtn" class="text-3xl">
           <i class="bx bx-menu"></i>
         </button>

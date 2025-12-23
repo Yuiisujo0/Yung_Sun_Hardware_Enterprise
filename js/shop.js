@@ -21,6 +21,9 @@ const client = window.supabaseClient;
 
 // --- DOM refs ---
 let allProducts = [];
+// expose for other modules (cart module may use it)
+window.allProducts = window.allProducts || allProducts;
+
 let currentCategory = 'All';
 let currentSearch = '';
 let currentSort = '';
@@ -55,11 +58,14 @@ async function loadProducts() {
     }
 
     allProducts = data;
+    // update global reference so other scripts (cart) can read
+    window.allProducts = allProducts;
+
     if (selectedCategoryFromURL) {
-    currentCategory = selectedCategoryFromURL;
-    highlightSidebarCategory(selectedCategoryFromURL);
-  }
-  applyFilters();
+      currentCategory = selectedCategoryFromURL;
+      highlightSidebarCategory(selectedCategoryFromURL);
+    }
+    applyFilters();
 
   } catch (err) {
     console.error('loadProducts error:', err);
@@ -98,18 +104,20 @@ function applyFilters() {
 }
 
 function renderProducts(products) {
+  // The Add to Cart button now includes helpful data attributes to allow
+  // items to be added even if the global product list isn't available.
   productGrid.innerHTML = products.map(p => `
     <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
       <div class="relative h-64 bg-white flex items-center justify-center">
-        <img src="${p.image_url}" alt="${p.name}" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+        <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="h-44 object-contain group-hover:scale-110 transition duration-500">
         <span class="absolute top-4 right-4 bg-orange-500 text-white text-s font-semibold px-3 py-1 rounded-md shadow">
-          ${p.category || 'Tools'}
+          ${escapeHtml(p.category || 'Tools')}
         </span>
       </div>
 
       <div class="p-6 text-left flex flex-col flex-grow border-t border-gray-150 bg-gray-100/40">
         <h3 class="font-bold text-lg mb-1 text-orange-600 line-clamp-2 min-h-[2rem]">
-          ${p.name}
+          ${escapeHtml(p.name)}
         </h3>
 
         <div class="flex items-center gap-1 text-yellow-400 text-sm mb-2">
@@ -123,7 +131,13 @@ function renderProducts(products) {
           <span class="text-2xl font-bold text-slate-900">
             RM ${Number(p.price).toFixed(2)}
           </span>
-          <button class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center hover:bg-orange-500 hover:text-white transition active:scale-95">
+          <button
+            class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center hover:bg-orange-500 hover:text-white transition active:scale-95 add-to-cart-btn"
+            data-product-id="${escapeHtml(p.id)}"
+            data-name="${escapeHtml(p.name)}"
+            data-price="${Number(p.price).toFixed(2)}"
+            data-image="${escapeHtml(p.image_url)}"
+            aria-label="Add ${escapeHtml(p.name)} to cart">
             <i class="bx bx-cart text-xl"></i>
           </button>
         </div>
@@ -132,11 +146,17 @@ function renderProducts(products) {
   `).join('');
 }
 
+// small helper to escape injection (for simple templating)
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+}
+
 const categoryButtons = document.querySelectorAll('aside button');
 
 categoryButtons.forEach(button => {
-button.addEventListener('click', () => {
-const selectedCategory = button.textContent.trim();
+  button.addEventListener('click', () => {
+    const selectedCategory = button.textContent.trim();
     currentCategory = selectedCategory;
 
     categoryButtons.forEach(b =>
@@ -146,7 +166,6 @@ const selectedCategory = button.textContent.trim();
 
     applyFilters();
   });
-
 });
 
 const searchInput = document.getElementById('searchInput');
@@ -277,3 +296,51 @@ if (document.getElementById('navbar')) {
 
 // Otherwise wait for navbar to be inserted (navbar.js should dispatch 'navbar:ready')
 document.addEventListener('navbar:ready', initNavbarDependentFeatures);
+
+
+// ----------------- CART INTEGRATION (product-grid click handler) -----------------
+// Delegated handler for Add to Cart buttons. Calls shared window.cartAPI if available.
+// Falls back to writing minimal cart to localStorage under 'ys_cart_v1'.
+function handleAddToCartButtonClick(e) {
+  const btn = e.target.closest('.add-to-cart-btn');
+  if (!btn) return;
+  e.preventDefault();
+  const id = btn.getAttribute('data-product-id');
+  if (!id) return;
+
+  // Try to find the product in memory
+  const product = (window.allProducts || allProducts || []).find(p => String(p.id) === String(id));
+
+  // build payload (minimal fields expected by cart module)
+  const payload = product || {
+    id,
+    name: btn.getAttribute('data-name') || `Product ${id}`,
+    price: parseFloat(btn.getAttribute('data-price')) || 0,
+    image_url: btn.getAttribute('data-image') || ''
+  };
+
+  try {
+    if (window.cartAPI && typeof window.cartAPI.add === 'function') {
+      window.cartAPI.add(payload);
+    } else {
+      // fallback into localStorage using same key as cart.js expects
+      const KEY = 'ys_cart_v1';
+      let store = {};
+      try {
+        const raw = localStorage.getItem(KEY);
+        store = raw ? JSON.parse(raw) : {};
+      } catch (err) { store = {}; }
+      const key = String(payload.id);
+      if (store[key]) store[key].qty = (store[key].qty || 0) + 1;
+      else store[key] = { id: key, name: payload.name, price: Number(payload.price || 0), image_url: payload.image_url || '', qty: 1 };
+      localStorage.setItem(KEY, JSON.stringify(store));
+      // if cart module loads later, it will pick it up; attempt to open drawer if API becomes available
+      setTimeout(() => { try { window.cartAPI?.open?.(); } catch (e) {} }, 50);
+    }
+  } catch (err) {
+    console.error('Failed to add to cart', err);
+  }
+}
+
+// attach delegation to product grid
+productGrid?.addEventListener('click', handleAddToCartButtonClick);
