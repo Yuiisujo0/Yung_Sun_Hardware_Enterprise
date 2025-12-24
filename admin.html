@@ -1,91 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard | Hardware Store</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Yung Sun Hardware</title>
 
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#023f88',
-            accent: '#f8941e'
-          },
-          boxShadow: {
-            soft: '0 10px 25px rgba(0,0,0,0.08)'
-          }
-        }
-      }
-    }
-  </script>
+  <style>
+    .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
+    .text-primary { color: #023f88; }
+    .bg-accent { background-color: #f8941e; }
+    .bg-lowstock { background-color: #f72e2e; } /* Tailwind red-400 */
+  </style>
 </head>
-<body class="bg-gradient-to-br from-gray-100 to-gray-200 min-h-screen flex">
+<body class="bg-gray-100 font-sans">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-gradient-to-b from-primary to-blue-900 text-white hidden md:flex flex-col shadow-xl">
-    <div class="p-6 text-2xl font-extrabold tracking-wide border-b border-white/20">
-      🛠 Hardware Admin
+  <!-- Navbar -->
+  <div id="navbar-root"></div>
+
+  <main class="max-w-7xl mx-auto p-6 mt-20 space-y-10">
+
+    <!-- Dashboard Header -->
+    <div>
+      <h1 class="text-3xl font-extrabold text-primary">Admin Dashboard</h1>
+      <p class="text-gray-500">Quick overview of store stats</p>
     </div>
-    <nav class="flex-1 p-4 space-y-2 text-sm">
-      <a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10">
-        📊 <span>Dashboard</span>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex flex-wrap gap-4">
+      <a href="inventory.html" class="bg-[#023f88] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-blue-700 transition flex items-center gap-2">
+        <i class="bx bx-package"></i> Manage Inventory
       </a>
-      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">📦 Products</a>
-      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">🧾 Orders</a>
-      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">📉 Inventory</a>
-      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">👥 Customers</a>
-      <a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10">⚙️ Settings</a>
-    </nav>
-  </aside>
-
-  <!-- Main -->
-  <main class="flex-1 p-8">
-
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-      <div>
-        <h1 class="text-3xl font-extrabold text-primary">Dashboard Overview</h1>
-        <p class="text-gray-500">Welcome back, Admin</p>
-      </div>
-      <button onclick="logout()" class="bg-accent text-white px-5 py-3 rounded-xl font-semibold shadow-soft hover:scale-105 transition">
-        Logout
-      </button>
+      <a href="sales.html" class="bg-[#f8941e] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-orange-600 transition flex items-center gap-2">
+        <i class="bx bx-line-chart"></i> View Sales Report
+      </a>
     </div>
 
-    <!-- Stats -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <!-- Stats Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
-        <span class="absolute right-4 top-4 text-accent text-3xl">💰</span>
+        <i class="bx bx-money text-3xl text-accent absolute right-4 top-4"></i>
         <p class="text-gray-500">Total Sales</p>
         <h2 id="sales" class="text-3xl font-bold text-primary">$0</h2>
       </div>
       <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
-        <span class="absolute right-4 top-4 text-primary text-3xl">🧾</span>
+        <i class="bx bx-receipt text-3xl text-primary absolute right-4 top-4"></i>
         <p class="text-gray-500">Orders</p>
         <h2 id="orders" class="text-3xl font-bold text-primary">0</h2>
       </div>
       <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
-        <span class="absolute right-4 top-4 text-primary text-3xl">📦</span>
+        <i class="bx bx-package text-3xl text-primary absolute right-4 top-4"></i>
         <p class="text-gray-500">Products</p>
         <h2 id="products" class="text-3xl font-bold text-primary">0</h2>
       </div>
-      <div class="relative bg-gradient-to-br from-accent to-orange-500 rounded-2xl p-6 shadow-soft text-white">
-        <span class="absolute right-4 top-4 text-3xl">⚠️</span>
+      <div class="relative bg-lowstock rounded-2xl p-6 shadow-soft text-white">
+        <i class="bx bx-error text-3xl absolute right-4 top-4"></i>
         <p class="opacity-90">Low Stock</p>
         <h2 id="lowStock" class="text-3xl font-extrabold">0</h2>
       </div>
     </section>
 
     <!-- Charts -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-soft">
         <h3 class="font-semibold text-lg mb-4">Sales Trend</h3>
         <canvas id="salesChart"></canvas>
@@ -96,7 +75,7 @@
       </div>
     </section>
 
-    <!-- Table -->
+    <!-- Recent Orders Table -->
     <section class="bg-white rounded-2xl shadow-soft overflow-hidden">
       <div class="flex items-center justify-between p-6 border-b">
         <h3 class="font-semibold text-lg">Recent Orders</h3>
@@ -117,6 +96,12 @@
 
   </main>
 
+  <!-- Modular JS -->
+  <script src="js/supabase.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/profile.js"></script>
+
+  <!-- Minimal Dashboard Script -->
   <script>
     const dashboardData = {
       sales: 12450,
@@ -133,10 +118,10 @@
     };
 
     function loadDashboard() {
-      sales.textContent = `$${dashboardData.sales}`;
-      orders.textContent = dashboardData.orders;
-      products.textContent = dashboardData.products;
-      lowStock.textContent = dashboardData.lowStock;
+      document.getElementById('sales').textContent = `$${dashboardData.sales}`;
+      document.getElementById('orders').textContent = dashboardData.orders;
+      document.getElementById('products').textContent = dashboardData.products;
+      document.getElementById('lowStock').textContent = dashboardData.lowStock;
 
       const table = document.getElementById('ordersTable');
       dashboardData.recentOrders.forEach(o => {
@@ -163,29 +148,18 @@
             tension: 0.4
           }]
         },
-        options: {
-          plugins: {
-            legend: { display: false }
-          }
-        }
+        options: { plugins: { legend: { display: false } } }
       });
 
       new Chart(document.getElementById('ordersChart'), {
         type: 'doughnut',
         data: {
           labels: ['Completed', 'Pending', 'Cancelled'],
-          datasets: [{
-            data: dashboardData.orderStatus,
-            backgroundColor: ['#023f88', '#f8941e', '#d1d5db']
-          }]
+          datasets: [{ data: dashboardData.orderStatus, backgroundColor: ['#023f88', '#f8941e', '#d1d5db'] }]
         },
-        options: {
-          cutout: '70%'
-        }
+        options: { cutout: '70%' }
       });
     }
-
-    function logout() { alert('Logged out'); }
 
     loadDashboard();
   </script>
