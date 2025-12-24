@@ -13,23 +13,19 @@
     .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
     .text-primary { color: #023f88; }
     .bg-accent { background-color: #f8941e; }
-    .bg-lowstock { background-color: #f72e2e; } /* Tailwind red-400 */
+    .bg-lowstock { background-color: #f72e2e; }
   </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
-  <!-- Navbar -->
   <div id="navbar-root"></div>
 
   <main class="max-w-7xl mx-auto p-6 mt-20 space-y-10">
-
-    <!-- Dashboard Header -->
     <div>
       <h1 class="text-3xl font-extrabold text-primary">Admin Dashboard</h1>
       <p class="text-gray-500">Quick overview of store stats</p>
     </div>
 
-    <!-- Quick Action Buttons -->
     <div class="flex flex-wrap gap-4">
       <a href="inventory.html" class="bg-[#023f88] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-blue-700 transition flex items-center gap-2">
         <i class="bx bx-package"></i> Manage Inventory
@@ -39,12 +35,11 @@
       </a>
     </div>
 
-    <!-- Stats Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
         <i class="bx bx-money text-3xl text-accent absolute right-4 top-4"></i>
         <p class="text-gray-500">Total Sales</p>
-        <h2 id="sales" class="text-3xl font-bold text-primary">$0</h2>
+        <h2 id="sales" class="text-3xl font-bold text-primary">RM0</h2>
       </div>
       <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
         <i class="bx bx-receipt text-3xl text-primary absolute right-4 top-4"></i>
@@ -63,7 +58,6 @@
       </div>
     </section>
 
-    <!-- Charts -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-soft">
         <h3 class="font-semibold text-lg mb-4">Sales Trend</h3>
@@ -75,7 +69,6 @@
       </div>
     </section>
 
-    <!-- Recent Orders Table -->
     <section class="bg-white rounded-2xl shadow-soft overflow-hidden">
       <div class="flex items-center justify-between p-6 border-b">
         <h3 class="font-semibold text-lg">Recent Orders</h3>
@@ -93,55 +86,71 @@
         <tbody id="ordersTable"></tbody>
       </table>
     </section>
-
   </main>
 
-  <!-- Modular JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/navbar.js"></script>
-
-  <!-- Minimal Dashboard Script -->
+  
   <script>
-    const dashboardData = {
-      sales: 12450,
-      orders: 87,
-      products: 342,
-      lowStock: 12,
-      monthlySales: [3200, 2800, 4100, 2350],
-      orderStatus: [50, 25, 12],
-      recentOrders: [
-        { id: '#1001', customer: 'John Doe', total: '$120', status: 'Completed' },
-        { id: '#1002', customer: 'Jane Smith', total: '$75', status: 'Pending' },
-        { id: '#1003', customer: 'Mike Johnson', total: '$340', status: 'Completed' }
-      ]
-    };
+    async function fetchProducts() {
+      const { data, error } = await supabaseClient.from('products').select('*');
+      if (error) return [];
+      return data;
+    }
 
-    function loadDashboard() {
-      document.getElementById('sales').textContent = `$${dashboardData.sales}`;
-      document.getElementById('orders').textContent = dashboardData.orders;
-      document.getElementById('products').textContent = dashboardData.products;
-      document.getElementById('lowStock').textContent = dashboardData.lowStock;
+    async function fetchLowStockProducts() {
+      const { data, error } = await supabaseClient.from('products').select('*').lt('stock', 5);
+      if (error) return [];
+      return data;
+    }
+
+    async function fetchOrders() {
+      const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }).limit(7);
+      if (error) return [];
+      return data;
+    }
+
+    async function fetchTotalSales() {
+      const { data, error } = await supabaseClient
+        .from('orders')
+        .select('total');
+      if (error || !data) return 0;
+      return data.reduce((sum, order) => sum + Number(order.total), 0);
+    }
+
+    async function loadDashboard() {
+      const products = await fetchProducts();
+      const lowStock = await fetchLowStockProducts();
+      const orders = await fetchOrders();
+      const totalSales = await fetchTotalSales();
+
+      document.getElementById('products').textContent = products.length;
+      document.getElementById('lowStock').textContent = lowStock.length;
+      document.getElementById('orders').textContent = orders.length;
+      document.getElementById('sales').textContent = `RM${totalSales.toFixed(2)}`;
 
       const table = document.getElementById('ordersTable');
-      dashboardData.recentOrders.forEach(o => {
+      table.innerHTML = '';
+      orders.forEach(o => {
         const tr = document.createElement('tr');
         tr.className = 'border-t hover:bg-gray-50';
         tr.innerHTML = `
           <td class="p-4 font-medium">${o.id}</td>
-          <td class="p-4">${o.customer}</td>
-          <td class="p-4">${o.total}</td>
+          <td class="p-4">${o.customer_name || 'N/A'}</td>
+          <td class="p-4">$${o.total}</td>
           <td class="p-4 font-semibold ${o.status === 'Completed' ? 'text-green-600' : 'text-accent'}">${o.status}</td>
         `;
         table.appendChild(tr);
       });
 
+      // Example charts
       new Chart(document.getElementById('salesChart'), {
         type: 'line',
         data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+          labels: orders.map(o => new Date(o.created_at).toLocaleDateString()),
           datasets: [{
-            data: dashboardData.monthlySales,
+            data: orders.map(o => Number(o.total)),
             borderColor: '#023f88',
             backgroundColor: 'rgba(2,63,136,0.15)',
             fill: true,
@@ -151,11 +160,16 @@
         options: { plugins: { legend: { display: false } } }
       });
 
+      const statusCounts = orders.reduce((acc, o) => {
+        acc[o.status] = (acc[o.status] || 0) + 1;
+        return acc;
+      }, {});
+
       new Chart(document.getElementById('ordersChart'), {
         type: 'doughnut',
         data: {
-          labels: ['Completed', 'Pending', 'Cancelled'],
-          datasets: [{ data: dashboardData.orderStatus, backgroundColor: ['#023f88', '#f8941e', '#d1d5db'] }]
+          labels: Object.keys(statusCounts),
+          datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#023f88', '#f8941e', '#d1d5db'] }]
         },
         options: { cutout: '70%' }
       });
@@ -163,6 +177,5 @@
 
     loadDashboard();
   </script>
-
 </body>
 </html>
