@@ -62,46 +62,56 @@
 
   // ======= Handle Login =======
   document.getElementById('loginBtn').addEventListener('click', async () => {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const messageEl = document.getElementById('message');
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const messageEl = document.getElementById('message');
 
-  messageEl.textContent = "";
-  messageEl.className = "text-sm mt-4 text-center";
+    messageEl.textContent = "";
+    messageEl.className = "text-sm mt-4 text-center";
 
-  if (!email || !password) {
-    messageEl.textContent = "Please enter both email and password.";
-    messageEl.classList.add("text-red-500");
-    return;
-  }
-
-  try {
-    // Authenticate via Supabase (email & password)
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      messageEl.textContent = error.message;
+    if (!email || !password) {
+      messageEl.textContent = "Please enter both email and password.";
       messageEl.classList.add("text-red-500");
       return;
     }
 
-    // Redirect based on user email
-    if (email === 'admin1') {
-      messageEl.textContent = "Admin login successful! Redirecting...";
-      messageEl.classList.add("text-green-600");
-      setTimeout(() => window.location.href = "admin.html", 1000);
-    } else {
-      messageEl.textContent = "Login successful! Redirecting...";
-      messageEl.classList.add("text-green-600");
-      setTimeout(() => window.location.href = "profile.html", 1000);
-    }
+    try {
+      // Authenticate via Supabase (email & password)
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
 
-  } catch (err) {
-    console.error("Unexpected error during login:", err);
-    messageEl.textContent = "Something went wrong. Please try again.";
-    messageEl.classList.add("text-red-500");
-  }
-});
+      if (error) {
+        messageEl.textContent = error.message;
+        messageEl.classList.add("text-red-500");
+        return;
+      }
+
+      // ===== Check redirectAfterLogin =====
+      const redirect = localStorage.getItem('redirectAfterLogin');
+      if (redirect) {
+        localStorage.removeItem('redirectAfterLogin');
+        messageEl.textContent = "Login successful! Redirecting...";
+        messageEl.classList.add("text-green-600");
+        setTimeout(() => window.location.href = redirect, 1000);
+        return;
+      }
+
+      // ===== Default redirect for admin or normal user =====
+      if (email === 'admin1') {
+        messageEl.textContent = "Admin login successful! Redirecting...";
+        messageEl.classList.add("text-green-600");
+        setTimeout(() => window.location.href = "admin.html", 1000);
+      } else {
+        messageEl.textContent = "Login successful! Redirecting...";
+        messageEl.classList.add("text-green-600");
+        setTimeout(() => window.location.href = "profile.html", 1000);
+      }
+
+    } catch (err) {
+      console.error("Unexpected error during login:", err);
+      messageEl.textContent = "Something went wrong. Please try again.";
+      messageEl.classList.add("text-red-500");
+    }
+  });
 
 </script>
 

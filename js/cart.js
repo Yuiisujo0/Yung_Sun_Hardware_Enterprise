@@ -269,18 +269,19 @@
     if (Number.isNaN(val) || val <= 0) remove(pid);
     else setQty(pid, val);
   }
-  function checkoutHandler() {
+    function checkoutHandler() {
     const items = itemsArray();
     if (!items.length) {
       alert('Cart is empty.');
       return;
     }
-    // Replace below with your actual checkout flow.
-    console.log('Checkout', items);
-    // Example: redirect to shop/checkout page
-    // window.location.href = '/checkout.html';
-    alert('Checkout action triggered — check console for items (implement real flow).');
+    // Save cart to localStorage (already saved, but ensure we have a consistent key)
+    localStorage.setItem('ys_cart_checkout', JSON.stringify(items));
+
+    // Redirect to checkout page
+    window.location.href = 'checkout.html';
   }
+
 
   // Wire navbar cart icons to open drawer (run when navbar is present)
   function wireNavbarCartIcons() {
