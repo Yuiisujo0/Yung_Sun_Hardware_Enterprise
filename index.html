@@ -593,70 +593,118 @@
   </div>
 </footer>
 
-    <!-- Supabase (keep this) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Navbar loader & role/caching script (make sure path matches where you saved navbar.js) -->
-  <script src="js/navbar.js"></script>
-  <script src="js/cart.js"></script>
+<!-- Navbar loader & role/caching script -->
+<script src="js/superbase.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/cart.js"></script>
 
-  <!-- Page-specific JS: about-title animation + tabs -->
-  <script>
-    // About title letter animation + tabs
-    document.addEventListener("DOMContentLoaded", () => {
-      // ABOUT TITLE ANIMATION
-      const title = document.getElementById("about-title");
-      if (title) {
-        const text = title.textContent.trim();
-        title.textContent = "";
-        const letters = text.split("").map(char => {
-          const span = document.createElement("span");
-          if (char === " ") span.innerHTML = "&nbsp;";
-          else span.textContent = char;
-          span.classList.add("letter");
-          title.appendChild(span);
-          return span;
-        });
+<!-- Page-specific JS -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-        const middle = Math.floor(letters.length / 2);
-        let order = [middle];
-        for (let i = 1; i <= middle; i++) {
-          if (middle - i >= 0) order.push(middle - i);
-          if (middle + i < letters.length) order.push(middle + i);
+  // ---------------- NAVBAR / PROFILE LINKS ----------------
+  async function initNavbarLinks() {
+    const profileLink = document.querySelector('a[href="profile.html"]');
+    if (!profileLink) return;
+
+    if (!window.supabaseClient) {
+      console.error('Supabase client not initialized');
+      return;
+    }
+
+    try {
+      const { data: { session } } = await window.supabaseClient.auth.getSession();
+      if (!session) {
+        profileLink.setAttribute('href', 'signin.html');
+      } else {
+        profileLink.setAttribute('href', 'profile.html');
+        profileLink.title = session.user.email;
+
+        // Show admin menu if user role is admin
+        const { data: profile, error } = await window.supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (!error && profile?.role === 'admin') {
+          document.getElementById('adminMenu')?.classList.remove('hidden');
+          document.getElementById('adminMenuMobile')?.classList.remove('hidden');
         }
-
-        function animateLetters() {
-          order.forEach((index, i) => {
-            setTimeout(() => letters[index].classList.add("show"), i * 100);
-          });
-        }
-        function resetLetters() {
-          letters.forEach(letter => letter.classList.remove("show"));
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) animateLetters();
-            else resetLetters();
-          });
-        }, { threshold: 0.5 });
-
-        observer.observe(title);
       }
+    } catch (err) {
+      console.error('Navbar session check failed:', err);
+    }
+  }
 
-      // TABS
-      const tabButtons = document.querySelectorAll(".tab-btn");
-      const tabContents = document.querySelectorAll(".tab-content");
-      tabButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          tabButtons.forEach(b => b.classList.remove("active-tab"));
-          tabContents.forEach(c => c.classList.add("hidden"));
-          btn.classList.add("active-tab");
-          const id = btn.dataset.tab;
-          document.getElementById(id)?.classList.remove("hidden");
-        });
-      });
+  // Run immediately if navbar exists, otherwise wait for 'navbar:ready'
+  if (document.getElementById('navbar')) {
+    initNavbarLinks();
+  } else {
+    document.addEventListener('navbar:ready', initNavbarLinks);
+  }
+
+  // ---------------- ABOUT TITLE ANIMATION ----------------
+  const title = document.getElementById("about-title");
+  if (title) {
+    const text = title.textContent.trim();
+    title.textContent = "";
+
+    const letters = text.split("").map(char => {
+      const span = document.createElement("span");
+      span.innerHTML = char === " " ? "&nbsp;" : char;
+      span.classList.add("letter");
+      title.appendChild(span);
+      return span;
     });
-  </script>
+
+    const middle = Math.floor(letters.length / 2);
+    const order = [middle];
+    for (let i = 1; i <= middle; i++) {
+      if (middle - i >= 0) order.push(middle - i);
+      if (middle + i < letters.length) order.push(middle + i);
+    }
+
+    function animateLetters() {
+      order.forEach((index, i) => {
+        setTimeout(() => letters[index].classList.add("show"), i * 100);
+      });
+    }
+
+    function resetLetters() {
+      letters.forEach(letter => letter.classList.remove("show"));
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) animateLetters();
+        else resetLetters();
+      });
+    }, { threshold: 0.5 });
+
+    observer.observe(title);
+  }
+
+  // ---------------- TABS ----------------
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach(b => b.classList.remove("active-tab"));
+      tabContents.forEach(c => c.classList.add("hidden"));
+      btn.classList.add("active-tab");
+
+      const id = btn.dataset.tab;
+      document.getElementById(id)?.classList.remove("hidden");
+    });
+  });
+
+});
+</script>
+
 </body>
 </html>
