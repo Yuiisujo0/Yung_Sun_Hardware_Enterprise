@@ -5,92 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Report | Yung Sun Hardware</title>
 
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Boxicons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- jsPDF + html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <style>
     .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
     .text-primary { color: #023f88; }
-    .bg-accent { background-color: #f8941e; }
   </style>
 </head>
 <body class="bg-gray-100 font-sans">
+
   <!-- Navbar placeholder -->
   <div id="navbar-root"></div>
 
   <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-8 mt-20">
 
-    <!-- Page Header with Back Button -->
+    <!-- Page Header with Back Arrow and Export -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div class="flex items-center gap-3">
-        <!-- Minimal Back Arrow -->
         <a href="admin.html" class="text-[#f8941e] text-2xl hover:text-orange-600 transition" title="Back to Dashboard">
           <i class="bx bx-arrow-back"></i>
         </a>
         <h1 class="text-xl sm:text-2xl font-bold text-primary">Sales Report</h1>
       </div>
-      <div class="flex gap-2 items-center">
-        <label for="dateFilter" class="text-gray-600 text-sm">Filter by:</label>
+      <div class="flex gap-2 items-center flex-wrap">
+        <label for="dateFilter" class="text-gray-600 text-sm">Duration:</label>
         <select id="dateFilter" class="border border-gray-300 rounded px-2 py-1 text-sm sm:text-base">
           <option value="7">Last 7 Days</option>
           <option value="30">Last 30 Days</option>
           <option value="90">Last 90 Days</option>
         </select>
+        <button id="exportBtn" class="inline-flex items-center px-3 py-2 bg-[#f8941e] text-white rounded shadow hover:bg-orange-500 transition text-sm sm:text-base">
+          <i class="bx bx-download mr-1"></i> Export PDF
+        </button>
       </div>
     </div>
 
-    <!-- Sales Trend Chart -->
-    <section class="bg-white rounded-2xl p-4 sm:p-6 shadow-soft">
-      <h2 class="text-lg sm:text-xl font-semibold mb-3">Sales Trend (RM)</h2>
-      <div class="w-full overflow-x-auto">
-        <canvas id="salesTrendChart" class="w-full h-64 sm:h-80"></canvas>
-      </div>
-    </section>
+    <!-- Exportable content -->
+    <div id="exportArea" class="space-y-6 bg-white rounded-2xl p-4 sm:p-6 shadow-soft">
+      <!-- Inner wrapper for consistent padding -->
+      <div class="px-4 sm:px-6" id="exportWrapper">
 
-    <!-- Top Selling Products -->
-    <section class="bg-white rounded-2xl p-4 sm:p-6 shadow-soft">
-      <h2 class="text-lg sm:text-xl font-semibold mb-3">Top Selling Products</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm sm:text-base">
-          <thead class="bg-gray-50 text-gray-600">
-            <tr>
-              <th class="p-2 sm:p-4 text-left">Product</th>
-              <th class="p-2 sm:p-4 text-left">Category</th>
-              <th class="p-2 sm:p-4 text-left">Quantity Sold</th>
-              <th class="p-2 sm:p-4 text-left">Revenue (RM)</th>
-            </tr>
-          </thead>
-          <tbody id="topProductsTable"></tbody>
-        </table>
-      </div>
-    </section>
+        <!-- Sales Trend Chart -->
+        <section class="mb-6">
+          <h2 class="text-lg sm:text-xl font-semibold mb-3">Sales Trend (RM)</h2>
+          <div class="w-full overflow-x-auto">
+            <canvas id="salesTrendChart" class="w-full h-64 sm:h-80"></canvas>
+          </div>
+        </section>
 
-    <!-- Sales by Date Table -->
-    <section class="bg-white rounded-2xl p-4 sm:p-6 shadow-soft">
-      <h2 class="text-lg sm:text-xl font-semibold mb-3">Sales by Date</h2>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm sm:text-base">
-          <thead class="bg-gray-50 text-gray-600">
-            <tr>
-              <th class="p-2 sm:p-4 text-left">Date</th>
-              <th class="p-2 sm:p-4 text-left">Orders</th>
-              <th class="p-2 sm:p-4 text-left">Total Sales (RM)</th>
-            </tr>
-          </thead>
-          <tbody id="salesByDateTable"></tbody>
-        </table>
-      </div>
-    </section>
+        <!-- Top Selling Products -->
+        <section class="mb-6">
+          <h2 class="text-lg sm:text-xl font-semibold mb-3">Top Selling Products</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm sm:text-base">
+              <thead class="bg-gray-50 text-gray-600">
+                <tr>
+                  <th class="p-2 sm:p-4 text-left">Product</th>
+                  <th class="p-2 sm:p-4 text-left">Category</th>
+                  <th class="p-2 sm:p-4 text-left">Quantity Sold</th>
+                  <th class="p-2 sm:p-4 text-left">Revenue (RM)</th>
+                </tr>
+              </thead>
+              <tbody id="topProductsTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Sales by Date Table -->
+        <section>
+          <h2 class="text-lg sm:text-xl font-semibold mb-3">Sales by Date</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm sm:text-base">
+              <thead class="bg-gray-50 text-gray-600">
+                <tr>
+                  <th class="p-2 sm:p-4 text-left">Date</th>
+                  <th class="p-2 sm:p-4 text-left">Orders</th>
+                  <th class="p-2 sm:p-4 text-left">Total Sales (RM)</th>
+                </tr>
+              </thead>
+              <tbody id="salesByDateTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div> <!-- end exportWrapper -->
+    </div> <!-- end exportArea -->
 
   </main>
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/navbar.js"></script>
 
   <script>
     const dateFilter = document.getElementById('dateFilter');
+    const exportBtn = document.getElementById('exportBtn');
 
     async function fetchOrders(days = 7) {
       const fromDate = new Date();
@@ -175,6 +193,34 @@
 
     dateFilter.addEventListener('change', loadSalesReport);
     loadSalesReport();
+
+    // Export PDF functionality with proper padding and header
+    exportBtn.addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const exportWrapper = document.getElementById('exportWrapper');
+
+      // Temporary header for PDF
+      const header = document.createElement('div');
+      header.className = 'mb-6 text-center';
+      const durationText = dateFilter.options[dateFilter.selectedIndex].text;
+      header.innerHTML = `<h1 class="text-2xl font-bold text-primary">Sales Report</h1>
+                          <p class="text-sm text-gray-600">Duration: ${durationText}</p>`;
+      exportWrapper.prepend(header);
+
+      const canvas = await html2canvas(exportWrapper, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`sales-report-${new Date().toLocaleDateString()}.pdf`);
+
+      // Remove temporary header
+      header.remove();
+    });
   </script>
+
 </body>
 </html>
