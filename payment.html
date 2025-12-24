@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - Yung Sun Hardware</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Boxicons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/shop.css">
+</head>
+<body class="bg-gray-100">
+
+  <!-- Navbar Mount -->
+  <div id="navbar-root"></div>
+
+  <div class="max-w-6xl mx-auto px-4 py-12 mt-10">
+
+    <!-- Back to cart -->
+    <a href="checkout.html" class="inline-flex items-center text-slate-500 hover:text-orange-600 mb-6">
+      <i class='bx bx-left-arrow-alt mr-1'></i> Back to Cart
+    </a>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+      <!-- LEFT CONTENT -->
+      <div class="lg:col-span-2 space-y-10">
+
+        <!-- Shipping Information -->
+        <section>
+          <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <span class="bg-orange-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
+            Shipping Information
+          </h2>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input id="fullName" placeholder="Full Name" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+            <input id="email" placeholder="Email Address" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+            <input id="address" placeholder="Shipping Address" class="md:col-span-2 w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+            <input id="city" placeholder="City" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+            <input id="postalCode" placeholder="Postal Code" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+          </div>
+        </section>
+
+        <!-- Payment Method -->
+        <section>
+          <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <span class="bg-orange-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+            Payment Method
+          </h2>
+
+          <!-- Payment Tabs -->
+          <div class="grid grid-cols-3 gap-3 mb-2">
+            <button type="button" id="tabCard" class="p-4 rounded-xl border border-slate-200 bg-white font-bold hover:border-slate-200">Card</button>
+            <button type="button" id="tabFPX" class="p-4 rounded-xl border border-slate-200 bg-white font-bold hover:border-slate-200">FPX</button>
+            <button type="button" id="tabEwallet" class="p-4 rounded-xl border border-slate-200 bg-white font-bold hover:border-slate-200">E-Wallet</button>
+          </div>
+
+          <!-- Payment Form -->
+          <form id="paymentForm" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+
+            <!-- CARD PANEL -->
+            <div id="payment-card" class="payment-panel space-y-4">
+              <div>
+                <label for="cardNumber" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Card Number</label>
+                <input id="cardNumber" placeholder="0000 0000 0000 0000" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label for="expiryDate" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Expiry Date</label>
+                  <input id="expiryDate" placeholder="MM/YY" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+                </div>
+                <div>
+                  <label for="cvv" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">CVV</label>
+                  <input id="cvv" placeholder="123" class="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- FPX PANEL -->
+            <div id="payment-fpx" class="payment-panel space-y-4 hidden">
+              <label for="fpxBank" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Select Bank</label>
+              <select id="fpxBank" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition bg-white">
+                <option value="">-- Choose your bank --</option>
+                <option>Maybank2u</option>
+                <option>CIMB Clicks</option>
+                <option>Public Bank</option>
+                <option>RHB Now</option>
+                <option>Hong Leong Connect</option>
+              </select>
+              <p class="text-xs text-slate-400 italic mt-1">
+                You will be redirected to your bank's portal to complete the payment.
+              </p>
+            </div>
+
+            <!-- E-WALLET PANEL -->
+            <div id="payment-ewallet" class="payment-panel space-y-4 hidden">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Select E-Wallet</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="ewallet" value="TNG" class="w-4 h-4 accent-orange-500">
+                  <span class="font-semibold text-slate-700">Touch 'n Go eWallet</span>
+                </label>
+                <label class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-slate-50">
+                  <input type="radio" name="ewallet" value="DuitNow" class="w-4 h-4 accent-orange-500">
+                  <span class="font-semibold text-slate-700">DuitNow QR</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="payBtn" class="w-full mt-8 bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">
+              Pay Now
+            </button>
+          </form>
+        </section>
+      </div>
+
+      <!-- ORDER SUMMARY -->
+      <div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm sticky top-24">
+
+          <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">Order Summary</h3>
+
+          <!-- Items -->
+          <div id="orderItems" class="space-y-4 "></div>
+
+          <!-- Totals -->
+          <div class="space-y-3 pt-1">
+            <div class="flex justify-between text-sm">
+              <span>Subtotal</span>
+              <span id="subtotal">RM 0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span>Tax (6%)</span>
+              <span id="tax">RM 0.00</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span>Shipping</span>
+              <span>RM 10.00</span>
+            </div>
+            <div class="flex justify-between text-xl font-bold border-t pt-2">
+              <span>Total</span>
+              <span class="text-orange-600" id="total">RM 0.00</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!--to make payment form scroll into view when inputs are focused-->
+  <script>
+  const paymentForm = document.getElementById("paymentForm");
+
+  // All inputs inside payment form
+  const paymentInputs = paymentForm.querySelectorAll(
+    "input, select, textarea"
+  );
+
+  paymentInputs.forEach(input => {
+    input.addEventListener("focus", () => {
+      paymentForm.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    });
+  });
+</script>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/payment.js"></script>
+
+</body>
+</html>

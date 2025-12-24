@@ -170,36 +170,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ===== Place Order button =====
-  qs('#place-order-btn').addEventListener('click', async () => {
-    const items = getCartItems();
-    if (!items.length) { alert('Cart is empty.'); return; }
+ // ===== Place Order button ===== 
+qs('#place-order-btn').addEventListener('click', async () => {
+  const items = getCartItems();
+  if (!items.length) { alert('Cart is empty.'); return; }
 
-    const client = window.supabaseClient;
-    if (!client) { alert('Supabase client not initialized.'); return; }
+  const client = window.supabaseClient;
+  if (!client) { alert('Supabase client not initialized.'); return; }
 
-    try {
-      const { data: { session }, error } = await client.auth.getSession();
-      if (error) throw error;
+  try {
+    const { data: { session }, error } = await client.auth.getSession();
+    if (error) throw error;
 
-      if (!session) {
-        // Show login/signup modal if not logged in
-        showLoginModal();
-        return;
-      }
-
-      // User is logged in, proceed
-      alert('Order placed successfully!');
-      if (window.cartAPI) window.cartAPI.clear();
-      localStorage.removeItem('ys_cart_v1');
-      localStorage.removeItem('ys_cart_checkout');
-
-      window.location.href = './'; // redirect home or order confirmation
-    } catch (err) {
-      console.error('Auth check failed:', err);
-      alert('Failed to verify login. Please try again.');
+    if (!session) {
+      // Show login/signup modal if not logged in
+      showLoginModal();
+      return;
     }
-  });
+
+    // User is logged in → save items for payment page
+    localStorage.setItem('ys_cart_checkout', JSON.stringify(items));
+
+    // Redirect to payment page
+    window.location.href = 'payment.html';
+
+  } catch (err) {
+    console.error('Auth check failed:', err);
+    alert('Failed to verify login. Please try again.');
+  }
+});
 
 
 });
