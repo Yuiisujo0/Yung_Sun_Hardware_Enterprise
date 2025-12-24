@@ -67,8 +67,8 @@ function showPaymentModal(message) {
     window.location.href = 'index.html';
   });
 
-  // Auto redirect after 5 seconds
-  setTimeout(() => window.location.href = 'index.html', 5000);
+  // Auto redirect after 10 seconds
+  setTimeout(() => window.location.href = 'index.html', 10000);
 }
 
 // ===== Handle Payment Submission =====
@@ -107,7 +107,7 @@ qs('#paymentForm').addEventListener('submit', async (e) => {
     const subtotal = items.reduce((sum, it) => sum + it.price * it.qty, 0);
     const totalAmount = subtotal * 1.06 + 10; // 6% tax + shipping fee
 
-    // Insert order with shipping info
+    // 1️⃣ Insert order
     const { data: orderData, error: orderError } = await client
       .from('orders')
       .insert([{
@@ -123,11 +123,11 @@ qs('#paymentForm').addEventListener('submit', async (e) => {
       }])
       .select()
       .single();
-
     if (orderError) throw orderError;
+
     const orderId = orderData.id;
 
-    // Insert order items
+    // 2️⃣ Insert order_items
     const orderItems = items.map(it => ({
       order_id: orderId,
       product_id: it.id,
@@ -138,12 +138,31 @@ qs('#paymentForm').addEventListener('submit', async (e) => {
     const { error: itemsError } = await client.from('order_items').insert(orderItems);
     if (itemsError) throw itemsError;
 
-    // Clear cart
+    // 3️⃣ Decrease product stock
+    for (let it of items) {
+      const { data: product, error: prodErr } = await client
+        .from('products')
+        .select('stock')
+        .eq('id', it.id)
+        .single();
+      if (prodErr) throw prodErr;
+
+      const newStock = product.stock - it.qty;
+      if (newStock < 0) throw new Error(`Insufficient stock for ${it.name}`);
+
+      const { error: stockError } = await client
+        .from('products')
+        .update({ stock: newStock })
+        .eq('id', it.id);
+      if (stockError) throw stockError;
+    }
+
+    // 4️⃣ Clear cart
     localStorage.removeItem('ys_cart_v1');
     if (window.cartAPI) window.cartAPI.clear();
 
-    // Show modal
-    showPaymentModal('Thank you for your payment! Your items will be shipped in 3 days. Please check your email for your order details.');
+    // 5️⃣ Show success modal
+    showPaymentModal('Thank you! Your items will be shipped in 3 days. Check your email for order details.');
 
   } catch (err) {
     console.error('Payment failed', err);
