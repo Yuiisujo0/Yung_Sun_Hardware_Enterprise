@@ -104,29 +104,24 @@ function applyFilters() {
 }
 
 function renderProducts(products) {
-  // The Add to Cart button now includes helpful data attributes to allow
-  // items to be added even if the global product list isn't available.
   productGrid.innerHTML = products.map(p => `
-    <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
+    <a href="product-details.html?id=${p.id}" class="group block bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
       <div class="relative h-64 bg-white flex items-center justify-center">
         <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" class="h-44 object-contain group-hover:scale-110 transition duration-500">
         <span class="absolute top-4 right-4 bg-orange-500 text-white text-s font-semibold px-3 py-1 rounded-md shadow">
           ${escapeHtml(p.category || 'Tools')}
         </span>
       </div>
-
       <div class="p-6 text-left flex flex-col flex-grow border-t border-gray-150 bg-gray-100/40">
         <h3 class="font-bold text-lg mb-1 text-orange-600 line-clamp-2 min-h-[2rem]">
           ${escapeHtml(p.name)}
         </h3>
-
         <div class="flex items-center gap-1 text-yellow-400 text-sm mb-2">
           <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
           <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-          <i class="bx bx-star"></i>
-          <span class="text-gray-400 text-xs ml-2">(4.9)</span>
+          <i class="bx bxs-star"></i>
+          <span class="text-gray-400 text-xs ml-2">(5.0)</span>
         </div>
-
         <div class="flex items-center justify-between mt-auto">
           <span class="text-2xl font-bold text-slate-900">
             RM ${Number(p.price).toFixed(2)}
@@ -142,7 +137,7 @@ function renderProducts(products) {
           </button>
         </div>
       </div>
-    </div>
+    </a>
   `).join('');
 }
 

@@ -145,22 +145,28 @@
 
   // Cart operations
   function add(product) {
-    // product can be id or product object { id, name, price, image_url }
     if (!product) return;
     const id = String(product.id || product);
+    const quantityToAdd = Number(product.qty) || 1; // use qty if provided
     const existing = cart[id];
-    if (existing) existing.qty = existing.qty + 1;
-    else cart[id] = {
-      id,
-      name: product.name || product.title || `Item ${id}`,
-      price: Number(product.price || 0),
-      image_url: product.image_url || product.image || '',
-      qty: 1
-    };
+
+    if (existing) {
+      existing.qty += quantityToAdd;
+    } else {
+      cart[id] = {
+        id,
+        name: product.name || product.title || `Item ${id}`,
+        price: Number(product.price || 0),
+        image_url: product.image_url || product.image || '',
+        qty: quantityToAdd
+     };
+    }
+
     save();
     renderDrawer();
     open();
   }
+
   function setQty(id, qty) {
     id = String(id);
     if (!cart[id]) return;
