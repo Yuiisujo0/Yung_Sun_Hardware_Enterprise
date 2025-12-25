@@ -93,6 +93,27 @@
   <script src="js/navbar.js"></script>
   
   <script>
+    async function requireAdmin() {
+      if (!window.supabaseClient) return;
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return window.location.href = "signin.html";
+
+      const { data } = await supabaseClient
+        .from('profiles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (data?.role !== 'admin') {
+        return window.location.href = "index.html";
+      }
+
+      loadDashboard();
+    }
+
+  requireAdmin();
+
     async function fetchProducts() {
       const { data, error } = await supabaseClient.from('products').select('*');
       if (error) return [];

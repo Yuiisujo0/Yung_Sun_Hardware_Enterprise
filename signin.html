@@ -61,56 +61,56 @@
   })();
 
   // ======= Handle Login =======
-  document.getElementById('loginBtn').addEventListener('click', async () => {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const messageEl = document.getElementById('message');
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const msg = document.getElementById("message");
 
-    messageEl.textContent = "";
-    messageEl.className = "text-sm mt-4 text-center";
+    msg.textContent = "";
+    msg.className = "text-sm mt-4 text-center";
 
     if (!email || !password) {
-      messageEl.textContent = "Please enter both email and password.";
-      messageEl.classList.add("text-red-500");
+      msg.textContent = "Please enter email and password.";
+      msg.classList.add("text-red-500");
       return;
     }
 
-    try {
-      // Authenticate via Supabase (email & password)
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
+    // 1️⃣ Login
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
 
-      if (error) {
-        messageEl.textContent = error.message;
-        messageEl.classList.add("text-red-500");
-        return;
-      }
-
-      // ===== Check redirectAfterLogin =====
-      const redirect = localStorage.getItem('redirectAfterLogin');
-      if (redirect) {
-        localStorage.removeItem('redirectAfterLogin');
-        messageEl.textContent = "Login successful! Redirecting...";
-        messageEl.classList.add("text-green-600");
-        setTimeout(() => window.location.href = redirect, 1000);
-        return;
-      }
-
-      // ===== Default redirect for admin or normal user =====
-      if (email === 'admin1') {
-        messageEl.textContent = "Admin login successful! Redirecting...";
-        messageEl.classList.add("text-green-600");
-        setTimeout(() => window.location.href = "admin.html", 1000);
-      } else {
-        messageEl.textContent = "Login successful! Redirecting...";
-        messageEl.classList.add("text-green-600");
-        setTimeout(() => window.location.href = "profile.html", 1000);
-      }
-
-    } catch (err) {
-      console.error("Unexpected error during login:", err);
-      messageEl.textContent = "Something went wrong. Please try again.";
-      messageEl.classList.add("text-red-500");
+    if (error) {
+      msg.textContent = error.message;
+      msg.classList.add("text-red-500");
+      return;
     }
+
+    const userId = data.user.id;
+
+    // 2️⃣ Get role from profiles table
+    const { data: profile, error: profileError } = await client
+      .from('profiles')
+      .select('role')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError) {
+      console.error(profileError);
+      msg.textContent = "Failed to load user role.";
+      msg.classList.add("text-red-500");
+      return;
+    }
+
+    msg.textContent = "Login successful! Redirecting...";
+    msg.classList.add("text-green-600");
+
+    // 3️⃣ Role-based redirect
+    setTimeout(() => {
+      if (profile.role === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "index.html";
+      }
+    }, 800);
   });
 
 </script>
