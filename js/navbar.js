@@ -1,6 +1,52 @@
-// navbar.js
 const ROLE_KEY = 'ys_role_v1';
 const ROLE_TTL = 1000 * 60 * 5;
+
+/* -------------------- Welcome User -------------------- */
+function setWelcomeUser(name) {
+  const el = document.getElementById('welcomeUser');
+  if (!el) return;
+  el.textContent = `Welcome back! ${name}`;
+  el.classList.remove('hidden');
+}
+
+function hideWelcomeUser() {
+  const el = document.getElementById('welcomeUser');
+  if (el) el.classList.add('hidden');
+}
+
+/* -------------------- Logout Button -------------------- */
+function showLogoutBtn() {
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.classList.remove('hidden');
+}
+
+function hideLogoutBtn() {
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.classList.add('hidden');
+}
+
+function bindLogout() {
+  const btn = document.getElementById('logoutBtn');
+  if (!btn || btn._bound) return;
+
+  btn.addEventListener('click', async () => {
+    const client = window.supabaseClient;
+    if (!client) return;
+
+    try {
+      await client.auth.signOut();
+      hideLogoutBtn();
+      hideWelcomeUser();
+      setAdminVisible(false);
+      cacheRole('user');
+      window.location.href = 'index.html';
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  });
+
+  btn._bound = true;
+}
 
 /* -------------------- Admin visibility -------------------- */
 function setAdminVisible(isAdmin) {
@@ -34,7 +80,6 @@ function readCachedRole() {
 async function initAuthAndRole() {
   const client = window.supabaseClient;
 
-  // If Supabase not ready, fall back to cache
   if (!client) {
     console.warn('Supabase client not found.');
     const cached = readCachedRole();
@@ -42,7 +87,6 @@ async function initAuthAndRole() {
     return;
   }
 
-  // Apply cached role immediately (prevents flicker)
   const cached = readCachedRole();
   if (cached) setAdminVisible(cached === 'admin');
 
@@ -51,47 +95,52 @@ async function initAuthAndRole() {
     const profileLink =
       document.querySelector('[aria-label="User Profile"]')?.parentElement;
 
-    // Not logged in
     if (!session) {
       if (profileLink) profileLink.setAttribute('href', 'signin.html');
       setAdminVisible(false);
+      hideWelcomeUser();
+      hideLogoutBtn();
       cacheRole('user');
       return;
     }
 
-    // Logged in
     if (profileLink) {
       profileLink.setAttribute('href', 'profile.html');
       profileLink.title = session.user.email;
     }
 
+    // Load profile (full_name + role)
     const { data: profile, error } = await client
       .from('profiles')
-      .select('role')
+      .select('role, full_name')
       .eq('user_id', session.user.id)
       .single();
 
     if (error) {
-      console.error('Failed to load role:', error);
-      if (!cached) setAdminVisible(false);
-      return;
+      console.error('Failed to load profile:', error);
+    } else {
+      const displayName =
+        profile?.full_name ||
+        session.user.user_metadata?.full_name ||
+        session.user.email?.split('@')[0] ||
+        'User';
+
+      setWelcomeUser(displayName);
+      showLogoutBtn();
+
+      const role = profile?.role || 'user';
+      setAdminVisible(role === 'admin');
+      cacheRole(role);
     }
-
-    const role = profile?.role || 'user';
-    setAdminVisible(role === 'admin');
-    cacheRole(role);
-
   } catch (err) {
     console.error('Auth init failed:', err);
   }
 }
 
-/* -------------------- 🔥 AUTH STATE LISTENER (FIX) -------------------- */
+/* -------------------- 🔥 AUTH STATE LISTENER -------------------- */
 function bindAuthListener() {
   const client = window.supabaseClient;
   if (!client) return;
-
-  // Prevent multiple bindings across pages
   if (window.__ysAuthListenerBound) return;
   window.__ysAuthListenerBound = true;
 
@@ -100,11 +149,12 @@ function bindAuthListener() {
 
     if (event === 'SIGNED_OUT') {
       setAdminVisible(false);
+      hideWelcomeUser();
+      hideLogoutBtn();
       cacheRole('user');
       return;
     }
 
-    // SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED
     await initAuthAndRole();
   });
 }
@@ -132,7 +182,7 @@ function initSmallUI() {
     navbar._shadowBound = true;
   }
 
-  // Dropdown
+  // Dropdown menu
   const dropdownButton = document.querySelector('.group');
   const dropdownMenu = dropdownButton?.querySelector('div');
   if (dropdownButton && dropdownMenu && !dropdownButton._dropdownBound) {
@@ -173,7 +223,8 @@ async function startNavbar() {
   if (existing && existing.children.length > 0) {
     initSmallUI();
     await initAuthAndRole();
-    bindAuthListener(); // ✅ FIX APPLIED
+    bindAuthListener();
+    bindLogout();
     document.dispatchEvent(new CustomEvent('navbar:ready'));
     return;
   }
@@ -186,7 +237,8 @@ async function startNavbar() {
       await Promise.resolve();
       initSmallUI();
       await initAuthAndRole();
-      bindAuthListener(); // ✅ FIX APPLIED
+      bindAuthListener();
+      bindLogout();
       document.dispatchEvent(new CustomEvent('navbar:ready'));
       return;
     }
@@ -194,7 +246,8 @@ async function startNavbar() {
 
   initSmallUI();
   await initAuthAndRole();
-  bindAuthListener(); // ✅ FIX APPLIED
+  bindAuthListener();
+  bindLogout();
   document.dispatchEvent(new CustomEvent('navbar:ready'));
 }
 
