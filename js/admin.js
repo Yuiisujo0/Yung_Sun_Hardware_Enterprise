@@ -178,8 +178,8 @@ async function loadRecentOrders() {
 
     tbody.innerHTML += `
       <tr class="divide-x hover:bg-gray-50">
-        <td class="p-4 text-xs font-mono text-gray-600 truncate" title="${o.id}">${o.id}</td>
-        <td class="p-4 w-48 truncate" title="${o.full_name}">${o.full_name}</td>
+        <td class="p-4 text-sm font-mono text-gray-600 truncate" title="${o.id}">${o.id}</td>
+        <td class="p-4 w-48 text-base truncate " title="${o.full_name}">${o.full_name}</td>
         <td class="p-4 text-center text-gray-500 text-xs">
           ${formattedDate}<br><span class="text-[11px]">${formattedTime}</span>
         </td>
@@ -188,7 +188,7 @@ async function loadRecentOrders() {
           <span class="px-3 py-1 rounded-full text-xs font-medium
             ${o.status === "completed" ? "bg-green-100 text-green-700"
             : o.status === "pending" ? "bg-yellow-100 text-yellow-700"
-            : "bg-gray-100 text-gray-700"}">
+            : "bg-orange-500 text-white"}">
             ${o.status}
           </span>
         </td>
