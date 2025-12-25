@@ -1,27 +1,20 @@
-// js/shop.js (safe replacement)
-// - Reuses/creates a single global Supabase client (window.supabaseClient).
-// - Loads products immediately.
-// - Defers navbar-dependent features until navbar exists (supports 'navbar:ready' event).
+// js/shop.js
+// Uses global Supabase client created in supabase.js
+// Loads products + filters + cart integration
 
-// --- Ensure global keys (do not redeclare with const) ---
-window.SUPABASE_URL = window.SUPABASE_URL || 'https://clhzzjugjttqidiuolrj.supabase.co';
-window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'sb_publishable_X8iVVZsZGbS9h_EKCds1wg_02UyKnpS';
-
-// --- Create or reuse a single supabase client ---
-window.supabaseClient = window.supabaseClient || (typeof supabase !== 'undefined'
-  ? supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY)
-  : null);
-
-if (!window.supabaseClient) {
-  console.error('Supabase client not available. Did you include the Supabase script before shop.js?');
-}
-
-// local reference
+// --- Supabase client ---
 const client = window.supabaseClient;
 
-// --- DOM refs ---
+if (!client) {
+  console.error(
+    'Supabase client not available. Make sure:\n' +
+    '1) Supabase CDN is loaded\n' +
+    '2) supabase.js runs BEFORE shop.js'
+  );
+}
+
+// --- STATE ---
 let allProducts = [];
-// expose for other modules (cart module may use it)
 window.allProducts = window.allProducts || allProducts;
 
 let currentCategory = 'All';
@@ -32,53 +25,58 @@ const urlParams = new URLSearchParams(window.location.search);
 const selectedCategoryFromURL = urlParams.get('category');
 
 const productGrid = document.getElementById('product-grid');
-if (!productGrid) {
-  console.error('product-grid element not found.');
-}
 
-// --- Load products immediately ---
-async function loadProducts() {
-  if (!client) {
-    productGrid && (productGrid.innerHTML = `<p class="text-red-500">Supabase not initialized.</p>`);
-    return;
-  }
+// Only run product-grid related code if it exists
+if (productGrid) {
 
-  try {
-    const { data, error } = await client.from('products').select('*');
-
-    if (error) {
-      console.error('Error fetching products:', error);
-      productGrid && (productGrid.innerHTML = `<p class="text-red-500">Failed to load products.</p>`);
+  // --- Load products immediately ---
+  async function loadProducts() {
+    if (!client) {
+      productGrid.innerHTML = `<p class="text-red-500">Supabase not initialized.</p>`;
       return;
     }
 
-    if (!data || data.length === 0) {
-      productGrid && (productGrid.innerHTML = '<p class="text-gray-600">No products found.</p>');
-      return;
+    try {
+      const { data, error } = await client.from('products').select('*');
+
+      if (error) {
+        console.error('Error fetching products:', error);
+        productGrid.innerHTML = `<p class="text-red-500">Failed to load products.</p>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        productGrid.innerHTML = '<p class="text-gray-600">No products found.</p>';
+        return;
+      }
+
+      allProducts = data;
+      window.allProducts = allProducts;
+
+      if (selectedCategoryFromURL) {
+        currentCategory = selectedCategoryFromURL;
+        highlightSidebarCategory(selectedCategoryFromURL);
+      }
+
+      applyFilters();
+
+    } catch (err) {
+      console.error('loadProducts error:', err);
+      productGrid.innerHTML = `<p class="text-red-500">Failed to load products.</p>`;
     }
-
-    allProducts = data;
-    // update global reference so other scripts (cart) can read
-    window.allProducts = allProducts;
-
-    if (selectedCategoryFromURL) {
-      currentCategory = selectedCategoryFromURL;
-      highlightSidebarCategory(selectedCategoryFromURL);
-    }
-    applyFilters();
-
-  } catch (err) {
-    console.error('loadProducts error:', err);
-    productGrid && (productGrid.innerHTML = `<p class="text-red-500">Failed to load products.</p>`);
   }
+
+  loadProducts();
+
+  // Attach add-to-cart click delegation
+  productGrid.addEventListener('click', handleAddToCartButtonClick);
 }
 
-loadProducts();
 
+// ---------------- FILTERING ----------------
 function applyFilters() {
   let filtered = [...allProducts];
 
-  // Category filter
   if (currentCategory !== 'All') {
     filtered = filtered.filter(p =>
       p.category &&
@@ -86,14 +84,12 @@ function applyFilters() {
     );
   }
 
-  // Search filter
   if (currentSearch) {
     filtered = filtered.filter(p =>
       p.name.toLowerCase().includes(currentSearch)
     );
   }
 
-  // Sorting
   if (currentSort === 'price-asc') {
     filtered.sort((a, b) => Number(a.price) - Number(b.price));
   } else if (currentSort === 'price-desc') {
@@ -103,6 +99,7 @@ function applyFilters() {
   renderProducts(filtered);
 }
 
+// ---------------- RENDER ----------------
 function renderProducts(products) {
   productGrid.innerHTML = products.map(p => `
     <a href="product-details.html?id=${p.id}" class="group block bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden h-full flex flex-col">
@@ -112,27 +109,30 @@ function renderProducts(products) {
           ${escapeHtml(p.category || 'Tools')}
         </span>
       </div>
+
       <div class="p-6 text-left flex flex-col flex-grow border-t border-gray-150 bg-gray-100/40">
         <h3 class="font-bold text-lg mb-1 text-orange-600 line-clamp-2 min-h-[2rem]">
           ${escapeHtml(p.name)}
         </h3>
+
         <div class="flex items-center gap-1 text-yellow-400 text-sm mb-2">
           <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
           <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
           <i class="bx bxs-star"></i>
           <span class="text-gray-400 text-xs ml-2">(5.0)</span>
         </div>
+
         <div class="flex items-center justify-between mt-auto">
           <span class="text-2xl font-bold text-slate-900">
             RM ${Number(p.price).toFixed(2)}
           </span>
+
           <button
             class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center hover:bg-orange-500 hover:text-white transition active:scale-95 add-to-cart-btn"
             data-product-id="${escapeHtml(p.id)}"
             data-name="${escapeHtml(p.name)}"
             data-price="${Number(p.price).toFixed(2)}"
-            data-image="${escapeHtml(p.image_url)}"
-            aria-label="Add ${escapeHtml(p.name)} to cart">
+            data-image="${escapeHtml(p.image_url)}">
             <i class="bx bx-cart text-xl"></i>
           </button>
         </div>
@@ -141,28 +141,42 @@ function renderProducts(products) {
   `).join('');
 }
 
-// small helper to escape injection (for simple templating)
+// escape helper
 function escapeHtml(s) {
-  if (s === null || s === undefined) return '';
-  return String(s).replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
+  if (!s) return '';
+  return String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[m]);
 }
 
+// ---------------- CATEGORY ----------------
 const categoryButtons = document.querySelectorAll('aside button');
 
 categoryButtons.forEach(button => {
   button.addEventListener('click', () => {
-    const selectedCategory = button.textContent.trim();
-    currentCategory = selectedCategory;
+    currentCategory = button.textContent.trim();
 
     categoryButtons.forEach(b =>
       b.classList.remove('bg-orange-50', 'text-orange-600', 'font-semibold')
     );
-    button.classList.add('bg-orange-50', 'text-orange-600', 'font-semibold');
 
+    button.classList.add('bg-orange-50', 'text-orange-600', 'font-semibold');
     applyFilters();
   });
 });
 
+function highlightSidebarCategory(category) {
+  const buttons = document.querySelectorAll('aside button');
+  buttons.forEach(btn => {
+    const text = btn.textContent.trim();
+    btn.classList.remove('bg-orange-50', 'text-orange-600', 'font-semibold');
+    if (text.toLowerCase() === category.toLowerCase()) {
+      btn.classList.add('bg-orange-50', 'text-orange-600', 'font-semibold');
+    }
+  });
+}
+
+// ---------------- SEARCH ----------------
 const searchInput = document.getElementById('searchInput');
 
 if (searchInput) {
@@ -172,6 +186,7 @@ if (searchInput) {
   });
 }
 
+// ---------------- SORT ----------------
 const sortSelect = document.getElementById('sortSelect');
 
 if (sortSelect) {
@@ -181,161 +196,42 @@ if (sortSelect) {
   });
 }
 
-function highlightSidebarCategory(category) {
-  const buttons = document.querySelectorAll('aside button');
-
-  buttons.forEach(btn => {
-    const text = btn.textContent.trim();
-
-    btn.classList.remove('bg-orange-50', 'text-orange-600', 'font-semibold');
-
-    if (text.toLowerCase() === category.toLowerCase()) {
-      btn.classList.add('bg-orange-50', 'text-orange-600', 'font-semibold');
-    }
-  });
-}
-
-
-// --- NAVBAR-DEPENDENT FEATURES (defensive) ---
-function initNavbarDependentFeatures() {
-  if (window.__navbar_initialized_for_shop) return;
-  window.__navbar_initialized_for_shop = true;
-
-  // Profile link (guarded)
-  const profileIcon = document.querySelector('#navbar .bx-user');
-  const profileLink = profileIcon ? profileIcon.parentElement : null;
-
-  (async () => {
-    try {
-      if (!client) return;
-      const { data: { session } } = await client.auth.getSession();
-      if (!session) {
-        if (profileLink) profileLink.setAttribute('href', 'signin.html');
-      } else {
-        if (profileLink) {
-          profileLink.setAttribute('href', 'profile.html');
-          profileLink.title = session.user.email;
-        }
-        const { data: profile, error } = await client.from('profiles').select('role').eq('user_id', session.user.id).single();
-        if (!error && profile?.role === 'admin') {
-          document.getElementById('adminMenu')?.classList.remove('hidden');
-          document.getElementById('adminMenuMobile')?.classList.remove('hidden');
-        }
-      }
-    } catch (err) {
-      console.error('Auth check failed:', err);
-    }
-  })();
-
-  // Navbar interactions (guarded)
-  const navbar = document.getElementById('navbar');
-  const menuBtn = document.getElementById('menuBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-
-  if (navbar) {
-    window.addEventListener('scroll', () => navbar.classList.toggle('shadow-md', window.scrollY > 10));
-  }
-
-  if (menuBtn && mobileMenu) {
-    // replace node to clear old listeners (defensive)
-    try {
-      const newMenuBtn = menuBtn.cloneNode(true);
-      menuBtn.parentNode.replaceChild(newMenuBtn, menuBtn);
-      newMenuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-        mobileMenu.classList.toggle('-translate-y-full');
-      });
-    } catch (e) { /* ignore */ }
-  }
-
-  // Dropdown wiring (guarded)
-  const dropdownButton = document.querySelector('.group');
-  const dropdownMenu = dropdownButton ? dropdownButton.querySelector('div') : null;
-  if (dropdownButton && dropdownMenu) {
-    const show = () => {
-      dropdownMenu.classList.remove('opacity-0', 'visibility-hidden', 'pointer-events-none');
-      dropdownMenu.classList.add('opacity-100', 'visibility-visible', 'pointer-events-auto');
-    };
-    const hide = () => {
-      dropdownMenu.classList.remove('opacity-100', 'visibility-visible', 'pointer-events-auto');
-      dropdownMenu.classList.add('opacity-0', 'visibility-hidden', 'pointer-events-none');
-    };
-
-    dropdownButton.addEventListener('mouseenter', show);
-    dropdownButton.addEventListener('mouseleave', () => setTimeout(() => !dropdownMenu.matches(':hover') && hide(), 100));
-    dropdownMenu.addEventListener('mouseenter', show);
-    dropdownMenu.addEventListener('mouseleave', hide);
-  }
-
-  // Active link highlight (guarded)
-  const sections = document.querySelectorAll('section');
-  const navLinks = document.querySelectorAll('.nav-link');
-  if (sections.length && navLinks.length) {
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        if (scrollY >= section.offsetTop - 120) current = section.getAttribute('id');
-      });
-      navLinks.forEach(link => {
-        link.classList.remove('text-orange-600', 'font-semibold');
-        if (link.getAttribute('href') === `#${current}`) link.classList.add('text-orange-600', 'font-semibold');
-      });
-    });
-  }
-}
-
-// If navbar already exists, init navbar-dependent features
-if (document.getElementById('navbar')) {
-  initNavbarDependentFeatures();
-}
-
-// Otherwise wait for navbar to be inserted (navbar.js should dispatch 'navbar:ready')
-document.addEventListener('navbar:ready', initNavbarDependentFeatures);
-
-
-// ----------------- CART INTEGRATION (product-grid click handler) -----------------
-// Delegated handler for Add to Cart buttons. Calls shared window.cartAPI if available.
-// Falls back to writing minimal cart to localStorage under 'ys_cart_v1'.
+// ---------------- ADD TO CART ----------------
 function handleAddToCartButtonClick(e) {
   const btn = e.target.closest('.add-to-cart-btn');
   if (!btn) return;
   e.preventDefault();
+
   const id = btn.getAttribute('data-product-id');
   if (!id) return;
 
-  // Try to find the product in memory
-  const product = (window.allProducts || allProducts || []).find(p => String(p.id) === String(id));
+  const product = (window.allProducts || []).find(p => String(p.id) === String(id));
 
-  // build payload (minimal fields expected by cart module)
   const payload = product || {
     id,
-    name: btn.getAttribute('data-name') || `Product ${id}`,
+    name: btn.getAttribute('data-name'),
     price: parseFloat(btn.getAttribute('data-price')) || 0,
     image_url: btn.getAttribute('data-image') || ''
   };
 
   try {
-    if (window.cartAPI && typeof window.cartAPI.add === 'function') {
+    if (window.cartAPI?.add) {
       window.cartAPI.add(payload);
     } else {
-      // fallback into localStorage using same key as cart.js expects
       const KEY = 'ys_cart_v1';
       let store = {};
-      try {
-        const raw = localStorage.getItem(KEY);
-        store = raw ? JSON.parse(raw) : {};
-      } catch (err) { store = {}; }
+      try { store = JSON.parse(localStorage.getItem(KEY)) || {}; }
+      catch { store = {}; }
+
       const key = String(payload.id);
       if (store[key]) store[key].qty = (store[key].qty || 0) + 1;
-      else store[key] = { id: key, name: payload.name, price: Number(payload.price || 0), image_url: payload.image_url || '', qty: 1 };
+      else store[key] = { ...payload, qty: 1 };
+
       localStorage.setItem(KEY, JSON.stringify(store));
-      // if cart module loads later, it will pick it up; attempt to open drawer if API becomes available
-      setTimeout(() => { try { window.cartAPI?.open?.(); } catch (e) {} }, 50);
     }
   } catch (err) {
     console.error('Failed to add to cart', err);
   }
 }
 
-// attach delegation to product grid
 productGrid?.addEventListener('click', handleAddToCartButtonClick);
