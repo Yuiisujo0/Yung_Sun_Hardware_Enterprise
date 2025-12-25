@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard | Yung Sun Hardware</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
@@ -35,6 +34,7 @@
       </a>
     </div>
 
+    <!-- Stats cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
         <i class="bx bx-money text-3xl text-accent absolute right-4 top-4"></i>
@@ -58,6 +58,7 @@
       </div>
     </section>
 
+    <!-- Charts -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-soft">
         <h3 class="font-semibold text-lg mb-4">Sales Trend</h3>
@@ -69,23 +70,31 @@
       </div>
     </section>
 
-    <section class="bg-white rounded-2xl shadow-soft overflow-hidden">
-      <div class="flex items-center justify-between p-6 border-b">
-        <h3 class="font-semibold text-lg">Recent Orders</h3>
-        <span class="text-sm text-gray-400">Last 7 days</span>
-      </div>
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50 text-gray-600">
-          <tr>
-            <th class="p-4">Order ID</th>
-            <th class="p-4">Customer</th>
-            <th class="p-4">Total</th>
-            <th class="p-4">Status</th>
-          </tr>
-        </thead>
-        <tbody id="ordersTable"></tbody>
-      </table>
-    </section>
+  
+    <!-- Recent Orders -->
+  <section class="bg-white rounded-2xl shadow-soft overflow-hidden">
+  <div class="flex items-center justify-between p-6 border-b">
+    <h3 class="font-semibold text-lg">Recent Orders</h3>
+    <span class="text-sm text-gray-400">Last 7 days</span>
+  </div>
+
+  <!-- Add fixed height and vertical scroll -->
+  <div class="overflow-x-auto overflow-y-auto max-h-96">
+    <table class="w-full text-sm border-collapse">
+      <thead class="bg-gray-50 text-gray-600">
+        <tr class="divide-x">
+          <th class="p-4 text-left w-32">Order ID</th>
+          <th class="p-4 text-left">Customer</th>
+          <th class="p-4 text-center w-36">Date</th>
+          <th class="p-4 text-right w-32">Total (RM)</th>
+          <th class="p-4 text-center w-32">Status</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTable" class="divide-y"></tbody>
+    </table>
+  </div>
+</section>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

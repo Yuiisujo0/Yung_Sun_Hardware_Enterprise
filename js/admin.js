@@ -1,104 +1,201 @@
-async function requireAdmin() {
-    if (!window.supabaseClient) return;
+// js/admin.js
+document.addEventListener("DOMContentLoaded", () => {
+  if (!window.supabaseClient) {
+    console.error("Supabase client not found");
+    return;
+  }
+  initAdminDashboard();
+});
 
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return window.location.href = "signin.html";
+const db = window.supabaseClient;
 
-    const { data } = await supabaseClient
-    .from('profiles')
-    .select('role')
-    .eq('user_id', session.user.id)
-    .single();
+/* =========================
+   INIT
+========================= */
+async function initAdminDashboard() {
+  await Promise.all([
+    loadStats(),
+    loadSalesTrend(),
+    loadOrderStatusChart(),
+    loadRecentOrders()
+  ]);
+}
 
-    if (data?.role !== 'admin') {
-    return window.location.href = "index.html";
+/* =========================
+   STATS CARDS
+========================= */
+async function loadStats() {
+  /* ---- ORDERS ---- */
+  const { data: orders, error: orderErr } = await db
+    .from("orders")
+    .select("id, total_amount");
+
+  if (orderErr) {
+    console.error(orderErr);
+    return;
+  }
+
+  const totalSales = orders.reduce(
+    (sum, o) => sum + Number(o.total_amount),
+    0
+  );
+
+  document.getElementById("sales").innerText =
+    `RM${totalSales.toFixed(2)}`;
+  document.getElementById("orders").innerText =
+    orders.length;
+
+  /* ---- PRODUCTS ---- */
+  const { data: products, error: prodErr } = await db
+    .from("products")
+    .select("stock");
+
+  if (prodErr) {
+    console.error(prodErr);
+    return;
+  }
+
+  document.getElementById("products").innerText =
+    products.length;
+
+  const lowStockCount = products.filter(
+    p => (p.stock ?? 0) <= 5
+  ).length;
+
+  document.getElementById("lowStock").innerText =
+    lowStockCount;
+}
+
+/* =========================
+   SALES TREND (LINE)
+========================= */
+async function loadSalesTrend() {
+  const { data, error } = await db
+    .from("orders")
+    .select("total_amount, created_at")
+    .order("created_at");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const dailySales = {};
+
+  data.forEach(o => {
+    const date = new Date(o.created_at)
+      .toLocaleDateString("en-MY");
+    dailySales[date] =
+      (dailySales[date] || 0) + Number(o.total_amount);
+  });
+
+  new Chart(document.getElementById("salesChart"), {
+    type: "line",
+    data: {
+      labels: Object.keys(dailySales),
+      datasets: [{
+        label: "Sales (RM)",
+        data: Object.values(dailySales),
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
     }
-
-    loadDashboard();
+  });
 }
 
-requireAdmin();
+/* =========================
+   ORDER STATUS (DOUGHNUT)
+========================= */
+async function loadOrderStatusChart() {
+  const { data, error } = await db
+    .from("orders")
+    .select("status");
 
-async function fetchProducts() {
-    const { data, error } = await supabaseClient.from('products').select('*');
-    if (error) return [];
-    return data;
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const statusMap = {};
+  data.forEach(o => {
+    statusMap[o.status] =
+      (statusMap[o.status] || 0) + 1;
+  });
+
+  new Chart(document.getElementById("ordersChart"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(statusMap),
+      datasets: [{
+        data: Object.values(statusMap)
+      }]
+    },
+    options: {
+      plugins: { legend: { position: "bottom" } }
+    }
+  });
 }
 
-async function fetchLowStockProducts() {
-    const { data, error } = await supabaseClient.from('products').select('*').lt('stock', 5);
-    if (error) return [];
-    return data;
-}
+/* =========================
+   RECENT ORDERS TABLE
+========================= */
+async function loadRecentOrders() {
+  // Calculate date 7 days ago
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-async function fetchOrders() {
-    const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false }).limit(7);
-    if (error) return [];
-    return data;
-}
+  const { data, error } = await db
+    .from("orders")
+    .select("id, full_name, total_amount, status, created_at")
+    .gte("created_at", sevenDaysAgo.toISOString()) // filter orders from last 7 days
+    .order("created_at", { ascending: false });
 
-async function fetchTotalSales() {
-    const { data, error } = await supabaseClient
-    .from('orders')
-    .select('total');
-    if (error || !data) return 0;
-    return data.reduce((sum, order) => sum + Number(order.total), 0);
-}
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-async function loadDashboard() {
-    const products = await fetchProducts();
-    const lowStock = await fetchLowStockProducts();
-    const orders = await fetchOrders();
-    const totalSales = await fetchTotalSales();
+  const tbody = document.getElementById("ordersTable");
+  tbody.innerHTML = "";
 
-    document.getElementById('products').textContent = products.length;
-    document.getElementById('lowStock').textContent = lowStock.length;
-    document.getElementById('orders').textContent = orders.length;
-    document.getElementById('sales').textContent = `RM${totalSales.toFixed(2)}`;
+  data.forEach(o => {
+    const date = new Date(o.created_at);
+    const formattedDate = date.toLocaleDateString("en-MY", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+    const formattedTime = date.toLocaleTimeString("en-MY", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-    const table = document.getElementById('ordersTable');
-    table.innerHTML = '';
-    orders.forEach(o => {
-    const tr = document.createElement('tr');
-    tr.className = 'border-t hover:bg-gray-50';
-    tr.innerHTML = `
-        <td class="p-4 font-medium">${o.id}</td>
-        <td class="p-4">${o.customer_name || 'N/A'}</td>
-        <td class="p-4">$${o.total}</td>
-        <td class="p-4 font-semibold ${o.status === 'Completed' ? 'text-green-600' : 'text-accent'}">${o.status}</td>
+    tbody.innerHTML += `
+      <tr class="divide-x hover:bg-gray-50">
+        <td class="p-4 text-xs font-mono text-gray-600 truncate" title="${o.id}">${o.id}</td>
+        <td class="p-4 w-48 truncate" title="${o.full_name}">${o.full_name}</td>
+        <td class="p-4 text-center text-gray-500 text-xs">
+          ${formattedDate}<br><span class="text-[11px]">${formattedTime}</span>
+        </td>
+        <td class="p-4 text-right font-semibold">${Number(o.total_amount).toFixed(2)}</td>
+        <td class="p-4 text-center">
+          <span class="px-3 py-1 rounded-full text-xs font-medium
+            ${o.status === "completed" ? "bg-green-100 text-green-700"
+            : o.status === "pending" ? "bg-yellow-100 text-yellow-700"
+            : "bg-gray-100 text-gray-700"}">
+            ${o.status}
+          </span>
+        </td>
+      </tr>
     `;
-    table.appendChild(tr);
-    });
-
-    // Example charts
-    new Chart(document.getElementById('salesChart'), {
-    type: 'line',
-    data: {
-        labels: orders.map(o => new Date(o.created_at).toLocaleDateString()),
-        datasets: [{
-        data: orders.map(o => Number(o.total)),
-        borderColor: '#023f88',
-        backgroundColor: 'rgba(2,63,136,0.15)',
-        fill: true,
-        tension: 0.4
-        }]
-    },
-    options: { plugins: { legend: { display: false } } }
-    });
-
-    const statusCounts = orders.reduce((acc, o) => {
-    acc[o.status] = (acc[o.status] || 0) + 1;
-    return acc;
-    }, {});
-
-    new Chart(document.getElementById('ordersChart'), {
-    type: 'doughnut',
-    data: {
-        labels: Object.keys(statusCounts),
-        datasets: [{ data: Object.values(statusCounts), backgroundColor: ['#023f88', '#f8941e', '#d1d5db'] }]
-    },
-    options: { cutout: '70%' }
-    });
+  });
 }
 
-loadDashboard();
+
+
