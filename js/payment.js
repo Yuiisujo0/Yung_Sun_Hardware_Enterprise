@@ -1,175 +1,269 @@
 const client = window.supabaseClient;
 
-// ===== Utility Functions =====
-function qs(sel, el = document) { return el.querySelector(sel); }
-function formatRM(n) { return `RM${Number(n || 0).toFixed(2)}`; }
+// =======================
+// Utility Functions
+// =======================
+function qs(sel, el = document) {
+  return el.querySelector(sel);
+}
+function formatRM(n) {
+  return `RM ${Number(n || 0).toFixed(2)}`;
+}
 
-// ===== Load Cart Items =====
+// =======================
+// Cart Handling
+// =======================
 function getCartItems() {
   try {
-    const raw = localStorage.getItem('ys_cart_v1');
+    const raw = localStorage.getItem("ys_cart_v1");
     const obj = raw ? JSON.parse(raw) : {};
     return Object.values(obj);
   } catch (e) {
-    console.error('Failed to load cart', e);
+    console.error("Failed to load cart", e);
     return [];
   }
 }
 
-// ===== Render Order Summary =====
+// =======================
+// Order Summary
+// =======================
 function renderOrderSummary() {
   const items = getCartItems();
   let subtotal = 0;
-  items.forEach(it => subtotal += Number(it.price) * Number(it.qty));
 
-  const tax = subtotal * 0.06; // 6% tax
-  const shipping = 10; // or 0 if free
+  items.forEach(it => {
+    subtotal += Number(it.price) * Number(it.qty);
+  });
+
+  const tax = subtotal * 0.06;
+  const shipping = 10;
   const total = subtotal + tax + shipping;
 
-  qs('#subtotal').textContent = formatRM(subtotal);
-  qs('#tax').textContent = formatRM(tax);
-  qs('#total').textContent = formatRM(total);
+  qs("#subtotal").textContent = formatRM(subtotal);
+  qs("#tax").textContent = formatRM(tax);
+  qs("#total").textContent = formatRM(total);
 }
 
-// ===== Payment Tabs =====
+// =======================
+// Payment Tabs
+// =======================
 function setupPaymentTabs() {
-  const tabs = { tabCard: 'payment-card', tabFPX: 'payment-fpx', tabEwallet: 'payment-ewallet' };
+  const tabs = {
+    tabCard: "payment-card",
+    tabFPX: "payment-fpx",
+    tabEwallet: "payment-ewallet"
+  };
+
   Object.keys(tabs).forEach(tabId => {
-    const btn = qs(`#${tabId}`);
-    btn.addEventListener('click', () => {
+    qs(`#${tabId}`).addEventListener("click", () => {
       Object.keys(tabs).forEach(t => {
-        qs(`#${t}`).classList.remove('bg-orange-50', 'text-orange-600', 'border-orange-500');
-        qs(`#${t}`).classList.add('border-slate-100', 'text-slate-500');
-        qs(`#${tabs[t]}`).classList.add('hidden');
+        qs(`#${t}`).classList.remove(
+          "bg-orange-50",
+          "text-orange-600",
+          "border-orange-500"
+        );
+        qs(`#${t}`).classList.add("text-slate-500", "border-slate-200");
+        qs(`#${tabs[t]}`).classList.add("hidden");
       });
-      btn.classList.add('bg-orange-50', 'text-orange-600', 'border-orange-500');
-      btn.classList.remove('border-slate-100', 'text-slate-500');
-      qs(`#${tabs[tabId]}`).classList.remove('hidden');
+
+      qs(`#${tabId}`).classList.add(
+        "bg-orange-50",
+        "text-orange-600",
+        "border-orange-500"
+      );
+      qs(`#${tabs[tabId]}`).classList.remove("hidden");
+
+      updatePayButton();
+    });
+  });
+
+  qs("#tabCard").click(); // default
+}
+
+// =======================
+// E-Wallet Logic
+// =======================
+let selectedEwallet = null;
+
+const ewalletRadios = document.querySelectorAll("input[name='ewallet']");
+const qrSection = document.getElementById("qrSection");
+const qrImage = document.getElementById("qrImage");
+const payBtn = document.getElementById("payBtn");
+
+function setupEwalletSelection() {
+  ewalletRadios.forEach(radio => {
+    radio.addEventListener("change", () => {
+      selectedEwallet = radio.value;
+
+      ewalletRadios.forEach(r =>
+        r.closest("label").classList.remove(
+          "border-orange-500",
+          "bg-orange-50"
+        )
+      );
+
+      radio.closest("label").classList.add(
+        "border-orange-500",
+        "bg-orange-50"
+      );
+
+      const total = qs("#total").textContent.replace("RM", "").trim();
+
+      qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=YungSun-${selectedEwallet}-RM${total}&color=${selectedEwallet === 'TNG' ? '0055AA' : 'D40054'}`;
+
+      qrSection.classList.remove("hidden");
+      updatePayButton();
     });
   });
 }
 
-// ===== Show Payment Success Modal =====
+function updatePayButton() {
+  const isEwallet = !qs("#payment-ewallet").classList.contains("hidden");
+  
+  if (isEwallet) {
+    payBtn.textContent = "Verify Payment";
+    if (!selectedEwallet) {
+      payBtn.disabled = true;
+      payBtn.classList.add("opacity-50", "cursor-not-allowed");
+    } else {
+      payBtn.disabled = false;
+      payBtn.classList.remove("opacity-50", "cursor-not-allowed");
+    }
+  } else {
+    payBtn.textContent = "Pay Now";
+    payBtn.disabled = false;
+    payBtn.classList.remove("opacity-50", "cursor-not-allowed");
+  }
+}
+
+
+// =======================
+// Success Modal
+// =======================
 function showPaymentModal(message) {
-  let modal = document.createElement('div');
-  modal.id = 'payment-modal';
-  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+  const modal = document.createElement("div");
+  modal.className =
+    "fixed inset-0 bg-black/50 flex items-center justify-center z-50";
   modal.innerHTML = `
-    <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md text-center">
-      <h2 class="text-xl font-bold text-slate-800 mb-4">Payment Successful!</h2>
+    <div class="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md">
+      <h2 class="text-xl font-bold mb-3 text-slate-800">Payment Successful</h2>
       <p class="text-slate-600 mb-6">${message}</p>
-      <button id="backHome" class="bg-orange-600 text-white px-6 py-3 rounded-xl hover:bg-orange-700 transition">Back to Home</button>
+      <button id="goHome"
+        class="bg-orange-600 text-white px-6 py-3 rounded-xl hover:bg-orange-700">
+        Back to Home
+      </button>
     </div>
   `;
   document.body.appendChild(modal);
 
-  qs('#backHome').addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
+  qs("#goHome").onclick = () => {
+    window.location.href = "index.html";
+  };
 
-  // Auto redirect after 10 seconds
-  setTimeout(() => window.location.href = 'index.html', 10000);
+  setTimeout(() => (window.location.href = "index.html"), 10000);
 }
 
-// ===== Handle Payment Submission =====
-qs('#paymentForm').addEventListener('submit', async (e) => {
+// =======================
+// Payment Submit
+// =======================
+qs("#paymentForm").addEventListener("submit", async e => {
   e.preventDefault();
 
   const items = getCartItems();
-  if (!items.length) return alert('Cart is empty');
+  if (!items.length) return alert("Cart is empty");
 
-  const { data: { session }, error: sessionError } = await client.auth.getSession();
-  if (sessionError || !session) {
-    alert('Please login first!');
-    return;
-  }
-  const userId = session.user.id;
+  const { data: { session }, error } = await client.auth.getSession();
+  if (error || !session) return alert("Please login first");
 
-  // Shipping info
   const shipping = {
-    full_name: qs('#fullName').value.trim(),
-    email: qs('#email').value.trim(),
-    address: qs('#address').value.trim(),
-    city: qs('#city').value.trim(),
-    postal_code: qs('#postalCode').value.trim()
+    full_name: qs("#fullName").value.trim(),
+    email: qs("#email").value.trim(),
+    address: qs("#address").value.trim(),
+    city: qs("#city").value.trim(),
+    postal_code: qs("#postalCode").value.trim()
   };
-  if (!shipping.full_name || !shipping.email || !shipping.address || !shipping.city || !shipping.postal_code) {
-    return alert('Please fill all shipping details.');
+
+  if (Object.values(shipping).some(v => !v)) {
+    return alert("Please fill all shipping details");
   }
 
-  // Payment method
-  let paymentMethod = 'Card';
-  if (!qs('#payment-card').classList.contains('hidden')) paymentMethod = 'Card';
-  else if (!qs('#payment-fpx').classList.contains('hidden')) paymentMethod = 'FPX';
-  else if (!qs('#payment-ewallet').classList.contains('hidden')) paymentMethod = 'E-Wallet';
+  let paymentMethod = "Card";
+  if (!qs("#payment-fpx").classList.contains("hidden")) {
+    paymentMethod = "FPX";
+  }
+  if (!qs("#payment-ewallet").classList.contains("hidden")) {
+    if (!selectedEwallet) return alert("Select an E-Wallet");
+    paymentMethod = `E-Wallet (${selectedEwallet})`;
+  }
 
   try {
-    const subtotal = items.reduce((sum, it) => sum + it.price * it.qty, 0);
-    const totalAmount = subtotal * 1.06 + 10; // 6% tax + shipping fee
+    payBtn.disabled = true;
+    payBtn.textContent = "Processing...";
 
-    // 1️⃣ Insert order
-    const { data: orderData, error: orderError } = await client
-      .from('orders')
+    const subtotal = items.reduce(
+      (s, it) => s + it.price * it.qty,
+      0
+    );
+    const totalAmount = subtotal * 1.06 + 10;
+
+    // Insert order
+    const { data: order, error: orderErr } = await client
+      .from("orders")
       .insert([{
-        user_id: userId,
-        full_name: shipping.full_name,
-        email: shipping.email,
-        address: shipping.address,
-        city: shipping.city,
-        postal_code: shipping.postal_code,
+        user_id: session.user.id,
+        ...shipping,
         total_amount: totalAmount,
         payment_method: paymentMethod,
-        status: 'paid'
+        status: "paid"
       }])
       .select()
       .single();
-    if (orderError) throw orderError;
+    if (orderErr) throw orderErr;
 
-    const orderId = orderData.id;
+    // Insert order items
+    await client.from("order_items").insert(
+      items.map(it => ({
+        order_id: order.id,
+        product_id: it.id,
+        name: it.name,
+        price: it.price,
+        qty: it.qty
+      }))
+    );
 
-    // 2️⃣ Insert order_items
-    const orderItems = items.map(it => ({
-      order_id: orderId,
-      product_id: it.id,
-      name: it.name,
-      price: it.price,
-      qty: it.qty
-    }));
-    const { error: itemsError } = await client.from('order_items').insert(orderItems);
-    if (itemsError) throw itemsError;
-
-    // 3️⃣ Decrease product stock
+    // Update stock
     for (let it of items) {
-      const { data: product, error: prodErr } = await client
-        .from('products')
-        .select('stock')
-        .eq('id', it.id)
+      const { data: p } = await client
+        .from("products")
+        .select("stock")
+        .eq("id", it.id)
         .single();
-      if (prodErr) throw prodErr;
 
-      const newStock = product.stock - it.qty;
-      if (newStock < 0) throw new Error(`Insufficient stock for ${it.name}`);
+      if (p.stock < it.qty) throw new Error("Insufficient stock");
 
-      const { error: stockError } = await client
-        .from('products')
-        .update({ stock: newStock })
-        .eq('id', it.id);
-      if (stockError) throw stockError;
+      await client
+        .from("products")
+        .update({ stock: p.stock - it.qty })
+        .eq("id", it.id);
     }
 
-    // 4️⃣ Clear cart
-    localStorage.removeItem('ys_cart_v1');
+    localStorage.removeItem("ys_cart_v1");
     if (window.cartAPI) window.cartAPI.clear();
 
-    // 5️⃣ Show success modal
-    showPaymentModal('Thank you! Your items will be shipped in 3 days. Check your email for order details.');
+    showPaymentModal("Thank you! Your order is confirmed. Please check your email for order details.");
 
   } catch (err) {
-    console.error('Payment failed', err);
-    alert('Payment failed. Check console for details.');
+    console.error(err);
+    alert("Payment failed. Please try again.");
+  } finally {
+    payBtn.disabled = false;
+    payBtn.textContent = "Pay Now";
   }
 });
 
-// ===== Initialize =====
+// =======================
+// Init
+// =======================
 renderOrderSummary();
 setupPaymentTabs();
+setupEwalletSelection();
