@@ -63,7 +63,8 @@
         <input id="addProductPrice" type="number" step="0.01" class="w-full border p-2 rounded" placeholder="Price (RM)">
         <input id="addProductStock" type="number" class="w-full border p-2 rounded" placeholder="Stock">
       </div>
-      <input id="addProductImage" class="w-full border p-2 rounded" placeholder="Image URL">
+      <input id="addProductImage" type="file" accept="image/*"
+        class="w-full border p-2 rounded bg-white">
       <div class="flex flex-wrap justify-end gap-2 pt-4">
         <button onclick="closeAddModal()" class="px-4 py-2 border rounded">Cancel</button>
         <button onclick="saveAddProduct()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded">Save Product</button>
@@ -82,7 +83,8 @@
         <input id="editProductPrice" type="number" step="0.01" class="w-full border p-2 rounded" placeholder="Price (RM)">
         <input id="editProductStock" type="number" class="w-full border p-2 rounded" placeholder="Stock">
       </div>
-      <input id="editProductImage" class="w-full border p-2 rounded" placeholder="Image URL">
+      <input id="editProductImage" type="file" accept="image/*"
+        class="w-full border p-2 rounded bg-white">
       <div class="flex flex-wrap justify-end gap-2 pt-4">
         <button onclick="closeEditModal()" class="px-4 py-2 border rounded">Cancel</button>
         <button onclick="saveEditProduct()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded">Save Changes</button>

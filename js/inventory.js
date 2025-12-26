@@ -18,8 +18,10 @@ const editImage = document.getElementById('editProductImage');
 
 const inventoryTable = document.getElementById('inventoryTable');
 const notification = document.getElementById('notification');
+const addButton = document.getElementById('addProductBtn'); // your Add button
 
 let editingId = null;
+let isReady = false; // auth/storage ready
 
 // ---------- ADMIN GUARD ----------
 async function requireAdmin() {
@@ -34,25 +36,37 @@ async function requireAdmin() {
 
   if (data?.role !== 'admin') location.href = "index.html";
 
+  // warm up storage & dummy DB query
+  try { 
+    await supabaseClient.storage.from('Product Images').list('', { limit: 1 });
+    await supabaseClient.from('products').select('id').limit(1);
+  } catch(e) { console.log("Warm-up failed", e); }
+
+  isReady = true;
+  enableButtons();
   loadInventory();
 }
 requireAdmin();
 
+function enableButtons() {
+  if (addButton) addButton.disabled = false;
+  document.querySelectorAll('.btn-edit, .btn-delete').forEach(b => b.disabled = false);
+}
+
 // ---------- FETCH & DISPLAY ----------
-async function loadInventory() {
+async function loadInventory(limit = 50) {
   const { data, error } = await supabaseClient
     .from('products')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(limit);
 
   if (error) return console.error(error);
 
   inventoryTable.innerHTML = '';
-
   data.forEach(p => {
     const tr = document.createElement('tr');
     tr.className = 'border-t hover:bg-gray-50 align-middle';
-
     tr.innerHTML = `
       <td class="p-4">
         <div class="flex items-center gap-3">
@@ -67,10 +81,10 @@ async function loadInventory() {
       <td class="p-4 text-center">RM ${Number(p.price).toFixed(2)}</td>
       <td class="p-4 text-center ${p.stock < 5 ? 'text-red-600 font-bold' : ''}">${p.stock}</td>
       <td class="p-4 text-center space-x-2">
-        <button onclick="openEditModal('${p.id}')" class="text-blue-600">
+        <button onclick="openEditModal('${p.id}')" class="text-blue-600 btn-edit">
           <i class="bx bx-edit text-xl"></i>
         </button>
-        <button onclick="deleteProduct('${p.id}')" class="text-red-600">
+        <button onclick="deleteProduct('${p.id}')" class="text-red-600 btn-delete">
           <i class="bx bx-trash text-xl"></i>
         </button>
       </td>
@@ -79,127 +93,148 @@ async function loadInventory() {
   });
 }
 
-// ---------- MODALS ----------
-function openAddModal() {
-  addName.value = '';
-  addCategory.value = '';
-  addDescription.value = '';
-  addPrice.value = '';
-  addStock.value = '';
-  addImage.value = '';
-  addModal.classList.remove('hidden');
+// ---------- IMAGE RESIZE & UPLOAD ----------
+async function resizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e => img.src = e.target.result;
+    reader.onerror = reject;
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > height && width > maxWidth) { height *= maxWidth/width; width=maxWidth; }
+      if (height >= width && height > maxHeight) { width *= maxHeight/height; height=maxHeight; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: file.type })), file.type, quality);
+    };
+    reader.readAsDataURL(file);
+  });
 }
-function closeAddModal() { addModal.classList.add('hidden'); }
 
-function openEditModal(id) {
-  fetchProduct(id);
+async function uploadImage(file) {
+  if (!file) return null;
+  const resizedFile = await resizeImage(file);
+  const fileExt = resizedFile.name.split('.').pop();
+  const fileName = `${Date.now()}.${fileExt}`;
+  const filePath = `products/${fileName}`;
+  const { error } = await supabaseClient.storage
+    .from('Product Images')
+    .upload(filePath, resizedFile, { cacheControl: '3600', upsert: false });
+  if (error) throw error;
+  const { data } = supabaseClient.storage
+    .from('Product Images')
+    .getPublicUrl(filePath);
+  return data.publicUrl;
 }
+
+// ---------- MODALS ----------
+function openAddModal() { addName.value=addCategory.value=addDescription.value=addPrice.value=addStock.value=addImage.value=''; addModal.classList.remove('hidden'); }
+function closeAddModal() { addModal.classList.add('hidden'); }
+function openEditModal(id) { fetchProduct(id); }
 function closeEditModal() { editModal.classList.add('hidden'); }
 
 // ---------- SAVE ADD ----------
-async function saveAddProduct() {
-  const payload = {
-    name: addName.value.trim(),
-    category: addCategory.value.trim(),
-    description: addDescription.value.trim(),
-    price: Number(addPrice.value),
-    stock: Number(addStock.value),
-    image_url: addImage.value.trim()
-  };
-  if (!payload.name || !payload.price) { alert('Name and price are required'); return; }
-
+window.saveAddProduct = async function() {
+  if (!isReady) { alert("Please wait until the page is fully loaded"); return; }
   try {
-    await supabaseClient.from('products').insert(payload);
+    let file = addImage.files[0];
+    const payload = {
+      name: addName.value.trim(),
+      category: addCategory.value.trim(),
+      description: addDescription.value.trim(),
+      price: Number(addPrice.value),
+      stock: Number(addStock.value),
+      image_url: file ? 'https://via.placeholder.com/60' : null
+    };
+    if (!payload.name || !payload.price) { alert('Name and price are required'); return; }
+    const { data: inserted, error: insertError } = await supabaseClient
+      .from('products')
+      .insert(payload)
+      .select()
+      .single();
+    if (insertError) throw insertError;
     showNotification("Product added successfully!");
     loadInventory();
     closeAddModal();
-  } catch (error) {
-    console.error('Failed to add product:', error);
-    alert('Error adding product: ' + error.message);
-  }
+    if (file) {
+      const imageUrl = await uploadImage(file);
+      await supabaseClient.from('products').update({ image_url: imageUrl }).eq('id', inserted.id);
+      loadInventory();
+    }
+  } catch (error) { console.error(error); alert("Failed to add product"); }
 }
 
 // ---------- SAVE EDIT ----------
 async function saveEditProduct() {
-  const payload = {
-    name: editName.value.trim(),
-    category: editCategory.value.trim(),
-    description: editDescription.value.trim(),
-    price: Number(editPrice.value),
-    stock: Number(editStock.value),
-    image_url: editImage.value.trim()
-  };
-  if (!payload.name || !payload.price) { alert('Name and price are required'); return; }
-
+  if (!isReady) { alert("Please wait until the page is fully loaded"); return; }
   try {
+    let file = editImage.files[0];
+    let imageUrl = editImage.dataset.current || null;
+    const payload = {
+      name: editName.value.trim(),
+      category: editCategory.value.trim(),
+      description: editDescription.value.trim(),
+      price: Number(editPrice.value),
+      stock: Number(editStock.value),
+      image_url: file ? 'https://via.placeholder.com/60' : imageUrl
+    };
     await supabaseClient.from('products').update(payload).eq('id', editingId);
     showNotification("Product updated successfully!");
     loadInventory();
     closeEditModal();
-  } catch (error) {
-    console.error('Failed to update product:', error);
-    alert('Error updating product: ' + error.message);
-  }
+    if (file) {
+      const newUrl = await uploadImage(file);
+      await supabaseClient.from('products').update({ image_url: newUrl }).eq('id', editingId);
+      loadInventory();
+    }
+  } catch (error) { console.error(error); alert("Failed to update product"); }
 }
 
 // ---------- FETCH PRODUCT FOR EDIT ----------
 async function fetchProduct(id) {
   const { data, error } = await supabaseClient.from('products').select('*').eq('id', id).single();
   if (error || !data) { alert('Failed to load product'); return; }
-
   editingId = data.id;
   editName.value = data.name || '';
   editCategory.value = data.category || '';
   editDescription.value = data.description || '';
   editPrice.value = data.price || '';
   editStock.value = data.stock || '';
-  editImage.value = data.image_url || '';
-
+  editImage.value = '';
+  editImage.dataset.current = data.image_url || '';
   editModal.classList.remove('hidden');
 }
 
 // ---------- DELETE ----------
 async function deleteProduct(id) {
+  if (!isReady) { alert("Please wait until the page is fully loaded"); return; }
   const confirmed = window.confirm("Are you sure you want to delete this product?");
   if (!confirmed) return;
-
   try {
     await supabaseClient.from('products').delete().eq('id', id);
     loadInventory();
-    showNotification("Product deleted successfully!", 3000, "success"); // ✅ green bottom-right
+    showNotification("Product deleted successfully!", 5000, "success");
   } catch (error) {
     console.error("Failed to delete product:", error);
-    showNotification("Error deleting product: " + error.message, 5000, "error"); // red notification
+    showNotification("Error deleting product: " + error.message, 5000, "error");
   }
 }
 
 // ---------- NOTIFICATION ----------
-function showNotification(message = "Update successful!", duration = 3000, type = "success") {
+function showNotification(message="Update successful!", duration=5000, type="success") {
   const notification = document.getElementById('notification');
-
-  if (!notification) return; // safety check
-
-  // Set text
+  if (!notification) return;
   notification.textContent = message;
-
-  // Reset classes
   notification.className = `fixed bottom-6 right-6 text-white px-4 py-2 rounded shadow-lg z-50 transition-opacity duration-300`;
-
-  // Set color
-  if (type === "success") notification.classList.add("bg-green-600");
-  if (type === "error") notification.classList.add("bg-red-600");
-  if (type === "warning") notification.classList.add("bg-yellow-600");
-
-  // Show notification
+  if (type==="success") notification.classList.add("bg-green-600");
+  if (type==="error") notification.classList.add("bg-red-600");
+  if (type==="warning") notification.classList.add("bg-yellow-600");
   notification.classList.remove("hidden");
   notification.classList.add("opacity-100");
-
-  // Hide after duration
   setTimeout(() => {
     notification.classList.remove("opacity-100");
-    setTimeout(() => notification.classList.add("hidden"), 300);
+    setTimeout(()=>notification.classList.add("hidden"), 300);
   }, duration);
 }
-
-
-
