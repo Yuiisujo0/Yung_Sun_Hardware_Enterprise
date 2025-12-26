@@ -1,32 +1,40 @@
+<!-- ================= NAVBAR ================= -->
 <nav id="navbar" class="fixed top-0 w-full bg-white z-50 transition-shadow duration-300">
   <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between relative">
 
-    <!-- Logo + Brand -->
+    <!-- ===== Logo + Brand ===== -->
     <div class="flex items-center gap-4">
       <a href="index.html" class="flex items-center gap-3">
-        <img src="assets/Yung_Sun_logo3_round.png" alt="Yung Sun Hardware Logo" class="h-11 md:h-10 w-auto" />
+        <img src="assets/Yung_Sun_logo3_round.png" alt="Yung Sun Hardware Logo"
+          class="h-11 md:h-10 w-auto" />
       </a>
 
-      <!-- Desktop Brand Name -->
+      <!-- Desktop Brand -->
       <a href="index.html" class="hidden md:inline text-xl font-bold whitespace-nowrap">
         <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
         <span class="text-[#023f88]"> Hardware Enterprise</span>
       </a>
 
-      <!-- Mobile Brand Name -->
+      <!-- Mobile Brand -->
       <a href="index.html" class="md:hidden text-xl font-bold whitespace-nowrap">
         <span class="text-[#f8941e] font-extrabold">YUNG SUN</span>
       </a>
     </div>
 
-    <!-- Center Menu (Desktop) -->
+    <!-- ===== Desktop Center Menu ===== -->
     <div class="hidden md:flex items-center gap-10 absolute left-1/2 -translate-x-1/2">
+
       <!-- Home Dropdown -->
       <div class="relative group">
-        <button class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+        <button class="flex items-center gap-2 font-medium transition-colors duration-300 hover:text-orange-500">
           <i class="bx bx-home text-lg"></i> Home
         </button>
-        <div class="absolute top-8 left-0 bg-white shadow rounded w-40 opacity-0 invisible pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto transition-all duration-300 ease-in-out delay-100">
+
+        <div
+          class="absolute top-8 left-0 bg-white shadow rounded w-40 opacity-0 invisible pointer-events-none
+                 group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
+                 transition-all duration-300 ease-in-out delay-100">
+
           <a href="index.html#hero" class="block px-4 py-2 hover:bg-gray-100 nav-link">Home</a>
           <a href="index.html#about" class="block px-4 py-2 hover:bg-gray-100 nav-link">About</a>
           <a href="index.html#contact" class="block px-4 py-2 hover:bg-gray-100 nav-link">Contact</a>
@@ -34,20 +42,23 @@
       </div>
 
       <!-- Shop -->
-      <a href="shop.html" class="flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+      <a href="shop.html" class="flex items-center gap-2 font-medium transition-colors duration-300 hover:text-orange-500">
         <i class="bx bx-store text-lg"></i> Shop
       </a>
 
       <!-- Admin (Desktop) -->
-      <a href="admin.html" id="adminMenu" class="hidden flex items-center gap-2 font-medium hover:text-orange-500 transition-colors duration-300">
+      <a href="admin.html" id="adminMenu"
+        class="hidden flex items-center gap-2 font-medium transition-colors duration-300 hover:text-orange-500">
         <i class="bx bx-shield-quarter text-lg"></i> Admin
       </a>
     </div>
 
-    <!-- Right Icons -->
+    <!-- ===== Right Icons ===== -->
     <div class="flex items-center gap-4 text-xl">
-      <!-- Desktop Icons -->
+
+      <!-- ===== Desktop Icons ===== -->
       <div class="hidden md:flex items-center gap-5">
+
         <!-- Welcome Text -->
         <span id="welcomeUser"
           class="hidden text-base font-medium text-gray-600 whitespace-nowrap">
@@ -56,47 +67,73 @@
 
         <!-- Profile Icon -->
         <a href="profile.html" aria-label="User Profile" class="flex items-center gap-2">
-          <i class="bx bx-user cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
+          <i class="bx bx-user cursor-pointer transition-colors duration-300 hover:text-orange-500 transform hover:scale-110"></i>
         </a>
 
-        <!--cart icon-->
+        <!-- Cart -->
         <div class="relative">
-          <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
-          <span class="cart-badge hidden absolute -top-2 -right-2 bg-red-600 text-white text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+          <i class="bx bx-cart cursor-pointer transition-colors duration-300 hover:text-orange-500 transform hover:scale-110"></i>
+          <span
+            class="cart-badge hidden absolute -top-2 -right-2 bg-red-600 text-white text-[11px]
+                   font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            0
+          </span>
         </div>
-        
+
         <!-- Logout -->
-          <button id="logoutBtn"
-            title="Logout"
-            class="hidden ml-6">
-            <i class="bx bx-log-out cursor-pointer hover:text-red-500 transition-colors duration-300 transform hover:scale-110"></i>
-          </button>
+        <button id="logoutBtn" title="Logout" class="hidden ml-6">
+          <i class="bx bx-log-out cursor-pointer transition-colors duration-300 hover:text-red-500 transform hover:scale-110"></i>
+        </button>
       </div>
 
-  
-      <!-- Mobile Icons -->
+      <!-- ===== Mobile Icons ===== -->
       <div class="md:hidden flex items-center gap-4">
+
+        <!-- Cart -->
         <div class="relative">
-          <i class="bx bx-cart cursor-pointer hover:text-orange-500 transition-colors duration-300 transform hover:scale-110"></i>
-          <span class="cart-badge hidden absolute -top-2 -right-2 bg-red-600 text-white text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full">0</span>
+          <i class="bx bx-cart cursor-pointer transition-colors duration-300 hover:text-orange-500 transform hover:scale-110"></i>
+          <span
+            class="cart-badge hidden absolute -top-2 -right-2 bg-red-600 text-white text-[11px]
+                   font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            0
+          </span>
         </div>
+
+        <!-- Hamburger Button -->
         <button id="menuBtn" class="text-3xl">
           <i class="bx bx-menu"></i>
         </button>
       </div>
     </div>
-
   </div>
 </nav>
 
+
 <!-- ================= MOBILE MENU ================= -->
-<div id="mobileMenu" class="fixed top-16 w-full bg-white shadow-md md:hidden z-40 overflow-hidden transition-transform duration-300 ease-in-out -translate-y-full">
-  <a href="index.html#hero" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Home</a>
-  <a href="index.html#about" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">About</a>
-  <a href="index.html#contact" class="block px-6 py-4 hover:bg-gray-100 nav-link transition-colors duration-300">Contact</a>
-  <a href="profile.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Profile</a> 
-  <a href="admin.html" id="adminMenuMobile" class="hidden block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">
-    <i class="bx bx-shield-quarter mr-2"></i> Admin
+<div id="mobileMenu"
+  class="fixed top-16 w-full bg-white shadow-md md:hidden hidden z-40 overflow-hidden
+         transition-transform duration-300 ease-in-out -translate-y-full">
+
+  <a href="index.html#hero" class="flex items-center gap-2 px-6 py-4 hover:bg-gray-100 nav-link">
+    <i class="bx bx-home text-lg"></i> Home
   </a>
-  <a href="shop.html" class="block px-6 py-4 hover:bg-gray-100 transition-colors duration-300">Shop</a>
+  <a href="index.html#about" class="flex items-center gap-2 px-6 py-4 hover:bg-gray-100 nav-link">
+    <i class="bx bx-info-circle text-lg"></i> About
+  </a>
+  <a href="index.html#contact" class="flex items-center gap-2 px-6 py-4 hover:bg-gray-100 nav-link">
+    <i class="bx bx-envelope text-lg"></i> Contact
+  </a>
+  <a href="profile.html" class="flex items-center gap-2 px-6 py-4 hover:bg-gray-100">
+    <i class="bx bx-user text-lg"></i> Profile
+  </a>
+
+  <!-- Admin (Mobile) -->
+  <a href="admin.html" id="adminMenuMobile"
+    class="hidden flex items-center gap-2 px-6 py-4 hover:bg-gray-100">
+    <i class="bx bx-shield-quarter text-lg"></i> Admin
+  </a>
+
+  <a href="shop.html" class="flex items-center gap-2 px-6 py-4 hover:bg-gray-100">
+    <i class="bx bx-store text-lg"></i> Shop
+  </a>
 </div>

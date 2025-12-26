@@ -161,15 +161,37 @@ function bindAuthListener() {
 
 /* -------------------- Small UI wiring -------------------- */
 function initSmallUI() {
-  // Mobile menu
+  // ===== Mobile menu =====
   const menuBtn = document.getElementById('menuBtn');
   const mobileMenu = document.getElementById('mobileMenu');
   if (menuBtn && mobileMenu) {
-    const newBtn = menuBtn.cloneNode(true);
-    menuBtn.parentNode.replaceChild(newBtn, menuBtn);
-    newBtn.addEventListener('click', () => {
+    const icon = menuBtn.querySelector('i');
+
+    // Toggle menu
+    menuBtn.addEventListener('click', () => {
       mobileMenu.classList.toggle('hidden');
       mobileMenu.classList.toggle('-translate-y-full');
+
+      // Hamburger → X animation
+      if (icon) {
+        icon.classList.toggle('bx-menu');
+        icon.classList.toggle('bx-x');
+      }
+
+      // Lock/unlock body scroll
+      document.body.classList.toggle('overflow-hidden');
+    });
+
+    // Auto-close when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden', '-translate-y-full');
+        if (icon) {
+          icon.classList.add('bx-menu');
+          icon.classList.remove('bx-x');
+        }
+        document.body.classList.remove('overflow-hidden');
+      });
     });
   }
 
