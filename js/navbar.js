@@ -15,15 +15,39 @@ function hideWelcomeUser() {
 }
 
 /* -------------------- Logout Button -------------------- */
+/* -------------------- Logout Button -------------------- */
 function showLogoutBtn() {
   const btn = document.getElementById('logoutBtn');
-  if (btn) btn.classList.remove('hidden');
+  if (!btn) return;
+
+  btn.classList.remove('hidden');
+
+  // Attach click listener only once
+  if (!btn._bound) {
+    btn.addEventListener('click', async () => {
+      const client = window.supabaseClient;
+      if (!client) return;
+
+      try {
+        await client.auth.signOut();
+        hideLogoutBtn();
+        hideWelcomeUser();
+        setAdminVisible(false);
+        cacheRole('user');
+        window.location.href = 'index.html';
+      } catch (err) {
+        console.error('Logout failed:', err);
+      }
+    });
+    btn._bound = true;
+  }
 }
 
 function hideLogoutBtn() {
   const btn = document.getElementById('logoutBtn');
   if (btn) btn.classList.add('hidden');
 }
+
 
 function bindLogout() {
   const btn = document.getElementById('logoutBtn');
