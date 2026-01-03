@@ -1,6 +1,15 @@
 // js/navbar.js
-// Rewritten navbar loader + auth + UI wiring
-// Assumes js/supabase.js initializes window.supabaseClient and may dispatch 'supabase:ready'
+// Rewritten navbar loader + auth + UI wiring with cart migration/isolation fix.
+//
+// Behaviors added:
+// - When a session is detected, migrate the anonymous cart into a per-user cart if a
+//   migration API is available (window.cartAPI.migrateAnonymousToUser).
+// - If migrateAnonymousToUser is not available, fallback to moving the anonymous localStorage
+//   key ('ys_cart_v1') to a user-scoped key ('ys_cart_v1_user_<userId>') to avoid cart leakage
+//   between accounts.
+// - After migration/fallback move, dispatch 'cart:changed' so cart UI updates (drawer/badges).
+//
+// Assumes js/supabase.js initializes window.supabaseClient and may dispatch 'supabase:ready'.
 
 const ROLE_KEY = 'ys_role_v1';
 const ROLE_TTL = 1000 * 60 * 5;
@@ -51,13 +60,15 @@ function showLogoutBtn() {
   if (btn._bound) return;
   btn.addEventListener('click', async () => {
     const client = window.supabaseClient;
-    if (!client) return window.location.href = 'index.html';
+    if (!client) { window.location.href = 'index.html'; return; }
     try {
       await client.auth.signOut();
       hideLogoutBtn();
       hideWelcomeUser();
       setAdminVisible(false);
       cacheRole('user');
+      // optionally clear user-scoped cart on sign-out - commented by default
+      // window.cartAPI?.clear();
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed', err); }
   });
@@ -66,6 +77,52 @@ function showLogoutBtn() {
 function hideLogoutBtn() {
   const btn = document.getElementById('logoutBtn');
   if (btn) btn.classList.add('hidden');
+}
+
+/* -------------------- Cart migration helpers -------------------- */
+const ANON_CART_KEY = 'ys_cart_v1';
+function dispatchCartChanged() {
+  try {
+    document.dispatchEvent(new CustomEvent('cart:changed', { detail: { time: Date.now() } }));
+  } catch (e) {}
+}
+
+/*
+  fallbackMoveAnonCartToUser:
+  - If cartAPI.migrateAnonymousToUser is not available, this moves the raw JSON
+    from 'ys_cart_v1' to 'ys_cart_v1_user_<userId>' and removes the anon key.
+  - Returns true if something was moved, false otherwise.
+*/
+function fallbackMoveAnonCartToUser(userId) {
+  if (!userId) return false;
+  try {
+    const raw = localStorage.getItem(ANON_CART_KEY);
+    if (!raw) return false;
+    const userKey = `${ANON_CART_KEY}_user_${userId}`;
+    // If user already has a cart key, merge quantities:
+    const existingRaw = localStorage.getItem(userKey);
+    if (!existingRaw) {
+      localStorage.setItem(userKey, raw);
+    } else {
+      const anon = JSON.parse(raw || '{}');
+      const userCart = JSON.parse(existingRaw || '{}');
+      Object.keys(anon).forEach(k => {
+        if (!anon[k] || !anon[k].id) return;
+        if (userCart[k]) {
+          userCart[k].qty = (Number(userCart[k].qty || 0) + Number(anon[k].qty || 0));
+        } else {
+          userCart[k] = anon[k];
+        }
+      });
+      localStorage.setItem(userKey, JSON.stringify(userCart));
+    }
+    // remove anonymous cart to prevent leakage
+    localStorage.removeItem(ANON_CART_KEY);
+    return true;
+  } catch (err) {
+    console.warn('fallbackMoveAnonCartToUser failed', err);
+    return false;
+  }
 }
 
 /* -------------------- Auth initialization -------------------- */
@@ -80,7 +137,6 @@ async function initAuthAndRole() {
     return;
   }
 
-  // Check session
   try {
     const { data: { session } } = await client.auth.getSession();
     const profileAnchor = document.querySelector('a[aria-label="User Profile"], a[href="profile.html"]');
@@ -91,16 +147,33 @@ async function initAuthAndRole() {
       hideWelcomeUser();
       hideLogoutBtn();
       cacheRole('user');
+      // On signed-out state we may want to show anon cart - nothing else necessary
       return;
     }
 
-    // Logged in
+    // Logged in: ensure profile link points to profile
     if (profileAnchor) {
       profileAnchor.setAttribute('href', 'profile.html');
       profileAnchor.title = session.user.email || '';
     }
 
-    // Fetch profile row (role, full_name)
+    // Attempt to migrate/associate anonymous cart into user's cart to avoid leakage
+    try {
+      if (window.cartAPI?.migrateAnonymousToUser) {
+        // preferred flow if cart module implements migration
+        await window.cartAPI.migrateAnonymousToUser(session.user.id);
+        // cart module should fire cart change events; ensure UI updated
+        dispatchCartChanged();
+      } else {
+        // fallback: move anon raw storage into user-scoped key
+        const moved = fallbackMoveAnonCartToUser(session.user.id);
+        if (moved) dispatchCartChanged();
+      }
+    } catch (err) {
+      console.warn('Cart migration attempt failed', err);
+    }
+
+    // Load profile row (role, full_name)
     const { data: profile, error } = await client
       .from('profiles')
       .select('role, full_name')
@@ -130,14 +203,21 @@ function bindAuthListener() {
   window.__ysAuthListenerBound = true;
 
   client.auth.onAuthStateChange(async (event) => {
-    // Update UI on sign in / out
+    console.log('[Auth change]', event);
+
     if (event === 'SIGNED_OUT') {
+      // On sign out: hide admin UI and welcome; leave anon cart in place (so browser retains it).
+      // If you prefer to clear cart on sign-out, uncomment the next line:
+      // window.cartAPI?.clear?.();
       setAdminVisible(false);
       hideWelcomeUser();
       hideLogoutBtn();
       cacheRole('user');
+      dispatchCartChanged(); // notify listeners that cart context may have changed
       return;
     }
+
+    // On sign-in or other auth change, re-init auth UI and attempt cart migration
     await initAuthAndRole();
   });
 }
@@ -376,6 +456,9 @@ function bindLogout() {
       hideWelcomeUser();
       setAdminVisible(false);
       cacheRole('user');
+      // optionally clear cart on logout:
+      // if (window.cartAPI?.clear) window.cartAPI.clear();
+      dispatchCartChanged();
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed:', err); }
   });
