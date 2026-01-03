@@ -1,3 +1,6 @@
+// js/navbar.js
+// Navbar + auth + small UI wiring
+
 const ROLE_KEY = 'ys_role_v1';
 const ROLE_TTL = 1000 * 60 * 5;
 
@@ -14,7 +17,6 @@ function hideWelcomeUser() {
   if (el) el.classList.add('hidden');
 }
 
-/* -------------------- Logout Button -------------------- */
 /* -------------------- Logout Button -------------------- */
 function showLogoutBtn() {
   const btn = document.getElementById('logoutBtn');
@@ -47,7 +49,6 @@ function hideLogoutBtn() {
   const btn = document.getElementById('logoutBtn');
   if (btn) btn.classList.add('hidden');
 }
-
 
 function bindLogout() {
   const btn = document.getElementById('logoutBtn');
@@ -249,6 +250,88 @@ function initSmallUI() {
     dropdownMenu.addEventListener('mouseleave', hide);
 
     dropdownButton._dropdownBound = true;
+  }
+
+  // Highlight active nav item based on current page
+  highlightActiveNav();
+}
+
+/* -------------------- Highlight active nav item -------------------- */
+/*
+  Logic:
+  - Home (index) active when on index.html or when path is root or when hash anchors to index sections.
+  - Shop active when on shop.html OR product-details.html (we want Shop highlighted when viewing product pages).
+  - Admin active when on admin.html
+  - This function adds a consistent 'active' appearance by applying the orange text color
+    to the link and its icon (adds class text-[#f8941e] and font-semibold).
+*/
+function highlightActiveNav() {
+  try {
+    const path = window.location.pathname.split('/').pop() || 'index.html';
+    const hrefs = {
+      home: ['index.html', ''],
+      shop: ['shop.html', 'product-details.html'],
+      admin: ['admin.html', 'inventory.html']
+    };
+
+    // Utility to clear any previous active styling
+    function clearActive() {
+      document.querySelectorAll('#navbar a, #navbar button, #mobileMenu a').forEach(el => {
+        el.classList.remove('text-[#f8941e]', 'font-semibold');
+        // also remove from icon child
+        const icon = el.querySelector('i');
+        if (icon) icon.classList.remove('text-[#f8941e]', 'font-semibold');
+      });
+    }
+
+    // Apply active styling to a given selector (link or button element)
+    function applyActive(el) {
+      if (!el) return;
+      el.classList.add('text-[#f8941e]', 'font-semibold');
+      const icon = el.querySelector('i');
+      if (icon) icon.classList.add('text-[#f8941e]');
+    }
+
+    clearActive();
+
+    // Find and mark the matching nav item
+    if (hrefs.home.includes(path) || (path === 'index.html' && location.hash)) {
+      // mark Home - desktop button and mobile links
+      const desktopHomeBtn = document.querySelector('#navbar .group > button') || document.querySelector('#navbar a[href="index.html"]');
+      const mobileHomeLink = document.querySelector('#mobileMenu a[href^="index.html#"], #mobileMenu a[href="index.html"]');
+      applyActive(desktopHomeBtn);
+      applyActive(mobileHomeLink);
+      return;
+    }
+
+    if (hrefs.shop.includes(path)) {
+      const desktopShop = document.querySelector('#navbar a[href="shop.html"]');
+      const mobileShop = document.querySelector('#mobileMenu a[href="shop.html"]');
+      applyActive(desktopShop);
+      applyActive(mobileShop);
+      return;
+    }
+
+    if (hrefs.admin.includes(path)) {
+      const desktopAdmin = document.getElementById('adminMenu') || document.querySelector('#navbar a[href="admin.html"]');
+      const mobileAdmin = document.getElementById('adminMenuMobile') || document.querySelector('#mobileMenu a[href="admin.html"]');
+      applyActive(desktopAdmin);
+      applyActive(mobileAdmin);
+      return;
+    }
+
+    // Fallback: if no exact match, try to match by pathname contains (covers query params)
+    if (window.location.pathname.includes('product-details')) {
+      const desktopShop = document.querySelector('#navbar a[href="shop.html"]');
+      const mobileShop = document.querySelector('#mobileMenu a[href="shop.html"]');
+      applyActive(desktopShop);
+      applyActive(mobileShop);
+      return;
+    }
+
+    // If none matched, leave default (no forced active)
+  } catch (err) {
+    console.warn('highlightActiveNav failed', err);
   }
 }
 

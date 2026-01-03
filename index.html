@@ -22,12 +22,12 @@
     @keyframes zoomIn {
       from {
         opacity: 0;
-        transform: scale(0.8);  /* Start smaller */
+        transform: scale(0.8);
       }
 
       to {
         opacity: 1;
-        transform: scale(1);  /* End at normal size */
+        transform: scale(1);
       }
     }
 
@@ -73,69 +73,79 @@
     /*Shop Category*/
     /* Tabs */
     .tab-btn {
-        padding: 0.5rem 1.5rem;
-        border-radius: 0.375rem; 
-        font-weight: 600;
-        border: 2px solid #f97316;
-        color: #f97316;
-        background: white;
-        transition: all 0.3s ease;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      border: 2px solid #f97316;
+      color: #f97316;
+      background: white;
+      transition: all 0.3s ease;
     }
 
     .tab-btn:hover {
-    background-color: #f8941e;
-    color: white;
+      background-color: #f8941e;
+      color: white;
     }
 
     .active-tab {
-    background-color: #f8941e;
-    color: white;
+      background-color: #f8941e;
+      color: white;
     }
 
     /* restore dropdown visibility utility classes used in navbar partial */
-    .visibility-hidden { visibility: hidden; }
-    .visibility-visible { visibility: visible; }
+    .visibility-hidden {
+      visibility: hidden;
+    }
+
+    .visibility-visible {
+      visibility: visible;
+    }
 
     /* ensure pointer-events utility names exist as used in HTML */
-    .pointer-events-none { pointer-events: none; }
-    .pointer-events-auto { pointer-events: auto; }
+    .pointer-events-none {
+      pointer-events: none;
+    }
+
+    .pointer-events-auto {
+      pointer-events: auto;
+    }
 
     /* Category cards */
     .category-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    text-align: center;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .category-card img {
-    height: 96px;
-    margin: 0 auto 1rem;
+      height: 96px;
+      margin: 0 auto 1rem;
     }
 
     .category-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
     }
 
     /*About Us*/
     #about-title {
-      white-space: nowrap; /* Prevents breaking the words */
-      word-spacing: 0.25rem; /* Optional: adjusts space between words */
+      white-space: nowrap;
+      word-spacing: 0.25rem;
     }
 
     .letter {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(-50px);
-    transition: all 0.5s ease;
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(-50px);
+      transition: all 0.5s ease;
     }
 
     .letter.show {
-    opacity: 1;
-    transform: translateY(0);
+      opacity: 1;
+      transform: translateY(0);
     }
 
   </style>
@@ -148,23 +158,23 @@
 
   <!-- ================= HERO SECTION ================= -->
   <section id="hero" class="h-screen bg-cover bg-center flex items-center pt-10 md:pt-20 "
-    style="background-image: url('assets/background_01_png.png');">
+    style="background-image: url('assets/background_01_png.webp');">
     <div class="max-w-7xl mx-auto px-6 flex flex-col items-center justify-center w-full text-center">
 
       <!-- Logo -->
-      <img src="assets/Yung_Sun_logo2.png" alt="Yung Sun Hardware Logo"
+      <img src="assets/Yung_Sun_logo2.webp" alt="Yung Sun Hardware Logo"
         class="w-[280px] md:w-[420px] lg:w-[520px] drop-shadow-2xl opacity-0 animate-zoomIn" />
 
       <!-- Tagline / Categories -->
       <div class="mt-6 text-white text-sm md:text-base lg:text-lg font-semibold flex flex-wrap justify-center gap-x-3 gap-y-2">
         <a href="shop.html?category=Tools" class="hover:text-orange-300 transition">Tools</a>
-          <span>|</span>
+        <span>|</span>
         <a href="shop.html?category=Fasteners" class="hover:text-orange-300 transition">Fasteners</a>
-          <span>|</span>
+        <span>|</span>
         <a href="shop.html?category=Fittings" class="hover:text-orange-300 transition">Fittings</a>
-          <span>|</span>
+        <span>|</span>
         <a href="shop.html?category=Plumbing%20%26%20Electrical" class="hover:text-orange-300 transition">Plumbing &amp; Electrical</a>
-          <span>|</span>
+        <span>|</span>
         <a href="shop.html?category=Building Materials" class="hover:text-orange-300 transition">Building Materials</a>
       </div>
 
@@ -177,159 +187,69 @@
     </div>
   </section>
 
-    <!-- ================= SHOP BY CATEGORY ================= -->
-    <section class="py-24 px-6 bg-gray-100">
-      <div class="max-w-7xl mx-auto">
+  <!-- ================= SHOP BY CATEGORY ================= -->
+  <section class="py-24 px-6 bg-gray-100">
+    <div class="max-w-7xl mx-auto">
 
-        <!-- ===== HEADER ===== -->
-        <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
-          <div>
-            <h2 class="text-5xl font-extrabold tracking-tight mb-4">
-              Shop by Category
-            </h2>
-            <p class="text-gray-500 max-w-md text-lg">
-              Discover our most popular tools and limited-time deals trusted by professionals.
-            </p>
-          </div>
-
-          <!-- Tabs -->
-          <div class="flex gap-3 mt-8 md:mt-0">
-            <button class="tab-btn active-tab" data-tab="bestseller">Bestsellers</button>
-            <button class="tab-btn" data-tab="promo">Promotions</button>
-          </div>
+      <!-- ===== HEADER ===== -->
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
+        <div>
+          <h2 class="text-5xl font-extrabold tracking-tight mb-4">
+            Shop by Category
+          </h2>
+          <p class="text-gray-500 max-w-md text-lg">
+            Discover our most popular tools and limited-time deals trusted by professionals.
+          </p>
         </div>
 
-        <!-- ================= TAB CONTENT ================= -->
-
-        <!-- ===== BESTSELLERS ===== -->
-        <div
-          id="bestseller"
-          class="tab-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
-        >
-
-          <!-- PRODUCT CARD -->
-          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden">
-            <!-- Image -->
-            <div class="relative h-64 bg-white flex items-center justify-center">
-              <img
-                src="assets/products/hammer.webp"
-                alt="Steel Hammer 16oz"
-                class="h-44 object-contain transform transition duration-500 group-hover:scale-110"
-              />
-
-              <!-- Hover Actions -->
-              <div class="absolute bottom-4 inset-x-0 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition">
-                <button class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f8941e] hover:text-white transition">
-                  Quick View
-                </button>
-                <button class="bg-[#023f88] px-4 py-2 rounded-full text-sm font-semibold text-white hover:bg-blue-900 transition">
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-
-            <!-- Info -->
-            <div class="p-6 flex flex-col">
-              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">
-                Hand Tools
-              </p>
-              <h3 class="font-bold text-lg mb-2">
-                Steel Hammer 16oz
-              </h3>
-
-              <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
-                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-                <i class="bx bxs-star-half"></i>
-                <span class="text-gray-400 ml-2">(128)</span>
-              </div>
-
-              <div class="mt-auto flex items-center justify-between">
-                <span class="text-2xl font-extrabold text-gray-900">
-                  RM 29.90
-                </span>
-                <span class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                  In Stock
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- PRODUCT CARD -->
-          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
-            <div class="relative h-64 bg-white flex items-center justify-center">
-              <img src="assets/products/screwdriver.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
-            </div>
-
-            <div class="p-6">
-              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
-              <h3 class="font-bold text-lg mb-3">Screwdriver Set (6pcs)</h3>
-
-              <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
-                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-                <i class="bx bx-star"></i>
-              </div>
-
-              <span class="text-2xl font-extrabold">RM 45.00</span>
-            </div>
-          </div>
-
-          <!-- PRODUCT CARD -->
-          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden">
-            <div class="relative h-64 bg-white flex items-center justify-center">
-              <img src="assets/products/drill.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
-            </div>
-
-            <div class="p-6">
-              <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Power Tools</p>
-              <h3 class="font-bold text-lg mb-3">Electric Drill 500W</h3>
-
-              <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
-                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i><i class="bx bxs-star"></i>
-                <i class="bx bxs-star"></i>
-              </div>
-
-              <span class="text-2xl font-extrabold">RM 189.00</span>
-            </div>
-          </div>
+        <!-- Tabs -->
+        <div class="flex gap-3 mt-8 md:mt-0">
+          <button class="tab-btn active-tab" data-tab="bestseller">Bestsellers</button>
+          <button class="tab-btn" data-tab="promo">Promotions</button>
         </div>
+      </div>
 
-        <!-- ===== PROMO ===== -->
-        <div
-          id="promo"
-          class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
-        >
+      <!-- ================= TAB CONTENT ================= -->
 
-          <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden relative">
-            <span class="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full z-10">
-              SALE
-            </span>
+      <!-- ===== BESTSELLERS (will be populated by JS) ===== -->
+      <div id="bestseller" class="tab-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <!-- Loading placeholder -->
+        <p class="col-span-full text-center text-gray-500">Loading bestsellers…</p>
+      </div>
 
+      <!-- ===== PROMO (hardcoded link to Adjustable Wrench 10in) ===== -->
+      <div id="promo" class="tab-content hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <!-- We'll try to link to the real product if it exists in DB; otherwise fallback to a static product-details link -->
+        <div class="group bg-white rounded-3xl shadow-md hover:shadow-2xl transition overflow-hidden relative">
+          <span class="absolute top-4 left-4 bg-red-500 text-white text-xs px-3 py-1 rounded-full z-10">
+            SALE
+          </span>
+
+          <a id="promo-link" href="product-details.html?name=Adjustable%20Wrench%2010in" class="block">
             <div class="h-64 bg-white flex items-center justify-center">
-              <img src="assets/products/wrench.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500">
+              <img id="promo-img" src="assets/products/wrench.jpg" class="h-44 object-contain group-hover:scale-110 transition duration-500" alt="Adjustable Wrench 10in">
             </div>
 
             <div class="p-6">
               <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">Hand Tools</p>
-              <h3 class="font-bold text-lg mb-4">Adjustable Wrench 12"</h3>
+              <h3 class="font-bold text-lg mb-4">Adjustable Wrench 10in</h3>
 
               <div class="flex items-end justify-between">
                 <div>
                   <span class="block text-sm text-gray-400 line-through">RM 39.90</span>
                   <span class="text-2xl font-extrabold text-red-600">RM 29.90</span>
                 </div>
-                <button class="bg-[#f8941e] hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition">
+                <button class="promo-buy-btn bg-[#f8941e] hover:bg-orange-600 text-white px-5 py-2 rounded-full text-sm font-semibold transition">
                   Buy Now
                 </button>
               </div>
             </div>
-          </div>
-
+          </a>
         </div>
       </div>
-    </section>
+
+    </div>
+  </section>
 
   <!-- ================= ABOUT SECTION ================= -->
   <section id="about" class="relative py-20 px-6 bg-white overflow-hidden">
@@ -364,11 +284,9 @@
 
         <!-- Image collage -->
         <div class="relative">
-          <img src="assets/about-store1.PNG"
-            class="rounded-3xl shadow-2xl w-full object-cover">
+          <img src="assets/about-store1.webp" class="rounded-3xl shadow-2xl w-full object-cover">
 
-          <img src="assets/about-products.jpg"
-            class="absolute -bottom-16 -left-16 w-2/3 rounded-2xl shadow-xl border-8 border-white hidden md:block">
+          <img src="assets/about-products.webp" class="absolute -bottom-16 -left-16 w-2/3 rounded-2xl shadow-xl border-8 border-white hidden md:block">
 
           <div class="absolute top-6 right-6 bg-[#f8941e] text-white px-5 py-3 rounded-xl text-sm font-semibold">
             Serving Since 2002
@@ -381,8 +299,7 @@
 
         <!-- Image -->
         <div class="relative order-2 md:order-1">
-          <img src="assets/about-warehouse2.jpg"
-            class="rounded-3xl shadow-xl w-full object-cover">
+          <img src="assets/about-warehouse2.webp" class="rounded-3xl shadow-xl w-full object-cover">
         </div>
 
         <!-- Content -->
@@ -421,8 +338,7 @@
 
         <!-- Card 1 -->
         <div>
-          <img src="assets/about-shipping.jpg"
-            class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
+          <img src="assets/about-shipping.webp" class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
           <h4 class="text-2xl font-bold mb-3 text-gray-800">
             Logistics & Delivery
           </h4>
@@ -434,8 +350,7 @@
 
         <!-- Card 2 -->
         <div class="lg:translate-y-16">
-          <img src="assets/about-online.jpg"
-            class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
+          <img src="assets/about-online.webp" class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
           <h4 class="text-2xl font-bold mb-3 text-gray-800">
             Going Digital
           </h4>
@@ -447,8 +362,7 @@
 
         <!-- Card 3 -->
         <div>
-          <img src="assets/about-security.jpg"
-            class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
+          <img src="assets/about-security.webp" class="rounded-2xl shadow-lg mb-6 object-cover w-full h-64">
           <h4 class="text-2xl font-bold mb-3 text-gray-800">
             Secure & Reliable
           </h4>
@@ -496,222 +410,455 @@
   </section>
 
   <section id="contact" class="py-20 bg-white text-gray-800">
-  <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-7xl mx-auto px-6">
 
-    <div class="flex flex-col md:flex-row items-start justify-between gap-12">
+      <div class="flex flex-col md:flex-row items-start justify-between gap-12">
 
-      <!-- Contact Info -->
-      <div class="flex-1 flex flex-col gap-6 order-2 md:order-1">
+        <!-- Contact Info -->
+        <div class="flex-1 flex flex-col gap-6 order-2 md:order-1">
 
-        <div class="mt-0">
-          <p class="text-gray-700 text-lg md:text-xl leading-none md:leading-tight">
-            Sarawak, KUCHING<br>
-            <span class="text-base md:text-lg">LOT 33, BLOCK 7, 19TH MILE TAMAN DURANDA EMAS BAZAAR</span><br>
-            Postcode: 94200
-          </p>
+          <div class="mt-0">
+            <p class="text-gray-700 text-lg md:text-xl leading-none md:leading-tight">
+              Sarawak, KUCHING<br>
+              <span class="text-base md:text-lg">LOT 33, BLOCK 7, 19TH MILE TAMAN DURANDA EMAS BAZAAR</span><br>
+              Postcode: 94200
+            </p>
+          </div>
+
+          <div class="w-full">
+            <a href="https://www.google.com/maps/place/YUNG+SUN+HARDWARE+ENTERPRISE-Federal+Paints-Krystal+Spray+Paint" target="_blank" class="block group">
+              <div class="overflow-hidden rounded-2xl border border-gray-200">
+                <iframe
+                  src="https://www.google.com/maps?q=YUNG+SUN+HARDWARE+ENTERPRISE,Kuching&output=embed"
+                  class="w-full h-56 md:h-72"
+                  style="border:0;"
+                  loading="lazy">
+                </iframe>
+              </div>
+            </a>
+          </div>
+
         </div>
 
-        <div class="w-full">
-          <a href="https://www.google.com/maps/place/YUNG+SUN+HARDWARE+ENTERPRISE-Federal+Paints-Krystal+Spray+Paint" target="_blank" class="block group">
-            <div class="overflow-hidden rounded-2xl border border-gray-200">
-              <iframe
-                src="https://www.google.com/maps?q=YUNG+SUN+HARDWARE+ENTERPRISE,Kuching&output=embed"
-                class="w-full h-56 md:h-72"
-                style="border:0;"
-                loading="lazy">
-              </iframe>
+        <!-- Logo & Additional Info -->
+        <div class="flex-1 flex flex-col items-center md:items-end text-center md:text-right gap-6 order-1 md:order-2">
+
+          <!-- Logo -->
+          <div class="w-full flex justify-center md:justify-end -mt-2">
+            <img src="assets/Yung_Sun_logo.webp" alt="Yung Sun Logo" class="w-full max-w-md h-auto block" />
+          </div>
+
+          <!-- Phone & Email -->
+          <div class="flex flex-col gap-2 items-center md:items-end">
+            <div>
+              <span class="text-[#f8941e] font-bold text-lg md:text-xl">Phone:</span>
+              <span class="text-gray-800 text-lg md:text-xl ml-2">+60 12-345 6789</span>
             </div>
-          </a>
+            <div>
+              <span class="text-[#023f88] font-bold text-lg md:text-xl">Email:</span>
+              <span class="text-gray-800 text-lg md:text-xl ml-2">contact@yungsunhardware.com</span>
+            </div>
+          </div>
+
+          <!-- Operating Days & Hours -->
+          <div class="flex flex-col gap-1 items-center md:items-end">
+            <div class="text-sm">
+              <span class="text-[#f8941e] font-semibold uppercase">Operating Days:</span>
+              <span class="text-gray-700 ml-1">Everyday</span>
+            </div>
+            <div class="text-sm">
+              <span class="text-[#023f88] font-semibold uppercase">Hours:</span>
+              <span class="text-gray-700 ml-1">7am - 6pm</span>
+            </div>
+          </div>
+
         </div>
 
       </div>
-
-      <!-- Logo & Additional Info -->
-      <div class="flex-1 flex flex-col items-center md:items-end text-center md:text-right gap-6 order-1 md:order-2">
-        
-        <!-- Logo -->
-        <div class="w-full flex justify-center md:justify-end -mt-2">
-          <img src="assets/Yung_Sun_logo.png" alt="Yung Sun Logo" class="w-full max-w-md h-auto block" /> 
-        </div>
-
-        <!-- Phone & Email -->
-        <div class="flex flex-col gap-2 items-center md:items-end">
-          <div>
-            <span class="text-[#f8941e] font-bold text-lg md:text-xl">Phone:</span>
-            <span class="text-gray-800 text-lg md:text-xl ml-2">+60 12-345 6789</span>
-          </div>
-          <div>
-            <span class="text-[#023f88] font-bold text-lg md:text-xl">Email:</span>
-            <span class="text-gray-800 text-lg md:text-xl ml-2">contact@yungsunhardware.com</span>
-          </div>
-        </div>
-
-        <!-- Operating Days & Hours -->
-        <div class="flex flex-col gap-1 items-center md:items-end">
-          <div class="text-sm">
-            <span class="text-[#f8941e] font-semibold uppercase">Operating Days:</span>
-            <span class="text-gray-700 ml-1">Everyday</span>
-          </div>
-          <div class="text-sm">
-            <span class="text-[#023f88] font-semibold uppercase">Hours:</span>
-            <span class="text-gray-700 ml-1">7am - 6pm</span>
-          </div>
-        </div>
-
-      </div>
-
     </div>
-  </div>
-</section>
+  </section>
 
 
-<!-- ================= FOOTER ================= -->
-<footer class="bg-gray-50 text-gray-800 py-16">
-  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-12">
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-gray-50 text-gray-800 py-16">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-12">
 
-    <!-- Brand & Copyright -->
-    <div class="flex flex-col gap-4">
-      <h3 class="text-2xl font-bold text-[#f8941e]">Yung Sun Hardware Enterprise</h3>
-      <p class="text-gray-600 text-sm md:text-base">
-        © 2025 Jean | Angel | Ivy | Chloe | Yao Yee, Inc. All rights reserved.
-      </p>
-    </div>
-
-    <!-- Footer Links -->
-    <div class="flex flex-col md:flex-row gap-12">
-      
-      <!-- Section Links -->
-      <div class="flex flex-col gap-2">
-        <h4 class="font-semibold text-[#023f88] mb-2">Pages</h4>
-        <a href="#hero" class="hover:text-[#f8941e] transition-colors">Home</a>
-        <a href="#about" class="hover:text-[#f8941e] transition-colors">About Us</a>
-        <a href="#contact" class="hover:text-[#f8941e] transition-colors">Contact</a>
-        <a href="shop.html" class="hover:text-[#f8941e] transition-colors">Shop</a>
+      <!-- Brand & Copyright -->
+      <div class="flex flex-col gap-4">
+        <h3 class="text-2xl font-bold text-[#f8941e]">Yung Sun Hardware Enterprise</h3>
+        <p class="text-gray-600 text-sm md:text-base">
+          © 2025 Jean | Angel | Ivy | Chloe | Yao Yee, Inc. All rights reserved.
+        </p>
       </div>
 
-      <!-- Optional Extra Links -->
-      <div class="flex flex-col gap-2">
-        <h4 class="font-semibold text-[#023f88] mb-2">Resources</h4>
-        <a href="#" class="hover:text-[#f8941e] transition-colors">Privacy Policy</a>
-        <a href="#" class="hover:text-[#f8941e] transition-colors">Terms of Service</a>
-        <a href="#" class="hover:text-[#f8941e] transition-colors">FAQ</a>
+      <!-- Footer Links -->
+      <div class="flex flex-col md:flex-row gap-12">
+
+        <!-- Section Links -->
+        <div class="flex flex-col gap-2">
+          <h4 class="font-semibold text-[#023f88] mb-2">Pages</h4>
+          <a href="#hero" class="hover:text-[#f8941e] transition-colors">Home</a>
+          <a href="#about" class="hover:text-[#f8941e] transition-colors">About Us</a>
+          <a href="#contact" class="hover:text-[#f8941e] transition-colors">Contact</a>
+          <a href="shop.html" class="hover:text-[#f8941e] transition-colors">Shop</a>
+        </div>
+
+        <!-- Optional Extra Links -->
+        <div class="flex flex-col gap-2">
+          <h4 class="font-semibold text-[#023f88] mb-2">Resources</h4>
+          <a href="#" class="hover:text-[#f8941e] transition-colors">Privacy Policy</a>
+          <a href="#" class="hover:text-[#f8941e] transition-colors">Terms of Service</a>
+          <a href="#" class="hover:text-[#f8941e] transition-colors">FAQ</a>
+        </div>
+
       </div>
-      
     </div>
-  </div>
-</footer>
+  </footer>
 
   <!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- Navbar loader & role/caching script -->
-<script src="js/supabase.js"></script>
-<script src="js/navbar.js"></script>
-<script src="js/cart.js"></script>
+  <!-- Navbar loader & role/caching script -->
+  <script src="js/supabase.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/cart.js"></script>
 
-<!-- Page-specific JS -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+  <!-- Page-specific JS -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
 
-  // ---------------- NAVBAR / PROFILE LINKS ----------------
-  async function initNavbarLinks() {
-    const profileLink = document.querySelector('a[href="profile.html"]');
-    if (!profileLink) return;
+      // ---------------- NAVBAR / PROFILE LINKS ----------------
+      async function initNavbarLinks() {
+        const profileLink = document.querySelector('a[href="profile.html"]');
+        if (!profileLink) return;
 
-    if (!window.supabaseClient) {
-      console.error('Supabase client not initialized');
-      return;
-    }
+        if (!window.supabaseClient) {
+          console.error('Supabase client not initialized');
+          return;
+        }
 
-    try {
-      const { data: { session } } = await window.supabaseClient.auth.getSession();
-      if (!session) {
-        profileLink.setAttribute('href', 'signin.html');
-      } else {
-        profileLink.setAttribute('href', 'profile.html');
-        profileLink.title = session.user.email;
+        try {
+          const { data: { session } } = await window.supabaseClient.auth.getSession();
+          if (!session) {
+            profileLink.setAttribute('href', 'signin.html');
+          } else {
+            profileLink.setAttribute('href', 'profile.html');
+            profileLink.title = session.user.email;
 
-        // Show admin menu if user role is admin
-        const { data: profile, error } = await window.supabaseClient
-          .from('profiles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single();
+            // Show admin menu if user role is admin
+            const { data: profile, error } = await window.supabaseClient
+              .from('profiles')
+              .select('role')
+              .eq('user_id', session.user.id)
+              .single();
 
-        if (!error && profile?.role === 'admin') {
-          document.getElementById('adminMenu')?.classList.remove('hidden');
-          document.getElementById('adminMenuMobile')?.classList.remove('hidden');
+            if (!error && profile?.role === 'admin') {
+              document.getElementById('adminMenu')?.classList.remove('hidden');
+              document.getElementById('adminMenuMobile')?.classList.remove('hidden');
+            }
+          }
+        } catch (err) {
+          console.error('Navbar session check failed:', err);
         }
       }
-    } catch (err) {
-      console.error('Navbar session check failed:', err);
-    }
-  }
 
-  // Run immediately if navbar exists, otherwise wait for 'navbar:ready'
-  if (document.getElementById('navbar')) {
-    initNavbarLinks();
-  } else {
-    document.addEventListener('navbar:ready', initNavbarLinks);
-  }
+      // Run immediately if navbar exists, otherwise wait for 'navbar:ready'
+      if (document.getElementById('navbar')) {
+        initNavbarLinks();
+      } else {
+        document.addEventListener('navbar:ready', initNavbarLinks);
+      }
 
-  // ---------------- ABOUT TITLE ANIMATION ----------------
-  const title = document.getElementById("about-title");
-  if (title) {
-    const text = title.textContent.trim();
-    title.textContent = "";
+      // ---------------- ABOUT TITLE ANIMATION ----------------
+      const title = document.getElementById("about-title");
+      if (title) {
+        const text = title.textContent.trim();
+        title.textContent = "";
 
-    const letters = text.split("").map(char => {
-      const span = document.createElement("span");
-      span.innerHTML = char === " " ? "&nbsp;" : char;
-      span.classList.add("letter");
-      title.appendChild(span);
-      return span;
-    });
+        const letters = text.split("").map(char => {
+          const span = document.createElement("span");
+          span.innerHTML = char === " " ? "&nbsp;" : char;
+          span.classList.add("letter");
+          title.appendChild(span);
+          return span;
+        });
 
-    const middle = Math.floor(letters.length / 2);
-    const order = [middle];
-    for (let i = 1; i <= middle; i++) {
-      if (middle - i >= 0) order.push(middle - i);
-      if (middle + i < letters.length) order.push(middle + i);
-    }
+        const middle = Math.floor(letters.length / 2);
+        const order = [middle];
+        for (let i = 1; i <= middle; i++) {
+          if (middle - i >= 0) order.push(middle - i);
+          if (middle + i < letters.length) order.push(middle + i);
+        }
 
-    function animateLetters() {
-      order.forEach((index, i) => {
-        setTimeout(() => letters[index].classList.add("show"), i * 100);
+        function animateLetters() {
+          order.forEach((index, i) => {
+            setTimeout(() => letters[index].classList.add("show"), i * 100);
+          });
+        }
+
+        function resetLetters() {
+          letters.forEach(letter => letter.classList.remove("show"));
+        }
+
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) animateLetters();
+            else resetLetters();
+          });
+        }, { threshold: 0.5 });
+
+        observer.observe(title);
+      }
+
+      // ---------------- TABS ----------------
+      const tabButtons = document.querySelectorAll(".tab-btn");
+      const tabContents = document.querySelectorAll(".tab-content");
+
+      tabButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          tabButtons.forEach(b => b.classList.remove("active-tab"));
+          tabContents.forEach(c => c.classList.add("hidden"));
+          btn.classList.add("active-tab");
+
+          const id = btn.dataset.tab;
+          document.getElementById(id)?.classList.remove("hidden");
+        });
       });
-    }
 
-    function resetLetters() {
-      letters.forEach(letter => letter.classList.remove("show"));
-    }
+      // ---------------- DYNAMIC BESTSELLERS + PROMO LINK ----------------
+      // Helpers
+      function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/[&<>"']/g, m => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[m]);
+      }
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) animateLetters();
-        else resetLetters();
+      function formatPrice(p) {
+        if (p == null) return '';
+        return 'RM ' + Number(p).toFixed(2);
+      }
+
+      function renderStars(rating) {
+        const full = Math.floor(rating || 0);
+        const half = (rating || 0) - full >= 0.5;
+        let out = '';
+        for (let i = 0; i < full; i++) out += '<i class="bx bxs-star"></i>';
+        if (half) out += '<i class="bx bxs-star-half"></i>';
+        for (let i = full + (half ? 1 : 0); i < 5; i++) out += '<i class="bx bx-star"></i>';
+        out += `<span class="text-gray-400 ml-2">(${Math.max(0, Math.round((rating || 0) * 20))})</span>`;
+        return out;
+      }
+
+      function createCardElement(product) {
+        // product fields expected: id, name, category, price, image_url, stock
+        const wrapper = document.createElement('div');
+        wrapper.className = 'group bg-white rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 overflow-hidden';
+
+        wrapper.innerHTML = `
+          <div class="relative h-64 bg-white flex items-center justify-center">
+            <img src="${escapeHtml(product.image_url || 'assets/products/placeholder.png')}" alt="${escapeHtml(product.name)}" class="h-44 object-contain transform transition duration-500 group-hover:scale-110" />
+            <div class="absolute bottom-4 inset-x-0 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition">
+              <a href="product-details.html?id=${encodeURIComponent(product.id)}" class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f8941e] hover:text-white transition">Quick View</a>
+              <button class="add-to-cart-btn bg-[#023f88] px-4 py-2 rounded-full text-sm font-semibold text-white hover:bg-blue-900 transition"
+                data-product-id="${escapeHtml(product.id)}"
+                data-name="${escapeHtml(product.name)}"
+                data-price="${Number(product.price || 0).toFixed(2)}"
+                data-image="${escapeHtml(product.image_url || '')}">
+                Add to Cart
+              </button>
+            </div>
+          </div>
+
+          <div class="p-6 flex flex-col">
+            <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">${escapeHtml(product.category || '')}</p>
+            <h3 class="font-bold text-lg mb-2">${escapeHtml(product.name)}</h3>
+
+            <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">
+              ${renderStars(5)}
+            </div>
+
+            <div class="mt-auto flex items-center justify-between">
+              <span class="text-2xl font-extrabold text-gray-900">${formatPrice(product.price)}</span>
+              <span class="text-xs ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'} px-3 py-1 rounded-full">
+                ${product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+              </span>
+            </div>
+          </div>
+        `;
+
+        return wrapper;
+      }
+
+      async function loadBestsellersAndPromo() {
+        const bestsellerEl = document.getElementById('bestseller');
+        const promoLinkEl = document.getElementById('promo-link');
+        const promoImgEl = document.getElementById('promo-img');
+
+        if (!window.supabaseClient) {
+          console.error('Supabase client not initialized');
+          bestsellerEl.innerHTML = '<p class="col-span-full text-center text-red-500">Supabase not initialized.</p>';
+          return;
+        }
+
+        try {
+          // 1) Fetch order_items (product_id, qty) and compute totals client-side.
+          // Note: product_id in your schema is text; products.id is uuid - comparing string values is OK.
+          const { data: items, error: itemsErr } = await window.supabaseClient
+            .from('order_items')
+            .select('product_id, qty');
+
+          if (itemsErr) {
+            console.warn('Failed to fetch order_items:', itemsErr);
+          }
+
+          const totals = {};
+          (items || []).forEach(it => {
+            const pid = String(it.product_id);
+            const qty = Number(it.qty || 0);
+            totals[pid] = (totals[pid] || 0) + qty;
+          });
+
+          // Pick top 3 product_ids by qty
+          const sortedIds = Object.keys(totals).sort((a, b) => totals[b] - totals[a]).slice(0, 3);
+
+          let products = [];
+          if (sortedIds.length) {
+            // Fetch product details for top ids
+            const { data: topProducts, error: productsErr } = await window.supabaseClient
+              .from('products')
+              .select('*')
+              .in('id', sortedIds);
+
+            if (productsErr) {
+              console.warn('Failed to fetch products for top ids:', productsErr);
+            } else {
+              // Ensure we map and order by sortedIds order
+              const byId = {};
+              (topProducts || []).forEach(p => byId[String(p.id)] = p);
+              products = sortedIds.map(id => byId[id]).filter(Boolean);
+            }
+          } else {
+            // Fallback: if there are no order_items yet, show 3 most recently created products (as a friendly default)
+            const { data: recent, error: recentErr } = await window.supabaseClient
+              .from('products')
+              .select('*')
+              .order('created_at', { ascending: false })
+              .limit(3);
+
+            if (!recentErr && recent) products = recent;
+            else products = [];
+          }
+
+          // Render bestsellers
+          bestsellerEl.innerHTML = '';
+          if (products.length === 0) {
+            bestsellerEl.innerHTML = '<p class="col-span-full text-center text-gray-500">No bestseller data available yet.</p>';
+          } else {
+            products.forEach(p => bestsellerEl.appendChild(createCardElement(p)));
+          }
+
+          // PROMO: Try to find Adjustable Wrench 10in in products to link to the real product-details id.
+          // Use a loose ilike pattern to match '10', '10in', '10"', etc.
+          const promoSearchPattern = '%Adjustable Wrench 10%';
+          const promoNameFallback = 'Adjustable Wrench 10in';
+
+          const { data: promoProduct, error: promoErr } = await window.supabaseClient
+            .from('products')
+            .select('id, image_url')
+            .ilike('name', promoSearchPattern)
+            .limit(1)
+            .maybeSingle();
+
+          if (promoErr) {
+            // ignore; fallback below
+            console.warn('Promo product lookup failed:', promoErr);
+          }
+
+          if (promoProduct && promoProduct.id) {
+            // link to actual product-details page with id
+            promoLinkEl.setAttribute('href', `product-details.html?id=${encodeURIComponent(promoProduct.id)}`);
+            if (promoProduct.image_url) promoImgEl.setAttribute('src', promoProduct.image_url);
+          } else {
+            // fallback: keep the current fallback link (search-by-name)
+            promoLinkEl.setAttribute('href', `product-details.html?name=${encodeURIComponent(promoNameFallback)}`);
+          }
+
+          // Promo buy button: redirect to same promo link
+          document.querySelectorAll('.promo-buy-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              const href = promoLinkEl.getAttribute('href') || 'product-details.html';
+              window.location.href = href;
+            });
+          });
+
+        } catch (err) {
+          console.error('Error loading bestsellers/promos:', err);
+          bestsellerEl.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load bestsellers.</p>';
+        }
+      }
+
+      // Reuse cart logic: try to use window.cartAPI if available, otherwise localStorage fallback.
+      function addToCartFromAttrs(attrs) {
+        const payload = {
+          id: attrs['data-product-id'] || attrs['data-id'],
+          name: attrs['data-name'],
+          price: parseFloat(attrs['data-price']) || 0,
+          image_url: attrs['data-image'] || attrs['data-img'] || ''
+        };
+
+        try {
+          if (window.cartAPI?.add) {
+            window.cartAPI.add(payload);
+          } else {
+            const KEY = 'ys_cart_v1';
+            let store = {};
+            try { store = JSON.parse(localStorage.getItem(KEY)) || {}; }
+            catch { store = {}; }
+
+            const key = String(payload.id);
+            if (store[key]) store[key].qty = (store[key].qty || 0) + 1;
+            else store[key] = { ...payload, qty: 1 };
+
+            localStorage.setItem(KEY, JSON.stringify(store));
+
+            // basic UI feedback (optional)
+            const notif = document.createElement('div');
+            notif.textContent = `${payload.name} added to cart`;
+            notif.className = 'fixed bottom-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50';
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 1500);
+          }
+        } catch (err) {
+          console.error('Failed to add to cart', err);
+        }
+      }
+
+      // Global delegation for Add to Cart buttons on this page
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.add-to-cart-btn');
+        if (!btn) return;
+        e.preventDefault();
+        addToCartFromAttrs(btn.dataset ? Object.keys(btn.dataset).reduce((acc, k) => {
+          acc[`data-${k}`] = btn.dataset[k];
+          return acc;
+        }, {}) : {});
       });
-    }, { threshold: 0.5 });
 
-    observer.observe(title);
-  }
+      // Start loading bestsellers and promo once supabase is ready
+      if (window.supabaseClient) {
+        loadBestsellersAndPromo();
+      } else {
+        // If your js/supabase.js dispatches an event when ready, listen for it.
+        document.addEventListener('supabase:ready', () => loadBestsellersAndPromo());
+        // fallback retry
+        setTimeout(() => { if (window.supabaseClient) loadBestsellersAndPromo(); }, 800);
+      }
 
-  // ---------------- TABS ----------------
-  const tabButtons = document.querySelectorAll(".tab-btn");
-  const tabContents = document.querySelectorAll(".tab-content");
-
-  tabButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      tabButtons.forEach(b => b.classList.remove("active-tab"));
-      tabContents.forEach(c => c.classList.add("hidden"));
-      btn.classList.add("active-tab");
-
-      const id = btn.dataset.tab;
-      document.getElementById(id)?.classList.remove("hidden");
     });
-  });
+  </script>
 
-});
-</script>
 </body>
+
 </html>
