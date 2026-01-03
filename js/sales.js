@@ -15,6 +15,7 @@ function formatDateKey(d) {
 
 /* =========================
    FETCH ORDERS WITH CATEGORY (client-side fallback)
+   Only run when views are not available or when we need detailed orders
 ========================= */
 async function fetchOrdersClient(days = 7) {
   if (!window.supabaseClient) throw new Error('Supabase client not initialized');
@@ -56,96 +57,111 @@ async function fetchOrdersClient(days = 7) {
 
 /* =========================
    LOAD SALES REPORT
-   - Prefer server-side views for performance
-   - Fallback to client-side aggregation if views not present
+   Approach (best practice):
+   - Try server-side aggregated views first (fast, small payload)
+     - sales_by_date_view expected columns: day, total, order_count
+     - top_selling_products_view expected columns: order_day, product_id, name, category, qty, revenue
+   - If either view is missing or empty, fetch orders client-side and compute missing pieces
 ========================= */
 let salesChart = null;
 
 async function loadSalesReport() {
-  if (!dateFilter) {
-    console.warn('dateFilter element not found');
-  }
   const days = dateFilter ? Number(dateFilter.value || 7) : 7;
 
-  // Try server-side view first (recommended). If it fails, fallback to client aggregation.
-  let salesByDate = {}; // { 'YYYY-MM-DD': total }
-  let orders = [];
-  let topProducts = [];
+  // containers
+  let salesByDate = {};            // { 'YYYY-MM-DD': total }
+  let orderCountByDate = {};       // { 'YYYY-MM-DD': order_count } - from view if available
+  let topProducts = [];            // array of { name, category, qty, revenue }
+  let orders = [];                 // only fetched if needed (client-side)
 
+  const fromIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  // 1) Try server-side sales_by_date_view
+  let salesViewAvailable = false;
   try {
-    // Attempt to query a view called sales_by_date_view which should return (day date, total numeric, order_count int)
     const { data: salesView, error: salesErr } = await window.supabaseClient
       .from('sales_by_date_view')
       .select('*')
-      .gte('day', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
+      .gte('day', fromIso)
       .order('day', { ascending: true });
 
     if (!salesErr && salesView && salesView.length) {
-      // map to salesByDate using view result
+      salesViewAvailable = true;
       salesView.forEach(r => {
-        const key = (r.day instanceof String) ? r.day : formatDateKey(r.day);
+        const key = formatDateKey(r.day);
         salesByDate[key] = Number(r.total) || 0;
+        orderCountByDate[key] = Number(r.order_count) || 0;
       });
     }
   } catch (err) {
-    // view may not exist; ignore and fallback
-    console.warn('sales_by_date_view not available, falling back to client aggregation', err);
+    console.warn('sales_by_date_view not available or failed:', err);
   }
 
+  // 2) Try server-side top_selling_products_view
+  let topViewAvailable = false;
   try {
-    // Try top selling products view
     const { data: topView, error: topErr } = await window.supabaseClient
       .from('top_selling_products_view')
       .select('*')
-      .gte('order_day', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
+      .gte('order_day', fromIso)
       .order('qty', { ascending: false })
       .limit(10);
 
     if (!topErr && topView && topView.length) {
-      topProducts = topView.map(r => ({
-        name: r.name,
-        category: r.category,
-        qty: Number(r.qty) || 0,
-        revenue: Number(r.revenue) || 0
-      }));
+      topViewAvailable = true;
+      // Aggregate view rows across days into overall top products (sum qty & revenue by name)
+      const agg = {};
+      (topView || []).forEach(r => {
+        const key = r.name || r.product_id || 'Unknown';
+        if (!agg[key]) agg[key] = { name: r.name, category: r.category || 'N/A', qty: 0, revenue: 0 };
+        agg[key].qty += Number(r.qty || 0);
+        agg[key].revenue += Number(r.revenue || 0);
+      });
+      topProducts = Object.values(agg)
+        .sort((a, b) => b.qty - a.qty)
+        .slice(0, 10);
     }
   } catch (err) {
-    console.warn('top_selling_products_view not available, will compute client-side', err);
+    console.warn('top_selling_products_view not available or failed:', err);
   }
 
-  // If salesByDate is empty (no view or empty result), compute client-side
-  if (Object.keys(salesByDate).length === 0 || topProducts.length === 0) {
+  // 3) If either view is missing or returned no rows, fetch client-side orders and compute missing pieces
+  if (!salesViewAvailable || !topViewAvailable) {
     orders = await fetchOrdersClient(days);
 
-    // Sales Trend (client-side)
-    salesByDate = {};
-    orders.forEach(o => {
-      const key = formatDateKey(o.created_at);
-      salesByDate[key] = (salesByDate[key] || 0) + Number(o.total_amount || 0);
-    });
-
-    // Top Selling Products (client-side)
-    const productMap = {};
-    orders.forEach(o => {
-      (o.items || []).forEach(i => {
-        if (!productMap[i.name]) productMap[i.name] = { name: i.name, category: i.category || 'N/A', qty: 0, revenue: 0 };
-        productMap[i.name].qty += Number(i.qty || 0);
-        productMap[i.name].revenue += Number(i.qty || 0) * Number(i.price || 0);
+    // If salesByDate still empty (no view), compute salesByDate and orderCountByDate from orders
+    if (!salesViewAvailable) {
+      salesByDate = {};
+      orderCountByDate = {};
+      orders.forEach(o => {
+        const key = formatDateKey(o.created_at);
+        salesByDate[key] = (salesByDate[key] || 0) + Number(o.total_amount || 0);
+        orderCountByDate[key] = (orderCountByDate[key] || 0) + 1;
       });
-    });
+    }
 
-    topProducts = Object.values(productMap).sort((a, b) => b.qty - a.qty).slice(0, 10);
+    // If topProducts not available from view, compute from orders
+    if (!topViewAvailable) {
+      const productAgg = {};
+      orders.forEach(o => {
+        (o.items || []).forEach(i => {
+          const key = i.name || i.product_id || 'Unknown';
+          if (!productAgg[key]) productAgg[key] = { name: i.name, category: i.category || 'N/A', qty: 0, revenue: 0 };
+          productAgg[key].qty += Number(i.qty || 0);
+          productAgg[key].revenue += Number(i.qty || 0) * Number(i.price || 0);
+        });
+      });
+      topProducts = Object.values(productAgg).sort((a, b) => b.qty - a.qty).slice(0, 10);
+    }
   }
 
-  // Prepare data for Chart.js - ensure chronological order
+  // 4) Prepare chart data (chronological)
   const dateLabels = Object.keys(salesByDate).sort((a, b) => new Date(a) - new Date(b));
   const dateValues = dateLabels.map(k => Number(salesByDate[k] || 0));
 
-  // Render chart
+  // Render Chart.js line chart
   const ctx = document.getElementById('salesTrendChart');
-  if (!ctx) {
-    console.warn('salesTrendChart canvas not found');
-  } else {
+  if (ctx) {
     if (salesChart) {
       salesChart.data.labels = dateLabels;
       salesChart.data.datasets[0].data = dateValues;
@@ -173,13 +189,15 @@ async function loadSalesReport() {
         }
       });
     }
+  } else {
+    console.warn('salesTrendChart canvas not found');
   }
 
-  // Render Top Products Table
+  // 5) Render Top Products Table
   const topProductsTable = document.getElementById('topProductsTable');
   if (topProductsTable) {
     topProductsTable.innerHTML = '';
-    if (topProducts.length === 0) {
+    if (!topProducts || topProducts.length === 0) {
       const tr = document.createElement('tr');
       tr.innerHTML = '<td class="p-4 text-center text-gray-500" colspan="4">No product sales data</td>';
       topProductsTable.appendChild(tr);
@@ -198,23 +216,23 @@ async function loadSalesReport() {
     }
   }
 
-  // Render Sales By Date Table
+  // 6) Render Sales By Date Table
   const salesByDateTable = document.getElementById('salesByDateTable');
   if (salesByDateTable) {
     salesByDateTable.innerHTML = '';
-    if (dateLabels.length === 0) {
+    if (!dateLabels || dateLabels.length === 0) {
       const tr = document.createElement('tr');
       tr.innerHTML = '<td class="p-4 text-center text-gray-500" colspan="3">No sales in selected range</td>';
       salesByDateTable.appendChild(tr);
     } else {
       dateLabels.forEach(date => {
         const total = Number(salesByDate[date] || 0);
-        // orderCount calculate from client orders if available
-        let orderCount = 0;
-        if (orders && orders.length) {
+        // Prefer orderCount from view-based orderCountByDate, otherwise compute from client orders
+        let orderCount = '-';
+        if (orderCountByDate && orderCountByDate[date] != null) {
+          orderCount = orderCountByDate[date];
+        } else if (orders && orders.length) {
           orderCount = orders.filter(o => formatDateKey(o.created_at) === date).length;
-        } else {
-          orderCount = '-';
         }
 
         const tr = document.createElement('tr');
@@ -228,11 +246,12 @@ async function loadSalesReport() {
       });
     }
   }
-}
+
+} // end loadSalesReport
 
 /* Helper: simple html escape */
 function escapeHtml(s) {
-  if (!s) return '';
+  if (!s && s !== 0) return '';
   return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"':'&quot;', "'":'&#39;' })[m]);
 }
 
