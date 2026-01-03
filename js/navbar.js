@@ -1,76 +1,28 @@
 // js/navbar.js
-// Navbar + auth + small UI wiring
+// Rewritten navbar loader + auth + UI wiring
+// Assumes js/supabase.js initializes window.supabaseClient and may dispatch 'supabase:ready'
 
 const ROLE_KEY = 'ys_role_v1';
 const ROLE_TTL = 1000 * 60 * 5;
 
-/* -------------------- Welcome User -------------------- */
-function setWelcomeUser(name) {
-  const el = document.getElementById('welcomeUser');
-  if (!el) return;
-  el.textContent = `Welcome back! ${name}`;
-  el.classList.remove('hidden');
+/* -------------------- Utilities -------------------- */
+function safeQuery(sel, root = document) { try { return root.querySelector(sel); } catch { return null; } }
+function safeQueryAll(sel, root = document) { try { return Array.from(root.querySelectorAll(sel)); } catch { return []; } }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* -------------------- Role cache -------------------- */
+function cacheRole(role) {
+  try { localStorage.setItem(ROLE_KEY, JSON.stringify({ role, t: Date.now() })); } catch {}
 }
-
-function hideWelcomeUser() {
-  const el = document.getElementById('welcomeUser');
-  if (el) el.classList.add('hidden');
-}
-
-/* -------------------- Logout Button -------------------- */
-function showLogoutBtn() {
-  const btn = document.getElementById('logoutBtn');
-  if (!btn) return;
-
-  btn.classList.remove('hidden');
-
-  // Attach click listener only once
-  if (!btn._bound) {
-    btn.addEventListener('click', async () => {
-      const client = window.supabaseClient;
-      if (!client) return;
-
-      try {
-        await client.auth.signOut();
-        hideLogoutBtn();
-        hideWelcomeUser();
-        setAdminVisible(false);
-        cacheRole('user');
-        window.location.href = 'index.html';
-      } catch (err) {
-        console.error('Logout failed:', err);
-      }
-    });
-    btn._bound = true;
-  }
-}
-
-function hideLogoutBtn() {
-  const btn = document.getElementById('logoutBtn');
-  if (btn) btn.classList.add('hidden');
-}
-
-function bindLogout() {
-  const btn = document.getElementById('logoutBtn');
-  if (!btn || btn._bound) return;
-
-  btn.addEventListener('click', async () => {
-    const client = window.supabaseClient;
-    if (!client) return;
-
-    try {
-      await client.auth.signOut();
-      hideLogoutBtn();
-      hideWelcomeUser();
-      setAdminVisible(false);
-      cacheRole('user');
-      window.location.href = 'index.html';
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
-  });
-
-  btn._bound = true;
+function readCachedRole() {
+  try {
+    const raw = localStorage.getItem(ROLE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj?.t) return null;
+    if (Date.now() - obj.t > ROLE_TTL) return null;
+    return obj.role || null;
+  } catch { return null; }
 }
 
 /* -------------------- Admin visibility -------------------- */
@@ -81,47 +33,60 @@ function setAdminVisible(isAdmin) {
   if (mobile) mobile.classList.toggle('hidden', !isAdmin);
 }
 
-/* -------------------- Role cache -------------------- */
-function cacheRole(role) {
-  try {
-    localStorage.setItem(ROLE_KEY, JSON.stringify({ role, t: Date.now() }));
-  } catch {}
+/* -------------------- Welcome / Logout -------------------- */
+function setWelcomeUser(name) {
+  const el = document.getElementById('welcomeUser');
+  if (!el) return;
+  el.textContent = `Welcome back! ${name}`;
+  el.classList.remove('hidden');
+}
+function hideWelcomeUser() {
+  const el = document.getElementById('welcomeUser');
+  if (el) el.classList.add('hidden');
+}
+function showLogoutBtn() {
+  const btn = document.getElementById('logoutBtn');
+  if (!btn) return;
+  btn.classList.remove('hidden');
+  if (btn._bound) return;
+  btn.addEventListener('click', async () => {
+    const client = window.supabaseClient;
+    if (!client) return window.location.href = 'index.html';
+    try {
+      await client.auth.signOut();
+      hideLogoutBtn();
+      hideWelcomeUser();
+      setAdminVisible(false);
+      cacheRole('user');
+      window.location.href = 'index.html';
+    } catch (err) { console.error('Logout failed', err); }
+  });
+  btn._bound = true;
+}
+function hideLogoutBtn() {
+  const btn = document.getElementById('logoutBtn');
+  if (btn) btn.classList.add('hidden');
 }
 
-function readCachedRole() {
-  try {
-    const raw = localStorage.getItem(ROLE_KEY);
-    if (!raw) return null;
-    const obj = JSON.parse(raw);
-    if (!obj?.t) return null;
-    if (Date.now() - obj.t > ROLE_TTL) return null;
-    return obj.role || null;
-  } catch {
-    return null;
-  }
-}
-
-/* -------------------- Auth + role init -------------------- */
+/* -------------------- Auth initialization -------------------- */
 async function initAuthAndRole() {
   const client = window.supabaseClient;
-
   if (!client) {
-    console.warn('Supabase client not found.');
+    // Use cached role if available
     const cached = readCachedRole();
-    if (cached !== null) setAdminVisible(cached === 'admin');
+    if (cached) setAdminVisible(cached === 'admin');
+    hideWelcomeUser();
+    hideLogoutBtn();
     return;
   }
 
-  const cached = readCachedRole();
-  if (cached) setAdminVisible(cached === 'admin');
-
+  // Check session
   try {
     const { data: { session } } = await client.auth.getSession();
-    const profileLink =
-      document.querySelector('[aria-label="User Profile"]')?.parentElement;
+    const profileAnchor = document.querySelector('a[aria-label="User Profile"], a[href="profile.html"]');
 
     if (!session) {
-      if (profileLink) profileLink.setAttribute('href', 'signin.html');
+      if (profileAnchor) profileAnchor.setAttribute('href', 'signin.html');
       setAdminVisible(false);
       hideWelcomeUser();
       hideLogoutBtn();
@@ -129,40 +94,35 @@ async function initAuthAndRole() {
       return;
     }
 
-    if (profileLink) {
-      profileLink.setAttribute('href', 'profile.html');
-      profileLink.title = session.user.email;
+    // Logged in
+    if (profileAnchor) {
+      profileAnchor.setAttribute('href', 'profile.html');
+      profileAnchor.title = session.user.email || '';
     }
 
-    // Load profile (full_name + role)
+    // Fetch profile row (role, full_name)
     const { data: profile, error } = await client
       .from('profiles')
       .select('role, full_name')
       .eq('user_id', session.user.id)
       .single();
 
-    if (error) {
-      console.error('Failed to load profile:', error);
-    } else {
-      const displayName =
-        profile?.full_name ||
-        session.user.user_metadata?.full_name ||
-        session.user.email?.split('@')[0] ||
-        'User';
+    const displayName = profile?.full_name ||
+      session.user.user_metadata?.full_name ||
+      (session.user.email ? session.user.email.split('@')[0] : 'User');
 
-      setWelcomeUser(displayName);
-      showLogoutBtn();
+    setWelcomeUser(displayName);
+    showLogoutBtn();
 
-      const role = profile?.role || 'user';
-      setAdminVisible(role === 'admin');
-      cacheRole(role);
-    }
+    const role = profile?.role || 'user';
+    setAdminVisible(role === 'admin');
+    cacheRole(role);
   } catch (err) {
-    console.error('Auth init failed:', err);
+    console.error('initAuthAndRole failed', err);
   }
 }
 
-/* -------------------- 🔥 AUTH STATE LISTENER -------------------- */
+/* -------------------- Auth state listener -------------------- */
 function bindAuthListener() {
   const client = window.supabaseClient;
   if (!client) return;
@@ -170,8 +130,7 @@ function bindAuthListener() {
   window.__ysAuthListenerBound = true;
 
   client.auth.onAuthStateChange(async (event) => {
-    console.log('[Auth change]', event);
-
+    // Update UI on sign in / out
     if (event === 'SIGNED_OUT') {
       setAdminVisible(false);
       hideWelcomeUser();
@@ -179,164 +138,161 @@ function bindAuthListener() {
       cacheRole('user');
       return;
     }
-
     await initAuthAndRole();
   });
 }
 
+/* -------------------- Profile link handling (prevent flash) -------------------- */
+function bindProfileLinkClicks() {
+  const selector = 'a[aria-label="User Profile"], a[href="profile.html"], a[href*="profile.html"]';
+
+  async function handleClick(e) {
+    const anchor = e.currentTarget || e.target.closest('a');
+    if (!anchor) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Wait briefly for supabase client to be ready (if it's initializing)
+    const waitForClient = async (timeout = 800) => {
+      const start = Date.now();
+      while (!window.supabaseClient && (Date.now() - start < timeout)) {
+        await sleep(70);
+      }
+      return !!window.supabaseClient;
+    };
+
+    await waitForClient();
+
+    let isLoggedIn = false;
+    try {
+      if (window.supabaseClient) {
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        isLoggedIn = !!session;
+      }
+    } catch (err) {
+      console.warn('profile session check failed', err);
+    }
+
+    if (isLoggedIn) window.location.href = 'profile.html';
+    else window.location.href = 'signin.html';
+  }
+
+  function attachAll(root = document) {
+    safeQueryAll(selector, root).forEach(a => {
+      if (!a._profileBound) {
+        a.addEventListener('click', handleClick);
+        a._profileBound = true;
+      }
+    });
+  }
+
+  attachAll();
+  document.addEventListener('navbar:ready', () => attachAll());
+}
+
 /* -------------------- Small UI wiring -------------------- */
 function initSmallUI() {
-  // ===== Mobile menu =====
+  // Mobile menu toggle
   const menuBtn = document.getElementById('menuBtn');
   const mobileMenu = document.getElementById('mobileMenu');
-  if (menuBtn && mobileMenu) {
+  if (menuBtn && mobileMenu && !menuBtn._bound) {
     const icon = menuBtn.querySelector('i');
-
-    // Toggle menu
     menuBtn.addEventListener('click', () => {
       mobileMenu.classList.toggle('hidden');
       mobileMenu.classList.toggle('-translate-y-full');
-
-      // Hamburger → X animation
-      if (icon) {
-        icon.classList.toggle('bx-menu');
-        icon.classList.toggle('bx-x');
-      }
-
-      // Lock/unlock body scroll
+      if (icon) { icon.classList.toggle('bx-menu'); icon.classList.toggle('bx-x'); }
       document.body.classList.toggle('overflow-hidden');
     });
 
-    // Auto-close when a link is clicked
-    mobileMenu.querySelectorAll('a').forEach(link => {
+    // close on link click
+    safeQueryAll('a', mobileMenu).forEach(link => {
       link.addEventListener('click', () => {
         mobileMenu.classList.add('hidden', '-translate-y-full');
-        if (icon) {
-          icon.classList.add('bx-menu');
-          icon.classList.remove('bx-x');
-        }
+        if (icon) { icon.classList.add('bx-menu'); icon.classList.remove('bx-x'); }
         document.body.classList.remove('overflow-hidden');
       });
     });
+
+    menuBtn._bound = true;
   }
 
-  // Navbar shadow
+  // Navbar shadow on scroll
   const navbar = document.getElementById('navbar');
   if (navbar && !navbar._shadowBound) {
-    window.addEventListener('scroll', () => {
-      navbar.classList.toggle('shadow-md', window.scrollY > 10);
-    });
+    window.addEventListener('scroll', () => navbar.classList.toggle('shadow-md', window.scrollY > 10));
     navbar._shadowBound = true;
   }
 
-  // Dropdown menu
-  const dropdownButton = document.querySelector('.group');
+  // Desktop dropdown hover (Home)
+  const dropdownButton = document.querySelector('#navbar .group');
   const dropdownMenu = dropdownButton?.querySelector('div');
   if (dropdownButton && dropdownMenu && !dropdownButton._dropdownBound) {
     const show = () => {
-      dropdownMenu.classList.remove('opacity-0', 'visibility-hidden', 'pointer-events-none');
-      dropdownMenu.classList.add('opacity-100', 'visibility-visible', 'pointer-events-auto');
+      dropdownMenu.classList.remove('opacity-0','visibility-hidden','pointer-events-none');
+      dropdownMenu.classList.add('opacity-100','visibility-visible','pointer-events-auto');
     };
     const hide = () => {
-      dropdownMenu.classList.remove('opacity-100', 'visibility-visible', 'pointer-events-auto');
-      dropdownMenu.classList.add('opacity-0', 'visibility-hidden', 'pointer-events-none');
+      dropdownMenu.classList.remove('opacity-100','visibility-visible','pointer-events-auto');
+      dropdownMenu.classList.add('opacity-0','visibility-hidden','pointer-events-none');
     };
-
     dropdownButton.addEventListener('mouseenter', show);
-    dropdownButton.addEventListener('mouseleave', () =>
-      setTimeout(() => !dropdownMenu.matches(':hover') && hide(), 100)
-    );
+    dropdownButton.addEventListener('mouseleave', () => setTimeout(() => !dropdownMenu.matches(':hover') && hide(), 100));
     dropdownMenu.addEventListener('mouseenter', show);
     dropdownMenu.addEventListener('mouseleave', hide);
-
     dropdownButton._dropdownBound = true;
   }
 
-  // Highlight active nav item based on current page
+  // Active item highlight
   highlightActiveNav();
 }
 
 /* -------------------- Highlight active nav item -------------------- */
-/*
-  Logic:
-  - Home (index) active when on index.html or when path is root or when hash anchors to index sections.
-  - Shop active when on shop.html OR product-details.html (we want Shop highlighted when viewing product pages).
-  - Admin active when on admin.html
-  - This function adds a consistent 'active' appearance by applying the orange text color
-    to the link and its icon (adds class text-[#f8941e] and font-semibold).
-*/
 function highlightActiveNav() {
   try {
     const path = window.location.pathname.split('/').pop() || 'index.html';
-    const hrefs = {
-      home: ['index.html', ''],
-      shop: ['shop.html', 'product-details.html'],
-      admin: ['admin.html', 'inventory.html']
+    const isIndexWithHash = path === 'index.html' && location.hash;
+    const mapping = {
+      home: ['index.html',''],
+      shop: ['shop.html','product-details.html'],
+      admin: ['admin.html','inventory.html']
     };
 
-    // Utility to clear any previous active styling
-    function clearActive() {
-      document.querySelectorAll('#navbar a, #navbar button, #mobileMenu a').forEach(el => {
-        el.classList.remove('text-[#f8941e]', 'font-semibold');
-        // also remove from icon child
-        const icon = el.querySelector('i');
-        if (icon) icon.classList.remove('text-[#f8941e]', 'font-semibold');
-      });
-    }
+    // clear
+    safeQueryAll('#navbar a, #navbar button, #mobileMenu a').forEach(el => {
+      el.classList.remove('text-[#f8941e]','font-semibold');
+      const icon = el.querySelector('i');
+      if (icon) icon.classList.remove('text-[#f8941e]','font-semibold');
+    });
 
-    // Apply active styling to a given selector (link or button element)
-    function applyActive(el) {
+    const apply = (el) => {
       if (!el) return;
-      el.classList.add('text-[#f8941e]', 'font-semibold');
+      el.classList.add('text-[#f8941e]','font-semibold');
       const icon = el.querySelector('i');
       if (icon) icon.classList.add('text-[#f8941e]');
-    }
+    };
 
-    clearActive();
-
-    // Find and mark the matching nav item
-    if (hrefs.home.includes(path) || (path === 'index.html' && location.hash)) {
-      // mark Home - desktop button and mobile links
-      const desktopHomeBtn = document.querySelector('#navbar .group > button') || document.querySelector('#navbar a[href="index.html"]');
-      const mobileHomeLink = document.querySelector('#mobileMenu a[href^="index.html#"], #mobileMenu a[href="index.html"]');
-      applyActive(desktopHomeBtn);
-      applyActive(mobileHomeLink);
+    if (mapping.home.includes(path) || isIndexWithHash) {
+      apply(safeQuery('.group > button') || safeQuery('#navbar a[href="index.html"]'));
+      apply(safeQuery('#mobileMenu a[href^="index.html#"], #mobileMenu a[href="index.html"]'));
       return;
     }
-
-    if (hrefs.shop.includes(path)) {
-      const desktopShop = document.querySelector('#navbar a[href="shop.html"]');
-      const mobileShop = document.querySelector('#mobileMenu a[href="shop.html"]');
-      applyActive(desktopShop);
-      applyActive(mobileShop);
+    if (mapping.shop.includes(path) || window.location.pathname.includes('product-details')) {
+      apply(safeQuery('#navbar a[href="shop.html"]'));
+      apply(safeQuery('#mobileMenu a[href="shop.html"]'));
       return;
     }
-
-    if (hrefs.admin.includes(path)) {
-      const desktopAdmin = document.getElementById('adminMenu') || document.querySelector('#navbar a[href="admin.html"]');
-      const mobileAdmin = document.getElementById('adminMenuMobile') || document.querySelector('#mobileMenu a[href="admin.html"]');
-      applyActive(desktopAdmin);
-      applyActive(mobileAdmin);
+    if (mapping.admin.includes(path)) {
+      apply(document.getElementById('adminMenu') || safeQuery('#navbar a[href="admin.html"]'));
+      apply(document.getElementById('adminMenuMobile') || safeQuery('#mobileMenu a[href="admin.html"]'));
       return;
     }
-
-    // Fallback: if no exact match, try to match by pathname contains (covers query params)
-    if (window.location.pathname.includes('product-details')) {
-      const desktopShop = document.querySelector('#navbar a[href="shop.html"]');
-      const mobileShop = document.querySelector('#mobileMenu a[href="shop.html"]');
-      applyActive(desktopShop);
-      applyActive(mobileShop);
-      return;
-    }
-
-    // If none matched, leave default (no forced active)
   } catch (err) {
     console.warn('highlightActiveNav failed', err);
   }
 }
 
-/* -------------------- Navbar loader -------------------- */
-async function tryFetchNavbar(paths = ['./navbar.html', '/navbar.html', 'navbar.html']) {
+/* -------------------- Navbar HTML fetcher -------------------- */
+async function tryFetchNavbar(paths = ['./navbar.html','/navbar.html','navbar.html']) {
   for (const p of paths) {
     try {
       const resp = await fetch(p, { cache: 'no-store' });
@@ -346,38 +302,85 @@ async function tryFetchNavbar(paths = ['./navbar.html', '/navbar.html', 'navbar.
   return null;
 }
 
+/* -------------------- Start / bootstrap -------------------- */
 async function startNavbar() {
+  const root = document.getElementById('navbar-root');
   const existing = document.getElementById('navbar');
 
+  // If navbar already on page, initialize UI and auth
   if (existing && existing.children.length > 0) {
     initSmallUI();
-    await initAuthAndRole();
-    bindAuthListener();
-    bindLogout();
+    await waitForSupabaseThenInit();
     document.dispatchEvent(new CustomEvent('navbar:ready'));
     return;
   }
 
-  const root = document.getElementById('navbar-root');
+  // Try to fetch navbar markup and inject it
   if (root) {
     const html = await tryFetchNavbar();
     if (html) {
       root.innerHTML = html;
+      // slight tick to let DOM settle
       await Promise.resolve();
       initSmallUI();
-      await initAuthAndRole();
-      bindAuthListener();
-      bindLogout();
+      await waitForSupabaseThenInit();
       document.dispatchEvent(new CustomEvent('navbar:ready'));
       return;
     }
   }
 
+  // Fallback: still initialize UI + auth
   initSmallUI();
-  await initAuthAndRole();
-  bindAuthListener();
-  bindLogout();
+  await waitForSupabaseThenInit();
   document.dispatchEvent(new CustomEvent('navbar:ready'));
 }
 
+/* Helper: Wait for supabase client then init auth-related bindings */
+async function waitForSupabaseThenInit() {
+  // If supabase client already exists, run immediately
+  if (window.supabaseClient) {
+    await initAuthAndRole();
+    bindAuthListener();
+    bindProfileLinkClicks();
+    bindLogout(); // ensures logout button bound if present
+    return;
+  }
+  // Else wait for a short period or event
+  let resolved = false;
+  function onReady() { resolved = true; }
+  document.addEventListener('supabase:ready', onReady, { once: true });
+
+  // poll for up to ~2s
+  const start = Date.now();
+  while (!window.supabaseClient && !resolved && Date.now() - start < 2000) {
+    await sleep(100);
+  }
+  document.removeEventListener('supabase:ready', onReady);
+  // initialize whatever we have
+  await initAuthAndRole();
+  bindAuthListener();
+  bindProfileLinkClicks();
+  bindLogout();
+}
+
+/* -------------------- Legacy bindLogout (keeps compatibility) -------------------- */
+function bindLogout() {
+  const btn = document.getElementById('logoutBtn');
+  if (!btn || btn._bound) return;
+  btn.addEventListener('click', async () => {
+    const client = window.supabaseClient;
+    if (!client) { window.location.href = 'index.html'; return; }
+    try {
+      await client.auth.signOut();
+      hideLogoutBtn();
+      hideWelcomeUser();
+      setAdminVisible(false);
+      cacheRole('user');
+      window.location.href = 'index.html';
+    } catch (err) { console.error('Logout failed:', err); }
+  });
+  btn._bound = true;
+}
+
+/* -------------------- Kickoff -------------------- */
 document.addEventListener('DOMContentLoaded', startNavbar);
