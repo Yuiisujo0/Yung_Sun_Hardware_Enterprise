@@ -3,7 +3,7 @@
 // - Injects drawer markup if not present.
 // - Persists cart in localStorage under key 'ys_cart_v1' by default.
 // - Supports per-user cart keys 'ys_cart_v1_user_<userId>' and provides migrateAnonymousToUser(userId).
-// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId) }.
+// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId), useAnonymousAndClear(), setUserKey(userId) }.
 // - Exposes window.cartAPIReady Promise that resolves when cart module initialization completes.
 // - Listens for navbar ready and wires navbar cart icons to open drawer.
 // - Responds to 'cart:changed' events by reloading cart state from storage.
@@ -385,6 +385,35 @@
       } catch (err) {
         console.warn('migrateAnonymousToUser failed', err);
         return false;
+      }
+    },
+
+    // Switch cart module to anonymous mode and clear visible cart (used on sign-out).
+    // This does NOT delete any user-scoped key so the user's cart stays persisted.
+    useAnonymousAndClear() {
+      try {
+        currentStorageKey = STORAGE_KEY;
+        cart = {};
+        save();
+        renderDrawer();
+        // notify others
+        try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { reason: 'signed_out' } })); } catch (e) {}
+      } catch (err) {
+        console.warn('useAnonymousAndClear failed', err);
+      }
+    },
+
+    // Force the cart module to point to a specific user key (without merging). Useful if you already migrated.
+    setUserKey(userId) {
+      try {
+        if (!userId) return;
+        currentStorageKey = `${STORAGE_KEY}_user_${userId}`;
+        load();
+        save();
+        renderDrawer();
+        try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { reason: 'set_user' } })); } catch (e) {}
+      } catch (err) {
+        console.warn('setUserKey failed', err);
       }
     }
   };

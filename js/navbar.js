@@ -67,8 +67,8 @@ function showLogoutBtn() {
       hideWelcomeUser();
       setAdminVisible(false);
       cacheRole('user');
-      // optionally clear user-scoped cart on sign-out - commented by default
-      // window.cartAPI?.clear();
+      // ensure cart UI clears and switches back to anon mode (preserve user-scoped key)
+      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) { /* ignore */ }
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed', err); }
   });
@@ -147,7 +147,8 @@ async function initAuthAndRole() {
       hideWelcomeUser();
       hideLogoutBtn();
       cacheRole('user');
-      // On signed-out state we may want to show anon cart - nothing else necessary
+      // On signed-out state we switch cart module to anonymous and clear visible cart
+      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
       return;
     }
 
@@ -168,6 +169,8 @@ async function initAuthAndRole() {
         // fallback: move anon raw storage into user-scoped key
         const moved = fallbackMoveAnonCartToUser(session.user.id);
         if (moved) dispatchCartChanged();
+        // ensure cart module points to the user key (useful if cart module was already initialized)
+        try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
       }
     } catch (err) {
       console.warn('Cart migration attempt failed', err);
@@ -206,13 +209,12 @@ function bindAuthListener() {
     console.log('[Auth change]', event);
 
     if (event === 'SIGNED_OUT') {
-      // On sign out: hide admin UI and welcome; leave anon cart in place (so browser retains it).
-      // If you prefer to clear cart on sign-out, uncomment the next line:
-      // window.cartAPI?.clear?.();
+      // On sign out: hide admin UI and welcome; switch cart module to anonymous and clear visible cart.
       setAdminVisible(false);
       hideWelcomeUser();
       hideLogoutBtn();
       cacheRole('user');
+      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
       dispatchCartChanged(); // notify listeners that cart context may have changed
       return;
     }
@@ -456,8 +458,8 @@ function bindLogout() {
       hideWelcomeUser();
       setAdminVisible(false);
       cacheRole('user');
-      // optionally clear cart on logout:
-      // if (window.cartAPI?.clear) window.cartAPI.clear();
+      // ensure cart UI clears and switches back to anon mode (preserve user-scoped key)
+      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
       dispatchCartChanged();
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed:', err); }
