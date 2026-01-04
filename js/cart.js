@@ -3,13 +3,13 @@
 // - Injects drawer markup if not present.
 // - Persists cart in localStorage under key 'ys_cart_v1' by default.
 // - Supports per-user cart keys 'ys_cart_v1_user_<userId>' and provides migrateAnonymousToUser(userId).
-// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId), useAnonymousAndClear(), setUserKey(userId) }.
+// - Exposes window.cartAPI: { add(product), setQty(id, qty), remove(id), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId), useAnonymousAndClear(), setUserKey(userId) }.
 // - Exposes window.cartAPIReady Promise that resolves when cart module initialization completes.
-// - Listens for navbar ready and wires navbar cart icons to open drawer.
-// - Responds to 'cart:changed' events by reloading cart state from storage.
+// - Dispatches 'cart:changed' when the cart changes so other parts of the app (checkout.js, payment.js) can re-render.
 
 (function () {
   const STORAGE_KEY = 'ys_cart_v1';
+  const STAGED_CHECKOUT_KEY = 'ys_cart_checkout';
 
   // Provide a ready promise other scripts can await
   let _cartReadyResolve;
@@ -24,6 +24,21 @@
   // internal variable storing which localStorage key we currently read/write
   let currentStorageKey = STORAGE_KEY;
   let cart = {}; // { id: { id, name, price, image_url, qty } }
+
+  // Emit cart change event and keep staged checkout snapshot up-to-date
+  function notifyCartChanged() {
+    try {
+      // update staged checkout array for pages that read it
+      try {
+        const staged = Object.values(cart).map(i => ({ ...i }));
+        localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(staged));
+      } catch (e) { /* ignore */ }
+
+      document.dispatchEvent(new CustomEvent('cart:changed', { detail: { time: Date.now() } }));
+    } catch (e) {
+      console.warn('notifyCartChanged failed', e);
+    }
+  }
 
   // Load: attempt to use currentStorageKey, otherwise fall back:
   // - try anonymous STORAGE_KEY
@@ -46,6 +61,8 @@
       if (keyToUse !== STORAGE_KEY) {
         currentStorageKey = keyToUse;
         cart = {};
+        // ensure staged checkout snapshot cleared
+        try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify([])); } catch (e) {}
         return;
       }
 
@@ -65,6 +82,8 @@
 
       currentStorageKey = keyToUse || STORAGE_KEY;
       cart = raw ? JSON.parse(raw) : {};
+      // ensure staged snapshot matches loaded cart
+      try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(cart))); } catch (e) {}
     } catch (e) {
       console.error('cart load error', e);
       cart = {};
@@ -72,7 +91,11 @@
     }
   }
   function save() {
-    try { localStorage.setItem(currentStorageKey || STORAGE_KEY, JSON.stringify(cart)); } catch (e) { console.error('cart save', e); }
+    try {
+      localStorage.setItem(currentStorageKey || STORAGE_KEY, JSON.stringify(cart));
+      // keep staged checkout in sync too
+      try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(cart))); } catch (e) {}
+    } catch (e) { console.error('cart save', e); }
   }
   function itemsArray() { return Object.values(cart); }
   function subtotal() { return itemsArray().reduce((s, it) => s + (Number(it.price || 0) * (it.qty || 0)), 0); }
@@ -208,25 +231,34 @@
 
     save();
     renderDrawer();
+    notifyCartChanged();
     open();
   }
 
   function setQty(id, qty) {
     id = String(id);
-    if (!cart[id]) return;
     const q = Math.max(0, Number(qty) || 0);
-    if (q <= 0) delete cart[id];
-    else cart[id].qty = q;
+    if (!cart[id] && q > 0) {
+      // unknown item — ignore
+      return;
+    }
+    if (q <= 0) {
+      delete cart[id];
+    } else {
+      cart[id].qty = q;
+    }
     save();
     renderDrawer();
+    notifyCartChanged();
   }
-  function remove(id) {
+  function removeItem(id) {
     id = String(id);
     if (cart[id]) delete cart[id];
     save();
     renderDrawer();
+    notifyCartChanged();
   }
-  function clear() { cart = {}; save(); renderDrawer(); }
+  function clear() { cart = {}; save(); renderDrawer(); notifyCartChanged(); }
 
   // Update small badge near navbar cart icons (creates badge if none)
   function updateBadge() {
@@ -291,7 +323,7 @@
     if (!itemEl) return;
     const pid = itemEl.getAttribute('data-product-id');
     if (target.closest('[data-action="remove"]')) {
-      remove(pid);
+      removeItem(pid);
       return;
     }
     if (target.closest('[data-action="increase"]')) {
@@ -310,7 +342,7 @@
     if (!itemEl) return;
     const pid = itemEl.getAttribute('data-product-id');
     const val = parseInt(input.value, 10);
-    if (Number.isNaN(val) || val <= 0) remove(pid);
+    if (Number.isNaN(val) || val <= 0) removeItem(pid);
     else setQty(pid, val);
   }
   async function checkoutHandler() {
@@ -321,7 +353,7 @@
     }
 
     // Save cart snapshot for checkout (so checkout page or sign-in can pick it up if needed)
-    try { localStorage.setItem('ys_cart_checkout', JSON.stringify(items)); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(items)); } catch (e) { /* ignore */ }
 
     // Check if user is signed in (if supabase client is available)
     let isLoggedIn = false;
@@ -365,9 +397,11 @@
   // Public API
   const api = {
     add(product) { add(product); },
+    setQty(id, qty) { setQty(id, qty); },
+    remove(id) { removeItem(id); },
     open() { open(); },
     close() { close(); },
-    getItems() { return itemsArray(); },
+    getItems() { return itemsArray().map(i => ({ ...i })); },
     count() { return totalCount(); },
     clear() { clear(); },
     _render: renderDrawer, // exposed for debugging
@@ -404,6 +438,7 @@
         load();
         save();
         renderDrawer();
+        notifyCartChanged();
         return true;
       } catch (err) {
         console.warn('migrateAnonymousToUser failed', err);
@@ -421,8 +456,7 @@
         cart = {};
         save();
         renderDrawer();
-        // notify others
-        try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { reason: 'signed_out' } })); } catch (e) {}
+        notifyCartChanged();
       } catch (err) {
         console.warn('useAnonymousAndClear failed', err);
       }
@@ -436,7 +470,7 @@
         load();
         save();
         renderDrawer();
-        try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { reason: 'set_user' } })); } catch (e) {}
+        notifyCartChanged();
       } catch (err) {
         console.warn('setUserKey failed', err);
       }
