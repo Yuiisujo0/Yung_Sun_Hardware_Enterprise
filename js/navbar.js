@@ -69,6 +69,8 @@ function showLogoutBtn() {
       cacheRole('user');
       // ensure cart UI clears and switches back to anon mode (preserve user-scoped key)
       try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) { /* ignore */ }
+      // notify others
+      try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { reason: 'signed_out' } })); } catch (e) {}
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed', err); }
   });

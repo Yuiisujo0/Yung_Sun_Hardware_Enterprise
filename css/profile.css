@@ -23,6 +23,13 @@ html { scroll-behavior: smooth; }
   transform-origin: bottom left;
 }
 
+/* Make navbar always above page-level modals/overlays */
+#navbar { z-index: 99999 !important; }
+
+/* Make cart drawer and overlay still appear above navbar when open */
+#cart-drawer { z-index: 100000 !important; }
+#cart-overlay { z-index: 99998 !important; }
+
 #mobileMenu {
   transition: transform 0.3s ease-in-out;
 }

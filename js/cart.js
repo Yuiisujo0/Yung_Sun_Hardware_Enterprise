@@ -392,6 +392,8 @@
     // This does NOT delete any user-scoped key so the user's cart stays persisted.
     useAnonymousAndClear() {
       try {
+        // close drawer first so overlay is removed
+        close();
         currentStorageKey = STORAGE_KEY;
         cart = {};
         save();

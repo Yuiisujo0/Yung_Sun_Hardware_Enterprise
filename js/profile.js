@@ -224,6 +224,8 @@ function setAvatarSrc(imgEl, src) {
       } catch (err) {
         console.warn('Sign out error', err);
       } finally {
+        // Ensure cart UI reverts to anonymous and clears
+        try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
         window.location.href = 'index.html';
       }
     });
