@@ -151,6 +151,8 @@ async function initAuthAndRole() {
       cacheRole('user');
       // On signed-out state we switch cart module to anonymous and clear visible cart
       try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
+      // notify cart listeners as well
+      dispatchCartChanged();
       return;
     }
 
@@ -165,17 +167,23 @@ async function initAuthAndRole() {
       if (window.cartAPI?.migrateAnonymousToUser) {
         // preferred flow if cart module implements migration
         await window.cartAPI.migrateAnonymousToUser(session.user.id);
+        // ensure cart module points to user's key (safe even if already set)
+        try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
         // cart module should fire cart change events; ensure UI updated
         dispatchCartChanged();
       } else {
         // fallback: move anon raw storage into user-scoped key
         const moved = fallbackMoveAnonCartToUser(session.user.id);
-        if (moved) dispatchCartChanged();
-        // ensure cart module points to the user key (useful if cart module was already initialized)
+        // ensure cart module points to user's key even if nothing was moved
         try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
+        if (moved) dispatchCartChanged();
+        else dispatchCartChanged(); // still dispatch so cart module reloads using user key
       }
     } catch (err) {
       console.warn('Cart migration attempt failed', err);
+      // In any case try to point cart module to the user's key
+      try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
+      dispatchCartChanged();
     }
 
     // Load profile row (role, full_name)
