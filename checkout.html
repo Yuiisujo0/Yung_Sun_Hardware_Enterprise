@@ -10,8 +10,6 @@
 
   <!-- Boxicons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
-
 </head>
 
 <body class="bg-gray-100">
@@ -21,50 +19,50 @@
 
   <!-- Page -->
   <div class="pt-24">
-  <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-6">
 
-    <!-- LEFT SECTION -->
-    <div class="md:basis-2/3">
-      <h2 class="text-2xl font-bold mb-4 text-gray-800">Shopping Cart</h2>
-      <div id="checkout-items" class="space-y-4 max-h-[80vh] overflow-auto">
-        <!-- JS injects items -->
-      </div>
-    </div>
-
-    <!-- RIGHT SECTION -->
-    <div class="md:basis-1/3 bg-white p-6 rounded-xl shadow h-full">
-      <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between">
-          <span>Subtotal</span>
-          <span id="summary-subtotal">RM0.00</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Tax (6%)</span>
-          <span id="summary-tax">RM0.00</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Shipping</span>
-          <span id="summary-shipping">RM10.00</span>
-        </div>
-        <div class="border-t mt-2 pt-2 flex justify-between font-bold text-lg">
-          <span>Total</span>
-          <span id="summary-total">RM0.00</span>
+      <!-- LEFT SECTION -->
+      <div class="md:basis-2/3">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Shopping Cart</h2>
+        <div id="checkout-items" class="space-y-4 max-h-[80vh] overflow-auto">
+          <!-- JS injects items -->
         </div>
       </div>
+
+      <!-- RIGHT SECTION -->
+      <div class="md:basis-1/3 bg-white p-6 rounded-xl shadow h-full">
+        <h2 class="text-xl font-semibold mb-4">Order Summary</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span>Subtotal</span>
+            <span id="summary-subtotal">RM0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Tax (6%)</span>
+            <span id="summary-tax">RM0.00</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Shipping</span>
+            <span id="summary-shipping">RM10.00</span>
+          </div>
+          <div class="border-t mt-2 pt-2 flex justify-between font-bold text-lg">
+            <span>Total</span>
+            <span id="summary-total">RM0.00</span>
+          </div>
+        </div>
         <button id="place-order-btn"
-        class="w-full mt-6 bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-800 transition flex items-center justify-center">
+          class="w-full mt-6 bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-800 transition flex items-center justify-center">
             <span class="mr-2">Proceed to Checkout</span>
             <i class="bx bx-right-arrow-alt text-lg mt-0.5"></i>
         </button>
 
-      <p class="text-center mt-3 text-sm">
-        <a href="shop.html" class="text-blue-600 hover:underline">Continue Shopping</a>
-      </p>
-    </div>
+        <p class="text-center mt-3 text-sm">
+          <a href="shop.html" class="text-blue-600 hover:underline">Continue Shopping</a>
+        </p>
+      </div>
 
+    </div>
   </div>
-</div>
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -72,6 +70,9 @@
 
   <!-- Navbar Loader -->
   <script src="js/navbar.js"></script>
+
+  <!-- Cart module: load before shop/checkout so window.cartAPI is available -->
+  <script src="js/cart.js"></script>
 
   <!-- Cart + Checkout Logic -->
   <script src="js/shop.js"></script>

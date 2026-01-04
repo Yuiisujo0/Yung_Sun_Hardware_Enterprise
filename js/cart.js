@@ -1,10 +1,12 @@
 // js/cart.js
 // Simple site-wide cart module (works on pages with or without existing drawer markup).
 // - Injects drawer markup if not present.
-// - Persists cart in localStorage under key 'ys_cart_v1'.
-// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count(), clear() }.
+// - Persists cart in localStorage under key 'ys_cart_v1' by default.
+// - Supports per-user cart keys 'ys_cart_v1_user_<userId>' and provides migrateAnonymousToUser(userId).
+// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId) }.
 // - Exposes window.cartAPIReady Promise that resolves when cart module initialization completes.
 // - Listens for navbar ready and wires navbar cart icons to open drawer.
+// - Responds to 'cart:changed' events by reloading cart state from storage.
 
 (function () {
   const STORAGE_KEY = 'ys_cart_v1';
@@ -19,19 +21,56 @@
   function formatRM(n) { return `RM${Number(n || 0).toFixed(2)}`; }
 
   // CART state
+  // internal variable storing which localStorage key we currently read/write
+  let currentStorageKey = STORAGE_KEY;
   let cart = {}; // { id: { id, name, price, image_url, qty } }
 
+  // Load: attempt to use currentStorageKey, otherwise fall back:
+  // - try anonymous STORAGE_KEY
+  // - if missing, look for a single user-scoped key that starts with STORAGE_KEY + '_user_'
   function load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      // Prefer the currentStorageKey if it exists in localStorage
+      let keyToUse = currentStorageKey || STORAGE_KEY;
+      let raw = localStorage.getItem(keyToUse);
+
+      if (!raw) {
+        // If the preferred key is empty/missing, try anonymous key
+        raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          keyToUse = STORAGE_KEY;
+        } else {
+          // Try to find any user-scoped key (e.g. 'ys_cart_v1_user_<id>')
+          const keys = Object.keys(localStorage).filter(k => k.startsWith(`${STORAGE_KEY}_user_`));
+          if (keys.length === 1) {
+            keyToUse = keys[0];
+            raw = localStorage.getItem(keyToUse);
+          } else if (keys.length > 1) {
+            // If multiple user keys exist (unlikely in one browser), prefer currentStorageKey if set,
+            // otherwise pick the one with most items as best-effort
+            let best = keys[0];
+            let bestCount = (JSON.parse(localStorage.getItem(best) || '{}') && Object.keys(JSON.parse(localStorage.getItem(best) || '{}')).length) || 0;
+            for (let i = 1; i < keys.length; i++) {
+              const k = keys[i];
+              const cnt = (JSON.parse(localStorage.getItem(k) || '{}') && Object.keys(JSON.parse(localStorage.getItem(k) || '{}')).length) || 0;
+              if (cnt > bestCount) { best = k; bestCount = cnt; }
+            }
+            keyToUse = best;
+            raw = localStorage.getItem(keyToUse);
+          }
+        }
+      }
+
+      currentStorageKey = keyToUse || STORAGE_KEY;
       cart = raw ? JSON.parse(raw) : {};
     } catch (e) {
       console.error('cart load error', e);
       cart = {};
+      currentStorageKey = STORAGE_KEY;
     }
   }
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); } catch (e) { console.error('cart save', e); }
+    try { localStorage.setItem(currentStorageKey || STORAGE_KEY, JSON.stringify(cart)); } catch (e) { console.error('cart save', e); }
   }
   function itemsArray() { return Object.values(cart); }
   function subtotal() { return itemsArray().reduce((s, it) => s + (Number(it.price || 0) * (it.qty || 0)), 0); }
@@ -308,7 +347,46 @@
     getItems() { return itemsArray(); },
     count() { return totalCount(); },
     clear() { clear(); },
-    _render: renderDrawer // exposed for debugging
+    _render: renderDrawer, // exposed for debugging
+
+    // Migrate anonymous cart to a user-scoped key and load it into the cart module.
+    // Returns true if migration did something, false otherwise.
+    async migrateAnonymousToUser(userId) {
+      try {
+        if (!userId) return false;
+        const anonRaw = localStorage.getItem(STORAGE_KEY);
+        if (!anonRaw) return false;
+        const userKey = `${STORAGE_KEY}_user_${userId}`;
+        const anon = JSON.parse(anonRaw || '{}');
+        const existingRaw = localStorage.getItem(userKey);
+        if (!existingRaw) {
+          localStorage.setItem(userKey, JSON.stringify(anon));
+        } else {
+          const userCart = JSON.parse(existingRaw || '{}');
+          Object.keys(anon).forEach(k => {
+            if (!anon[k] || !anon[k].id) return;
+            if (userCart[k]) {
+              userCart[k].qty = (Number(userCart[k].qty || 0) + Number(anon[k].qty || 0));
+            } else {
+              userCart[k] = anon[k];
+            }
+          });
+          localStorage.setItem(userKey, JSON.stringify(userCart));
+        }
+        // Remove anonymous key to avoid leakage
+        localStorage.removeItem(STORAGE_KEY);
+
+        // Point this cart module to the user key and reload
+        currentStorageKey = userKey;
+        load();
+        save();
+        renderDrawer();
+        return true;
+      } catch (err) {
+        console.warn('migrateAnonymousToUser failed', err);
+        return false;
+      }
+    }
   };
 
   // Initialize on load
@@ -325,7 +403,7 @@
     wireDrawerEvents();
     renderDrawer();
 
-    // if navbar is already injected, wire icons; otherwise listen for navbar:ready
+    // respond to navbar:ready
     if (qs('#navbar')) wireNavbarCartIcons();
     document.addEventListener('navbar:ready', () => {
       // small delay to allow navbar DOM settle
@@ -333,6 +411,13 @@
         wireNavbarCartIcons();
         renderDrawer();
       }, 10);
+    });
+
+    // Listen for cart changes triggered externally (e.g. navbar fallback moved keys)
+    document.addEventListener('cart:changed', () => {
+      // reload from storage (this will discover user-scoped key if anon was moved)
+      load();
+      renderDrawer();
     });
 
     // expose API
