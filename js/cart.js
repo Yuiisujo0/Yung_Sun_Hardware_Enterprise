@@ -6,6 +6,7 @@
 // - Exposes window.cartAPI: { add(product), setQty(id, qty), remove(id), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId), useAnonymousAndClear(), setUserKey(userId) }.
 // - Exposes window.cartAPIReady Promise that resolves when cart module initialization completes.
 // - Dispatches 'cart:changed' when the cart changes so other parts of the app (checkout.js, payment.js) can re-render.
+// - Exposes window.cartAddFallback(product) for pages/scripts that cannot access cartAPI (race or ordering issues).
 
 (function () {
   const STORAGE_KEY = 'ys_cart_v1';
@@ -21,58 +22,47 @@
   function formatRM(n) { return `RM${Number(n || 0).toFixed(2)}`; }
 
   // CART state
-  // internal variable storing which localStorage key we currently read/write
   let currentStorageKey = STORAGE_KEY;
   let cart = {}; // { id: { id, name, price, image_url, qty } }
 
   // Emit cart change event and keep staged checkout snapshot up-to-date
   function notifyCartChanged() {
     try {
-      // update staged checkout array for pages that read it
       try {
         const staged = Object.values(cart).map(i => ({ ...i }));
         localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(staged));
       } catch (e) { /* ignore */ }
-
       document.dispatchEvent(new CustomEvent('cart:changed', { detail: { time: Date.now() } }));
     } catch (e) {
       console.warn('notifyCartChanged failed', e);
     }
   }
 
-  // Load: attempt to use currentStorageKey, otherwise fall back:
-  // - try anonymous STORAGE_KEY
-  // - if missing, look for a single user-scoped key that starts with STORAGE_KEY + '_user_'
+  // Load current cart from storage (safe, conservative)
   function load() {
     try {
-      // Prefer the currentStorageKey if it exists in localStorage
       let keyToUse = currentStorageKey || STORAGE_KEY;
       let raw = localStorage.getItem(keyToUse);
 
       if (raw) {
         currentStorageKey = keyToUse;
         cart = JSON.parse(raw);
+        // ensure staged snapshot matches loaded cart
+        try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(cart))); } catch (e) {}
         return;
       }
 
-      // If preferred key is missing:
-      // - If the preferred key is NOT the anonymous key (i.e. it's a user key), do NOT auto-select another user's key.
-      //   Instead initialize an empty cart for the intended key (prevents accidentally loading another user's cart).
       if (keyToUse !== STORAGE_KEY) {
         currentStorageKey = keyToUse;
         cart = {};
-        // ensure staged checkout snapshot cleared
         try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify([])); } catch (e) {}
         return;
       }
 
-      // If preferred key was anonymous and missing, try to find an existing anonymous key (unlikely) or
-      // fallback to the single user-scoped key (legacy behavior).
       raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         keyToUse = STORAGE_KEY;
       } else {
-        // Try to find any user-scoped key (e.g. 'ys_cart_v1_user_<id>')
         const keys = Object.keys(localStorage).filter(k => k.startsWith(`${STORAGE_KEY}_user_`));
         if (keys.length === 1) {
           keyToUse = keys[0];
@@ -82,7 +72,6 @@
 
       currentStorageKey = keyToUse || STORAGE_KEY;
       cart = raw ? JSON.parse(raw) : {};
-      // ensure staged snapshot matches loaded cart
       try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(cart))); } catch (e) {}
     } catch (e) {
       console.error('cart load error', e);
@@ -90,18 +79,19 @@
       currentStorageKey = STORAGE_KEY;
     }
   }
+
   function save() {
     try {
       localStorage.setItem(currentStorageKey || STORAGE_KEY, JSON.stringify(cart));
-      // keep staged checkout in sync too
       try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(cart))); } catch (e) {}
     } catch (e) { console.error('cart save', e); }
   }
+
   function itemsArray() { return Object.values(cart); }
   function subtotal() { return itemsArray().reduce((s, it) => s + (Number(it.price || 0) * (it.qty || 0)), 0); }
   function totalCount() { return itemsArray().reduce((s, it) => s + (it.qty || 0), 0); }
 
-  // Drawer markup (use only if page doesn't already have one)
+  // Drawer markup
   const drawerHTML = `
   <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
 
@@ -126,7 +116,7 @@
   `;
 
   function ensureDrawer() {
-    if (qs('#cart-drawer')) return; // already present
+    if (qs('#cart-drawer')) return;
     document.body.insertAdjacentHTML('beforeend', drawerHTML);
   }
 
@@ -182,12 +172,10 @@
     updateBadge();
   }
 
-  // Simple HTML escape
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]);
   }
 
-  // Drawer controls
   function open() {
     ensureDrawer();
     const drawer = qs('#cart-drawer');
@@ -214,7 +202,7 @@
   function add(product) {
     if (!product) return;
     const id = String(product.id || product);
-    const quantityToAdd = Number(product.qty) || 1; // use qty if provided
+    const quantityToAdd = Number(product.qty) || 1;
     const existing = cart[id];
 
     if (existing) {
@@ -238,15 +226,9 @@
   function setQty(id, qty) {
     id = String(id);
     const q = Math.max(0, Number(qty) || 0);
-    if (!cart[id] && q > 0) {
-      // unknown item — ignore
-      return;
-    }
-    if (q <= 0) {
-      delete cart[id];
-    } else {
-      cart[id].qty = q;
-    }
+    if (!cart[id] && q > 0) return;
+    if (q <= 0) delete cart[id];
+    else cart[id].qty = q;
     save();
     renderDrawer();
     notifyCartChanged();
@@ -260,19 +242,15 @@
   }
   function clear() { cart = {}; save(); renderDrawer(); notifyCartChanged(); }
 
-  // Update small badge near navbar cart icons (creates badge if none)
   function updateBadge() {
     const count = totalCount();
-    // look for all cart icons inside #navbar
     const navIcons = qsa('#navbar .bx-cart');
     navIcons.forEach(icon => {
       let badge = icon.parentElement?.querySelector('.cart-badge') || icon.querySelector('.cart-badge');
       if (!badge) {
-        // create a small badge span
         badge = document.createElement('span');
         badge.className = 'cart-badge inline-flex items-center justify-center text-xs text-white bg-red-600 rounded-full w-5 h-5 text-[11px] ml-1';
         badge.style.minWidth = '20px';
-        // try to append intelligently
         if (icon.tagName.toLowerCase() === 'i') {
           icon.insertAdjacentElement('afterend', badge);
         } else {
@@ -284,20 +262,14 @@
     });
   }
 
-  // Wire interactions (delegation)
   function wireDrawerEvents() {
     const itemsEl = qs('#cart-items');
     if (!itemsEl) return;
-
-    // clicks inside cart-items
     itemsEl.removeEventListener('click', cartClickHandler);
     itemsEl.addEventListener('click', cartClickHandler);
-
-    // change qty input
     itemsEl.removeEventListener('change', cartChangeHandler);
     itemsEl.addEventListener('change', cartChangeHandler);
 
-    // overlay and close button
     const overlay = qs('#cart-overlay');
     const closeBtn = qs('#cart-close-btn');
     if (overlay) {
@@ -309,7 +281,6 @@
       closeBtn.addEventListener('click', close);
     }
 
-    // checkout (placeholder behavior)
     const checkout = qs('#checkout-btn');
     if (checkout) {
       checkout.removeEventListener('click', checkoutHandler);
@@ -347,44 +318,29 @@
   }
   async function checkoutHandler() {
     const items = itemsArray();
-    if (!items.length) {
-      alert('Cart is empty.');
-      return;
-    }
+    if (!items.length) { alert('Cart is empty.'); return; }
 
-    // Save cart snapshot for checkout (so checkout page or sign-in can pick it up if needed)
-    try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(items)); } catch (e) { /* ignore */ }
-
-    // Check if user is signed in (if supabase client is available)
+    try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(items)); } catch (e) {}
     let isLoggedIn = false;
     try {
       if (window.supabaseClient) {
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         isLoggedIn = !!session;
       }
-    } catch (err) {
-      console.warn('Failed to determine auth session:', err);
-      isLoggedIn = false;
-    }
+    } catch (err) { console.warn('Failed to determine auth session:', err); isLoggedIn = false; }
 
     if (!isLoggedIn) {
-      // Store a pending redirect so signin page or other scripts can use it
-      try { localStorage.setItem('ys_cart_pending_redirect', 'checkout.html'); } catch (e) { /* ignore */ }
-      // Redirect user to sign-in page (with redirect param)
+      try { localStorage.setItem('ys_cart_pending_redirect', 'checkout.html'); } catch (e) {}
       window.location.href = 'signin.html?redirect=checkout.html';
       return;
     }
-
-    // If signed in -> go to checkout
     window.location.href = 'checkout.html';
   }
 
-  // Wire navbar cart icons to open drawer (run when navbar is present)
   function wireNavbarCartIcons() {
     const navIcons = qsa('#navbar .bx-cart');
     if (!navIcons.length) return;
     navIcons.forEach(icon => {
-      // attach click
       icon.removeEventListener('click', navIconClickHandler);
       icon.addEventListener('click', navIconClickHandler);
     });
@@ -404,10 +360,8 @@
     getItems() { return itemsArray().map(i => ({ ...i })); },
     count() { return totalCount(); },
     clear() { clear(); },
-    _render: renderDrawer, // exposed for debugging
+    _render: renderDrawer,
 
-    // Migrate anonymous cart to a user-scoped key and load it into the cart module.
-    // Returns true if migration did something, false otherwise.
     async migrateAnonymousToUser(userId) {
       try {
         if (!userId) return false;
@@ -430,10 +384,7 @@
           });
           localStorage.setItem(userKey, JSON.stringify(userCart));
         }
-        // Remove anonymous key to avoid leakage
         localStorage.removeItem(STORAGE_KEY);
-
-        // Point this cart module to the user key and reload
         currentStorageKey = userKey;
         load();
         save();
@@ -446,11 +397,8 @@
       }
     },
 
-    // Switch cart module to anonymous mode and clear visible cart (used on sign-out).
-    // This does NOT delete any user-scoped key so the user's cart stays persisted.
     useAnonymousAndClear() {
       try {
-        // close drawer first so overlay is removed
         close();
         currentStorageKey = STORAGE_KEY;
         cart = {};
@@ -462,7 +410,6 @@
       }
     },
 
-    // Force the cart module to point to a specific user key (without merging). Useful if you already migrated.
     setUserKey(userId) {
       try {
         if (!userId) return;
@@ -477,45 +424,67 @@
     }
   };
 
-  // Initialize on load
+  // Fallback helper (available globally)
+  // Use this when cartAPI is not ready — it merges product into canonical anonymous storage and emits 'cart:changed'
+  window.cartAddFallback = function(product) {
+    try {
+      if (!product) return;
+      const key = STORAGE_KEY;
+      let obj = {};
+      try { obj = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { obj = {}; }
+      const id = String(product.id || product);
+      const qtyToAdd = Number(product.qty) || 1;
+      if (obj[id]) {
+        obj[id].qty = (Number(obj[id].qty || 0) + qtyToAdd);
+      } else {
+        obj[id] = {
+          id,
+          name: product.name || product.title || `Item ${id}`,
+          price: Number(product.price || 0),
+          image_url: product.image_url || product.image || '',
+          qty: qtyToAdd
+        };
+      }
+      localStorage.setItem(key, JSON.stringify(obj));
+      // update staged snapshot and notify
+      try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(obj))); } catch (e) {}
+      try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { time: Date.now(), source: 'fallback' } })); } catch (e) {}
+    } catch (err) {
+      console.error('cartAddFallback failed', err);
+    }
+  };
+
+  // Initialize
   function init() {
     load();
     ensureDrawer();
-    // make sure drawer is hidden initially (tailwind classes rely on translate)
     const drawer = qs('#cart-drawer');
     if (drawer) {
       drawer.classList.add('translate-x-full');
       drawer.classList.remove('translate-x-0');
     }
-    // wire events
     wireDrawerEvents();
     renderDrawer();
 
-    // respond to navbar:ready
     if (qs('#navbar')) wireNavbarCartIcons();
     document.addEventListener('navbar:ready', () => {
-      // small delay to allow navbar DOM settle
       setTimeout(() => {
         wireNavbarCartIcons();
         renderDrawer();
       }, 10);
     });
 
-    // Listen for cart changes triggered externally (e.g. navbar fallback moved keys)
+    // reload when other code reports cart:changed (e.g. fallback additions)
     document.addEventListener('cart:changed', () => {
-      // reload from storage (this will discover user-scoped key if anon was moved)
       load();
       renderDrawer();
     });
 
-    // expose API
     window.cartAPI = api;
 
-    // resolve ready promise so other pages can await cart readiness
     try { _cartReadyResolve && _cartReadyResolve(window.cartAPI); } catch (e) {}
   }
 
-  // safe init after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

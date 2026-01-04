@@ -19,10 +19,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="js/supabase.js"></script>
-  <script src="js/shop.js"></script> <!-- initializes window.supabaseClient -->
-  <script src="js/product-details.js"></script>
+
+  <!-- Important: load navbar + cart early so add-to-cart handlers use the canonical cartAPI -->
   <script src="js/navbar.js"></script>
   <script src="js/cart.js"></script>
+
+  <!-- Now load product/shop scripts -->
+  <script src="js/shop.js"></script>
+  <script src="js/product-details.js"></script>
   
 </body>
 </html>
