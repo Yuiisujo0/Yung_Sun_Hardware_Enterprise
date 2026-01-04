@@ -313,16 +313,37 @@
     if (Number.isNaN(val) || val <= 0) remove(pid);
     else setQty(pid, val);
   }
-    function checkoutHandler() {
+  async function checkoutHandler() {
     const items = itemsArray();
     if (!items.length) {
       alert('Cart is empty.');
       return;
     }
-    // Save cart to localStorage (already saved, but ensure we have a consistent key)
-    localStorage.setItem('ys_cart_checkout', JSON.stringify(items));
 
-    // Redirect to checkout page
+    // Save cart snapshot for checkout (so checkout page or sign-in can pick it up if needed)
+    try { localStorage.setItem('ys_cart_checkout', JSON.stringify(items)); } catch (e) { /* ignore */ }
+
+    // Check if user is signed in (if supabase client is available)
+    let isLoggedIn = false;
+    try {
+      if (window.supabaseClient) {
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        isLoggedIn = !!session;
+      }
+    } catch (err) {
+      console.warn('Failed to determine auth session:', err);
+      isLoggedIn = false;
+    }
+
+    if (!isLoggedIn) {
+      // Store a pending redirect so signin page or other scripts can use it
+      try { localStorage.setItem('ys_cart_pending_redirect', 'checkout.html'); } catch (e) { /* ignore */ }
+      // Redirect user to sign-in page (with redirect param)
+      window.location.href = 'signin.html?redirect=checkout.html';
+      return;
+    }
+
+    // If signed in -> go to checkout
     window.location.href = 'checkout.html';
   }
 
