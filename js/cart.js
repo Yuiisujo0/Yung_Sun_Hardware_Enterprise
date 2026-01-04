@@ -9,6 +9,10 @@
 // - Exposes window.cartAddFallback(product) for pages/scripts that cannot access cartAPI (race or ordering issues).
 
 (function () {
+  // Prevent double-init if this file is loaded more than once
+  if (window.__ysCartLoaded) return;
+  window.__ysCartLoaded = true;
+
   const STORAGE_KEY = 'ys_cart_v1';
   const STAGED_CHECKOUT_KEY = 'ys_cart_checkout';
 
@@ -17,8 +21,8 @@
   window.cartAPIReady = new Promise((resolve) => { _cartReadyResolve = resolve; });
 
   // Utility
-  function qs(sel, el = document) { return el.querySelector(sel); }
-  function qsa(sel, el = document) { return Array.from((el || document).querySelectorAll(sel)); }
+  function qs(sel, el = document) { try { return el.querySelector(sel); } catch (e) { return null; } }
+  function qsa(sel, el = document) { try { return Array.from((el || document).querySelectorAll(sel)); } catch (e) { return []; } }
   function formatRM(n) { return `RM${Number(n || 0).toFixed(2)}`; }
 
   // CART state
@@ -47,7 +51,6 @@
       if (raw) {
         currentStorageKey = keyToUse;
         cart = JSON.parse(raw);
-        // ensure staged snapshot matches loaded cart
         try { localStorage.setItem(STAGED_CHECKOUT_KEY, JSON.stringify(Object.values(cart))); } catch (e) {}
         return;
       }
@@ -337,6 +340,7 @@
     window.location.href = 'checkout.html';
   }
 
+  // Robust navbar wiring: both direct wiring and delegated click handling
   function wireNavbarCartIcons() {
     const navIcons = qsa('#navbar .bx-cart');
     if (!navIcons.length) return;
@@ -348,6 +352,32 @@
   function navIconClickHandler(e) {
     e.preventDefault();
     open();
+  }
+
+  // Delegated document-level handler so clicks work even if navbar injected later
+  let __delegationBound = false;
+  function bindDelegatedCartClick() {
+    if (__delegationBound) return;
+    __delegationBound = true;
+    document.addEventListener('click', (e) => {
+      const maybe = e.target.closest('#navbar .bx-cart');
+      if (!maybe) return;
+      e.preventDefault();
+      // If cartAPI ready, open now; otherwise wait for ready then open
+      try {
+        if (window.cartAPI && typeof window.cartAPI.open === 'function') {
+          window.cartAPI.open();
+        } else if (window.cartAPIReady && typeof window.cartAPIReady.then === 'function') {
+          // attempt to open once cartAPI resolves (user waited)
+          window.cartAPIReady.then(api => {
+            try { api.open(); } catch (err) {}
+          }).catch(()=>{});
+        } else {
+          // nothing to do (cart.js may not be present) — optionally navigate to signin if not logged-in
+          // leave as no-op so other code can handle it
+        }
+      } catch (err) { console.warn('delegated cart open failed', err); }
+    }, { capture: false, passive: false });
   }
 
   // Public API
@@ -466,13 +496,18 @@
     wireDrawerEvents();
     renderDrawer();
 
+    // wire nav icons if navbar present now
     if (qs('#navbar')) wireNavbarCartIcons();
+
+    // watch for navbar injection event and wire then
     document.addEventListener('navbar:ready', () => {
       setTimeout(() => {
-        wireNavbarCartIcons();
-        renderDrawer();
+        try { wireNavbarCartIcons(); renderDrawer(); } catch (e) {}
       }, 10);
     });
+
+    // bind delegated listener (robust)
+    bindDelegatedCartClick();
 
     // reload when other code reports cart:changed (e.g. fallback additions)
     document.addEventListener('cart:changed', () => {
