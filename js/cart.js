@@ -1,12 +1,17 @@
+// js/cart.js
 // Simple site-wide cart module (works on pages with or without existing drawer markup).
 // - Injects drawer markup if not present.
 // - Persists cart in localStorage under key 'ys_cart_v1'.
-// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count() }.
+// - Exposes window.cartAPI: { add(product), open(), close(), getItems(), count(), clear() }.
+// - Exposes window.cartAPIReady Promise that resolves when cart module initialization completes.
 // - Listens for navbar ready and wires navbar cart icons to open drawer.
-// - Safe: will not overwrite an existing cart-drawer element if already present.
 
 (function () {
   const STORAGE_KEY = 'ys_cart_v1';
+
+  // Provide a ready promise other scripts can await
+  let _cartReadyResolve;
+  window.cartAPIReady = new Promise((resolve) => { _cartReadyResolve = resolve; });
 
   // Utility
   function qs(sel, el = document) { return el.querySelector(sel); }
@@ -45,7 +50,6 @@
     <div id="cart-items" class="p-4 overflow-auto flex-1 flex flex-col divide-y divide-gray-200 space-y-4">
         <!-- Items injected -->
     </div>
-
 
     <div class="p-4 border-t">
       <div class="flex justify-between mb-2">
@@ -109,7 +113,6 @@
     </div>
   </div>
 `).join('');
-
 
     subtotalEl.textContent = formatRM(subtotal());
     updateBadge();
@@ -282,7 +285,6 @@
     window.location.href = 'checkout.html';
   }
 
-
   // Wire navbar cart icons to open drawer (run when navbar is present)
   function wireNavbarCartIcons() {
     const navIcons = qsa('#navbar .bx-cart');
@@ -335,6 +337,9 @@
 
     // expose API
     window.cartAPI = api;
+
+    // resolve ready promise so other pages can await cart readiness
+    try { _cartReadyResolve && _cartReadyResolve(window.cartAPI); } catch (e) {}
   }
 
   // safe init after DOM ready
