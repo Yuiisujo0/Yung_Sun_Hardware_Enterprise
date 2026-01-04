@@ -1,15 +1,9 @@
 // js/navbar.js
-// Rewritten navbar loader + auth + UI wiring with cart migration/isolation fix.
+// Navbar + auth wiring with safer cart migration / per-user isolation.
 //
-// Behaviors added:
-// - When a session is detected, migrate the anonymous cart into a per-user cart if a
-//   migration API is available (window.cartAPI.migrateAnonymousToUser).
-// - If migrateAnonymousToUser is not available, fallback to moving the anonymous localStorage
-//   key ('ys_cart_v1') to a user-scoped key ('ys_cart_v1_user_<userId>') to avoid cart leakage
-//   between accounts.
-// - After migration/fallback move, dispatch 'cart:changed' so cart UI updates (drawer/badges).
-//
-// Assumes js/supabase.js initializes window.supabaseClient and may dispatch 'supabase:ready'.
+// Main change: avoid merging carts when switching between two different signed-in users.
+// - anonymous -> user: migrate anonymous cart into user's key (existing behavior).
+// - user A -> user B: DO NOT merge anonymous cart; instead point cart module to B's user key.
 
 const ROLE_KEY = 'ys_role_v1';
 const ROLE_TTL = 1000 * 60 * 5;
@@ -63,14 +57,11 @@ function showLogoutBtn() {
     if (!client) { window.location.href = 'index.html'; return; }
     try {
       await client.auth.signOut();
+      // signOut will trigger onAuthStateChange -> 'SIGNED_OUT' and our listener will handle cart switching.
       hideLogoutBtn();
       hideWelcomeUser();
       setAdminVisible(false);
       cacheRole('user');
-      // ensure cart UI clears and switches back to anon mode (preserve user-scoped key)
-      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) { /* ignore */ }
-      // notify others
-      try { document.dispatchEvent(new CustomEvent('cart:changed', { detail: { reason: 'signed_out' } })); } catch (e) {}
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed', err); }
   });
@@ -91,9 +82,9 @@ function dispatchCartChanged() {
 
 /*
   fallbackMoveAnonCartToUser:
-  - If cartAPI.migrateAnonymousToUser is not available, this moves the raw JSON
-    from 'ys_cart_v1' to 'ys_cart_v1_user_<userId>' and removes the anon key.
-  - Returns true if something was moved, false otherwise.
+  - Moves the raw anon JSON from 'ys_cart_v1' to 'ys_cart_v1_user_<userId>' (merging if needed),
+    then removes the anon key.
+  - Returns true if data existed and was moved, false otherwise.
 */
 function fallbackMoveAnonCartToUser(userId) {
   if (!userId) return false;
@@ -101,7 +92,6 @@ function fallbackMoveAnonCartToUser(userId) {
     const raw = localStorage.getItem(ANON_CART_KEY);
     if (!raw) return false;
     const userKey = `${ANON_CART_KEY}_user_${userId}`;
-    // If user already has a cart key, merge quantities:
     const existingRaw = localStorage.getItem(userKey);
     if (!existingRaw) {
       localStorage.setItem(userKey, raw);
@@ -118,7 +108,6 @@ function fallbackMoveAnonCartToUser(userId) {
       });
       localStorage.setItem(userKey, JSON.stringify(userCart));
     }
-    // remove anonymous cart to prevent leakage
     localStorage.removeItem(ANON_CART_KEY);
     return true;
   } catch (err) {
@@ -127,11 +116,16 @@ function fallbackMoveAnonCartToUser(userId) {
   }
 }
 
+/* -------------------- Keep track of last session user -------------------- */
+// We store the last known signed-in user id here so we can detect user switches.
+// - null means last-known state was signed-out (anonymous).
+// - otherwise contains last user id.
+window.__ysLastUserId = window.__ysLastUserId || null;
+
 /* -------------------- Auth initialization -------------------- */
 async function initAuthAndRole() {
   const client = window.supabaseClient;
   if (!client) {
-    // Use cached role if available
     const cached = readCachedRole();
     if (cached) setAdminVisible(cached === 'admin');
     hideWelcomeUser();
@@ -144,49 +138,72 @@ async function initAuthAndRole() {
     const profileAnchor = document.querySelector('a[aria-label="User Profile"], a[href="profile.html"]');
 
     if (!session) {
+      // signed-out state
       if (profileAnchor) profileAnchor.setAttribute('href', 'signin.html');
       setAdminVisible(false);
       hideWelcomeUser();
       hideLogoutBtn();
       cacheRole('user');
-      // On signed-out state we switch cart module to anonymous and clear visible cart
-      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
-      // notify cart listeners as well
-      dispatchCartChanged();
+
+      // Switch cart module to anonymous and clear visible cart.
+      try {
+        // the cart module exposes useAnonymousAndClear
+        if (window.cartAPI?.useAnonymousAndClear) window.cartAPI.useAnonymousAndClear();
+        else dispatchCartChanged();
+      } catch (e) { /* ignore */ }
+
+      // record last user as null (anonymous)
+      window.__ysLastUserId = null;
       return;
     }
 
-    // Logged in: ensure profile link points to profile
+    // signed-in
     if (profileAnchor) {
       profileAnchor.setAttribute('href', 'profile.html');
       profileAnchor.title = session.user.email || '';
     }
 
-    // Attempt to migrate/associate anonymous cart into user's cart to avoid leakage
+    const newUserId = session.user.id;
+    const prevUserId = window.__ysLastUserId || null;
+
+    // Two cases:
+    // 1) prevUserId === null => anonymous -> signed-in: perform migration of anonymous cart into user's key
+    // 2) prevUserId != null and prevUserId !== newUserId => user A -> user B: DO NOT merge anon; just point cart to B's user key
     try {
-      if (window.cartAPI?.migrateAnonymousToUser) {
-        // preferred flow if cart module implements migration
-        await window.cartAPI.migrateAnonymousToUser(session.user.id);
-        // ensure cart module points to user's key (safe even if already set)
-        try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
-        // cart module should fire cart change events; ensure UI updated
+      if (prevUserId === null) {
+        // anon -> signed in
+        if (window.cartAPI?.migrateAnonymousToUser) {
+          await window.cartAPI.migrateAnonymousToUser(newUserId);
+        } else {
+          const moved = fallbackMoveAnonCartToUser(newUserId);
+          if (!moved) {
+            // even if nothing moved, make sure cart module loads user's key
+            try { window.cartAPI?.setUserKey?.(newUserId); } catch (e) {}
+          } else {
+            try { window.cartAPI?.setUserKey?.(newUserId); } catch (e) {}
+          }
+        }
+        // After migration, dispatch so UI re-renders
+        dispatchCartChanged();
+      } else if (prevUserId !== newUserId) {
+        // user A -> user B: DO NOT merge anything. Point cart to B and reload.
+        try { window.cartAPI?.setUserKey?.(newUserId); } catch (e) {}
+        // Also ensure anonymous key doesn't accidentally get used in this flow:
+        try { /* no-op: setUserKey already loads user's key and render */ } catch (e) {}
         dispatchCartChanged();
       } else {
-        // fallback: move anon raw storage into user-scoped key
-        const moved = fallbackMoveAnonCartToUser(session.user.id);
-        // ensure cart module points to user's key even if nothing was moved
-        try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
-        if (moved) dispatchCartChanged();
-        else dispatchCartChanged(); // still dispatch so cart module reloads using user key
+        // Same user as before (e.g., page reload). Still ensure cart module points to user key.
+        try { window.cartAPI?.setUserKey?.(newUserId); } catch (e) {}
+        dispatchCartChanged();
       }
     } catch (err) {
-      console.warn('Cart migration attempt failed', err);
-      // In any case try to point cart module to the user's key
-      try { window.cartAPI?.setUserKey?.(session.user.id); } catch (e) {}
+      console.warn('Cart migration/setUserKey attempt failed', err);
+      // fallback: still attempt to point to user's key
+      try { window.cartAPI?.setUserKey?.(newUserId); } catch (e) {}
       dispatchCartChanged();
     }
 
-    // Load profile row (role, full_name)
+    // Now load profile role and display name
     const { data: profile, error } = await client
       .from('profiles')
       .select('role, full_name')
@@ -203,6 +220,9 @@ async function initAuthAndRole() {
     const role = profile?.role || 'user';
     setAdminVisible(role === 'admin');
     cacheRole(role);
+
+    // record last user id
+    window.__ysLastUserId = newUserId;
   } catch (err) {
     console.error('initAuthAndRole failed', err);
   }
@@ -219,17 +239,21 @@ function bindAuthListener() {
     console.log('[Auth change]', event);
 
     if (event === 'SIGNED_OUT') {
-      // On sign out: hide admin UI and welcome; switch cart module to anonymous and clear visible cart.
+      // On sign out: clear admin UI and switch cart module to anonymous
       setAdminVisible(false);
       hideWelcomeUser();
       hideLogoutBtn();
       cacheRole('user');
-      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
-      dispatchCartChanged(); // notify listeners that cart context may have changed
+      try {
+        if (window.cartAPI?.useAnonymousAndClear) window.cartAPI.useAnonymousAndClear();
+        else dispatchCartChanged();
+      } catch (e) {}
+      // mark last user as anonymous
+      window.__ysLastUserId = null;
       return;
     }
 
-    // On sign-in or other auth change, re-init auth UI and attempt cart migration
+    // On sign-in or other auth change, run init which will handle proper migration or setUserKey
     await initAuthAndRole();
   });
 }
@@ -469,8 +493,10 @@ function bindLogout() {
       setAdminVisible(false);
       cacheRole('user');
       // ensure cart UI clears and switches back to anon mode (preserve user-scoped key)
-      try { window.cartAPI?.useAnonymousAndClear?.(); } catch (e) {}
+      try { if (window.cartAPI?.useAnonymousAndClear) window.cartAPI.useAnonymousAndClear(); } catch (e) {}
       dispatchCartChanged();
+      // mark last user as null
+      window.__ysLastUserId = null;
       window.location.href = 'index.html';
     } catch (err) { console.error('Logout failed:', err); }
   });
