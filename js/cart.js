@@ -34,30 +34,32 @@
       let keyToUse = currentStorageKey || STORAGE_KEY;
       let raw = localStorage.getItem(keyToUse);
 
-      if (!raw) {
-        // If the preferred key is empty/missing, try anonymous key
-        raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          keyToUse = STORAGE_KEY;
-        } else {
-          // Try to find any user-scoped key (e.g. 'ys_cart_v1_user_<id>')
-          const keys = Object.keys(localStorage).filter(k => k.startsWith(`${STORAGE_KEY}_user_`));
-          if (keys.length === 1) {
-            keyToUse = keys[0];
-            raw = localStorage.getItem(keyToUse);
-          } else if (keys.length > 1) {
-            // If multiple user keys exist (unlikely in one browser), prefer currentStorageKey if set,
-            // otherwise pick the one with most items as best-effort
-            let best = keys[0];
-            let bestCount = (JSON.parse(localStorage.getItem(best) || '{}') && Object.keys(JSON.parse(localStorage.getItem(best) || '{}')).length) || 0;
-            for (let i = 1; i < keys.length; i++) {
-              const k = keys[i];
-              const cnt = (JSON.parse(localStorage.getItem(k) || '{}') && Object.keys(JSON.parse(localStorage.getItem(k) || '{}')).length) || 0;
-              if (cnt > bestCount) { best = k; bestCount = cnt; }
-            }
-            keyToUse = best;
-            raw = localStorage.getItem(keyToUse);
-          }
+      if (raw) {
+        currentStorageKey = keyToUse;
+        cart = JSON.parse(raw);
+        return;
+      }
+
+      // If preferred key is missing:
+      // - If the preferred key is NOT the anonymous key (i.e. it's a user key), do NOT auto-select another user's key.
+      //   Instead initialize an empty cart for the intended key (prevents accidentally loading another user's cart).
+      if (keyToUse !== STORAGE_KEY) {
+        currentStorageKey = keyToUse;
+        cart = {};
+        return;
+      }
+
+      // If preferred key was anonymous and missing, try to find an existing anonymous key (unlikely) or
+      // fallback to the single user-scoped key (legacy behavior).
+      raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        keyToUse = STORAGE_KEY;
+      } else {
+        // Try to find any user-scoped key (e.g. 'ys_cart_v1_user_<id>')
+        const keys = Object.keys(localStorage).filter(k => k.startsWith(`${STORAGE_KEY}_user_`));
+        if (keys.length === 1) {
+          keyToUse = keys[0];
+          raw = localStorage.getItem(keyToUse);
         }
       }
 
