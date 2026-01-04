@@ -3,7 +3,7 @@
 // - Injects drawer markup if not present.
 // - Persists cart in localStorage under key 'ys_cart_v1' by default.
 // - Supports per-user cart keys 'ys_cart_v1_user_<userId>' and provides migrateAnonymousToUser(userId).
-// - Exposes window.cartAPI: { add(product), setQty(id, qty), remove(id), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId), useAnonymousAndClear(), setUserKey(userId) }.
+// - Exposes window.cartAPI: { add(product), setQty(id, qty), remove(id), open(), close(), getItems(), count(), clear(), migrateAnonymousToUser(userId), useAnonymousAndClear(), useAnonymous(), setUserKey(userId) }[...]
 // - Exposes window.cartAPIReady Promise that resolves when cart module initialization completes.
 // - Dispatches 'cart:changed' when the cart changes so other parts of the app (checkout.js, payment.js) can re-render.
 // - Exposes window.cartAddFallback(product) for pages/scripts that cannot access cartAPI (race or ordering issues).
@@ -437,6 +437,19 @@
         notifyCartChanged();
       } catch (err) {
         console.warn('useAnonymousAndClear failed', err);
+      }
+    },
+
+    // NEW: switch cart module to anonymous storage key WITHOUT clearing anonymous data.
+    useAnonymous() {
+      try {
+        // Switch to anonymous storage key and load existing anonymous cart (do not clear)
+        currentStorageKey = STORAGE_KEY;
+        load();
+        renderDrawer();
+        notifyCartChanged();
+      } catch (err) {
+        console.warn('useAnonymous failed', err);
       }
     },
 

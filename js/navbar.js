@@ -1,9 +1,7 @@
 // js/navbar.js
 // Navbar + auth wiring with safer cart migration / per-user isolation.
-//
-// Main change: avoid merging carts when switching between two different signed-in users.
-// - anonymous -> user: migrate anonymous cart into user's key (existing behavior).
-// - user A -> user B: DO NOT merge anonymous cart; instead point cart module to B's user key.
+// ...
+// (file header unchanged)
 
 const ROLE_KEY = 'ys_role_v1';
 const ROLE_TTL = 1000 * 60 * 5;
@@ -145,11 +143,19 @@ async function initAuthAndRole() {
       hideLogoutBtn();
       cacheRole('user');
 
-      // Switch cart module to anonymous and clear visible cart.
+      // Important change:
+      // Only clear the visible cart if we transitioned from a signed-in user -> signed-out.
+      // If we were already anonymous (window.__ysLastUserId === null), do NOT clear the anonymous cart.
       try {
-        // the cart module exposes useAnonymousAndClear
-        if (window.cartAPI?.useAnonymousAndClear) window.cartAPI.useAnonymousAndClear();
-        else dispatchCartChanged();
+        if (window.__ysLastUserId !== null) {
+          // We were previously signed-in and now signed-out: clear and show anonymous state
+          if (window.cartAPI?.useAnonymousAndClear) window.cartAPI.useAnonymousAndClear();
+          else dispatchCartChanged();
+        } else {
+          // We were already anonymous: switch cart module to anonymous storage without clearing existing anon items
+          if (window.cartAPI?.useAnonymous) window.cartAPI.useAnonymous();
+          else dispatchCartChanged();
+        }
       } catch (e) { /* ignore */ }
 
       // record last user as null (anonymous)
@@ -239,7 +245,7 @@ function bindAuthListener() {
     console.log('[Auth change]', event);
 
     if (event === 'SIGNED_OUT') {
-      // On sign out: clear admin UI and switch cart module to anonymous
+      // On sign out: clear admin UI and switch cart module to anonymous (clear visible cart)
       setAdminVisible(false);
       hideWelcomeUser();
       hideLogoutBtn();
@@ -485,7 +491,8 @@ function bindLogout() {
   if (!btn || btn._bound) return;
   btn.addEventListener('click', async () => {
     const client = window.supabaseClient;
-    if (!client) { window.location.href = 'index.html'; return; }
+    if (!client) { window.location.href = 'index.html'; return;
+    }
     try {
       await client.auth.signOut();
       hideLogoutBtn();
