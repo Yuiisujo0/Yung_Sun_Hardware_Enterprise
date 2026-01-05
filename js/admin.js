@@ -7,11 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
   initAdminDashboard();
 });
 
+/*Supabase Database Reference*/
 const db = window.supabaseClient;
 
-/* =========================
-   INIT
-========================= */
+/* ===============================
+   INIT (Dashboard Initialization)
+================================== */
 async function initAdminDashboard() {
   await Promise.all([
     loadStats(),
@@ -35,6 +36,7 @@ async function loadStats() {
     return;
   }
 
+  /*Calculate total sales*/
   const totalSales = orders.reduce(
     (sum, o) => sum + Number(o.total_amount),
     0
@@ -58,6 +60,7 @@ async function loadStats() {
   document.getElementById("products").innerText =
     products.length;
 
+  /*Low Stock Stats - appear when products <= 5*/  
   const lowStockCount = products.filter(
     p => (p.stock ?? 0) <= 5
   ).length;
@@ -176,6 +179,7 @@ async function loadRecentOrders() {
       minute: "2-digit"
     });
 
+    /*Render Orders Table*/
     tbody.innerHTML += `
       <tr class="divide-x hover:bg-gray-50">
         <td class="p-4 text-sm font-mono text-gray-600 truncate" title="${o.id}">${o.id}</td>

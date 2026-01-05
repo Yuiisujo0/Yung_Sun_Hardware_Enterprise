@@ -24,8 +24,11 @@ let editingId = null;
 let isReady = false; // auth/storage ready
 
 // ---------- ADMIN GUARD ----------
+/*Checks if user is logged in*/
+/*Checks user role from profiles table*/
 async function requireAdmin() {
   const { data: { session } } = await supabaseClient.auth.getSession();
+  /*Not logged in → signin.html*/
   if (!session) return location.href = "signin.html";
 
   const { data } = await supabaseClient
@@ -34,9 +37,10 @@ async function requireAdmin() {
     .eq('user_id', session.user.id)
     .single();
 
+  /*Not admin → index.html*/  
   if (data?.role !== 'admin') location.href = "index.html";
 
-  // warm up storage & dummy DB query
+  // Prepares database & storage by warming up storage & dummy DB query
   try { 
     await supabaseClient.storage.from('Product Images').list('', { limit: 1 });
     await supabaseClient.from('products').select('id').limit(1);

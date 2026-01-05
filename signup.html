@@ -86,6 +86,7 @@
       messageEl.textContent = "";
       messageEl.className = "text-sm mt-4 text-center";
 
+      // Failed to sign up if requirements did not fill in follow the format or empty.
       if (!fullName || !email || !password) {
         messageEl.textContent = "Please fill out all required fields.";
         messageEl.classList.add("text-red-500");

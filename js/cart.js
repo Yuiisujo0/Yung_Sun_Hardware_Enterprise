@@ -118,6 +118,7 @@
   </aside>
   `;
 
+  // Injected automatically
   function ensureDrawer() {
     if (qs('#cart-drawer')) return;
     document.body.insertAdjacentHTML('beforeend', drawerHTML);
@@ -202,6 +203,7 @@
   }
 
   // Cart operations
+  /*Add items*/
   function add(product) {
     if (!product) return;
     const id = String(product.id || product);
@@ -226,6 +228,7 @@
     open();
   }
 
+  /*Change quantity*/
   function setQty(id, qty) {
     id = String(id);
     const q = Math.max(0, Number(qty) || 0);
@@ -236,6 +239,8 @@
     renderDrawer();
     notifyCartChanged();
   }
+
+  /*Remove item*/
   function removeItem(id) {
     id = String(id);
     if (cart[id]) delete cart[id];
@@ -243,8 +248,11 @@
     renderDrawer();
     notifyCartChanged();
   }
+
+  /*Clear cart*/
   function clear() { cart = {}; save(); renderDrawer(); notifyCartChanged(); }
 
+  /*Updates cart count*/
   function updateBadge() {
     const count = totalCount();
     const navIcons = qsa('#navbar .bx-cart');
@@ -319,6 +327,8 @@
     if (Number.isNaN(val) || val <= 0) removeItem(pid);
     else setQty(pid, val);
   }
+
+  /*Checkout Logic*/
   async function checkoutHandler() {
     const items = itemsArray();
     if (!items.length) { alert('Cart is empty.'); return; }
@@ -392,6 +402,7 @@
     clear() { clear(); },
     _render: renderDrawer,
 
+    /*Anonymous → Logged-In Cart Migration*/
     async migrateAnonymousToUser(userId) {
       try {
         if (!userId) return false;
