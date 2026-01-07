@@ -26,8 +26,23 @@
       <input id="email" type="email" placeholder="Email"
         class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
 
+      <div class="relative">
       <input id="password" type="password" placeholder="Password"
-        class="w-full p-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300">
+        class="w-full p-4 pr-12 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-400 focus:outline-none transition duration-300"/>
+          <!-- Eye Toggle Button -->
+          <button type="button"id="togglePassword" class="absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-orange-500 transition">
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+
+              <!-- Eye -->
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                <circle cx="12" cy="12" r="3" />
+
+              <!-- Slash -->
+              <line id="eyeSlash" x1="3" y1="21" x2="21" y2="3" class="hidden" />
+            </svg>
+          </button>
+      </div>
+
 
       <button id="loginBtn"
         class="w-full py-4 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold rounded-xl hover:from-orange-500 hover:to-orange-600 transition duration-300 shadow-lg">
@@ -113,8 +128,17 @@
     }, 800);
   });
 
-</script>
+    // ======= Toggle Password Visibility =======
+    const passwordInput = document.getElementById("password");
+    const toggleBtn = document.getElementById("togglePassword");
+    const eyeSlash = document.getElementById("eyeSlash");
 
+    toggleBtn.addEventListener("click", () => {
+      const isHidden = passwordInput.type === "password";
+      passwordInput.type = isHidden ? "text" : "password";
+      eyeSlash.classList.toggle("hidden", !isHidden);
+    });
+</script>
 
 </body>
 </html>
