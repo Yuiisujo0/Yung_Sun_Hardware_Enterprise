@@ -63,6 +63,16 @@
     #about-title { white-space: nowrap; word-spacing: 0.25rem; }
     .letter { display: inline-block; opacity: 0; transform: translateY(-50px); transition: all 0.5s ease; }
     .letter.show { opacity: 1; transform: translateY(0); }
+  
+    .footer-bg {
+      background-image:
+        linear-gradient(to bottom, rgba(2,63,136,0) 0%, #023f88 70%),
+        url('assets/background_01_png.webp');
+      background-size: cover;
+      background-position: center 20%;
+      background-repeat: no-repeat;
+    }
+
   </style>
 </head>
 
@@ -269,16 +279,17 @@
     </div>
   </section>
 
-  <footer class="bg-gray-50 text-gray-800 py-16">
+  <footer class="footer-bg text-white py-16">
     <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-12">
       <div class="flex flex-col gap-4">
         <h3 class="text-2xl font-bold text-[#f8941e]">Yung Sun Hardware Enterprise</h3>
-        <p class="text-gray-600 text-sm md:text-base">© 2025 Jean | Angel | Ivy | Chloe | Yao Yee, Inc. All rights reserved.</p>
+        <p class="text-[#ffffff] text-sm md:text-base">© 2025 Jean | Angel | Ivy | Chloe | Yao Yee, Inc. All rights reserved.</p>
       </div>
 
       <div class="flex flex-col md:flex-row gap-12">
         <div class="flex flex-col gap-2">
-          <h4 class="font-semibold text-[#023f88] mb-2">Pages</h4>
+          <h4 class="text-white font-bold text-lg mb-3 inline-block border-b-2 border-[#f8941e] pb-1">Pages</h4>
+
           <a href="#hero" class="hover:text-[#f8941e] transition-colors">Home</a>
           <a href="#about" class="hover:text-[#f8941e] transition-colors">About Us</a>
           <a href="#contact" class="hover:text-[#f8941e] transition-colors">Contact</a>
@@ -286,7 +297,7 @@
         </div>
 
         <div class="flex flex-col gap-2">
-          <h4 class="font-semibold text-[#023f88] mb-2">Resources</h4>
+          <h4 class="text-white font-bold text-lg mb-3 inline-block border-b-2 border-[#f8941e] pb-1">Resources</h4>
           <a href="#" class="hover:text-[#f8941e] transition-colors">Privacy Policy</a>
           <a href="#" class="hover:text-[#f8941e] transition-colors">Terms of Service</a>
           <a href="#" class="hover:text-[#f8941e] transition-colors">FAQ</a>
