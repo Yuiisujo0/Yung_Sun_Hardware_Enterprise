@@ -70,7 +70,6 @@
   (async () => {
     const { data: { session } } = await client.auth.getSession();
     if (session) {
-      // If admin is already logged in manually, you can adjust this if needed
       window.location.href = "shop.html";
     }
   })();
@@ -90,7 +89,7 @@
       return;
     }
 
-    // 1️⃣ Login
+    //Login
     const { data, error } = await client.auth.signInWithPassword({ email, password });
 
     if (error) {
@@ -101,7 +100,7 @@
 
     const userId = data.user.id;
 
-    // 2️⃣ Get role from profiles table
+    //Get role from profiles table
     const { data: profile, error: profileError } = await client
       .from('profiles')
       .select('role')
@@ -118,7 +117,7 @@
     msg.textContent = "Login successful! Redirecting...";
     msg.classList.add("text-green-600");
 
-    // 3️⃣ Role-based redirect
+    //Role-based redirect
     setTimeout(() => {
       if (profile.role === "admin") {
         window.location.href = "admin.html";
