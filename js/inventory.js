@@ -83,7 +83,7 @@ async function loadInventory(limit = 50) {
       </td>
       <td class="p-4 text-center">${p.category || '-'}</td>
       <td class="p-4 text-center">RM ${Number(p.price).toFixed(2)}</td>
-      <td class="p-4 text-center ${p.stock < 5 ? 'text-red-600 font-bold' : ''}">${p.stock}</td>
+      <td class="p-4 text-center ${p.stock <= 5 ? 'text-red-600 font-bold' : ''}">${p.stock}</td>
       <td class="p-4 text-center space-x-2">
         <button onclick="openEditModal('${p.id}')" class="text-blue-600 btn-edit">
           <i class="bx bx-edit text-xl"></i>
