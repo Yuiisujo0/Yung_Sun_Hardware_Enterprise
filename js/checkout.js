@@ -1,9 +1,7 @@
-// checkout.js
 function qs(sel, el = document) { return el.querySelector(sel); }
 function formatRM(n) { return `RM${Number(n || 0).toFixed(2)}`; }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // If cart exposes a ready promise, wait for it so getItems() returns the right data.
   if (window.cartAPIReady && typeof window.cartAPIReady.then === 'function') {
     try { await window.cartAPIReady; } catch (e) { /* ignore */ }
   }
@@ -13,7 +11,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const ANON_KEY = 'ys_cart_v1';
 
-  // helper: find a user-scoped key if present
   function findUserScopedKey() {
     try {
       return Object.keys(localStorage).find(k => k.startsWith(`${ANON_KEY}_user_`)) || null;
@@ -22,7 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // Get items: prefer cartAPI if available, else fallback to localStorage (anon, then user-scoped, then staged checkout)
   function getCartItems() {
     try {
       if (window.cartAPI && typeof window.cartAPI.getItems === 'function') {
@@ -30,27 +26,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Array.isArray(items) ? items : [];
       }
 
-      // fallback: try anonymous key first
       const rawAnon = localStorage.getItem(ANON_KEY);
-      if (rawAnon) {
-        const obj = JSON.parse(rawAnon || '{}');
-        return Object.values(obj);
-      }
+      if (rawAnon) return Object.values(JSON.parse(rawAnon || '{}'));
 
-      // then try user-scoped key
       const userKey = findUserScopedKey();
       if (userKey) {
         const raw = localStorage.getItem(userKey);
-        const obj = raw ? JSON.parse(raw) : {};
-        return Object.values(obj);
+        return raw ? Object.values(JSON.parse(raw)) : [];
       }
 
-      // lastly check any staged checkout key
       const staged = localStorage.getItem('ys_cart_checkout');
-      if (staged) {
-        const arr = JSON.parse(staged);
-        return Array.isArray(arr) ? arr : [];
-      }
+      if (staged) return Array.isArray(JSON.parse(staged)) ? JSON.parse(staged) : [];
 
       return [];
     } catch (e) {
@@ -59,10 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // helper: write to the appropriate localStorage key when cartAPI not available
   function saveItemChangeToStorage(updatedObj) {
     try {
-      // prefer anonymous key if exists; else user-scoped; else write to anonymous
       let keyToUse = ANON_KEY;
       const anonRaw = localStorage.getItem(ANON_KEY);
       if (!anonRaw) {
@@ -72,6 +56,38 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.setItem(keyToUse, JSON.stringify(updatedObj));
     } catch (e) {
       console.error('Failed to persist cart fallback', e);
+    }
+  }
+
+  function modifyStorageQty(id, deltaOrSetTo) {
+    try {
+      let keyToUse = ANON_KEY;
+      let raw = localStorage.getItem(ANON_KEY);
+      if (!raw) {
+        const userKey = findUserScopedKey();
+        if (userKey) {
+          keyToUse = userKey;
+          raw = localStorage.getItem(userKey);
+        }
+      }
+      const obj = raw ? JSON.parse(raw) : {};
+      const item = obj[String(id)];
+      if (!item) return;
+
+      if (typeof deltaOrSetTo === 'number') {
+        if (Number.isInteger(deltaOrSetTo) && deltaOrSetTo !== 0) {
+          item.qty = (Number(item.qty || 0) + deltaOrSetTo);
+        } else {
+          item.qty = deltaOrSetTo;
+        }
+      }
+
+      if (!item.qty || Number(item.qty) <= 0) delete obj[String(id)];
+      else obj[String(id)] = item;
+
+      localStorage.setItem(keyToUse, JSON.stringify(obj));
+    } catch (e) {
+      console.error('modifyStorageQty failed', e);
     }
   }
 
@@ -92,6 +108,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     itemsContainer.innerHTML = items.map(it => {
       const itemTotal = Number(it.price || 0) * Number(it.qty || 0);
       subtotal += itemTotal;
+      const stock = typeof it.stock === 'number' ? it.stock : Infinity;
+      const disableIncrease = (it.qty || 0) >= stock ? 'disabled opacity-50 cursor-not-allowed' : '';
 
       return `
       <div class="bg-white shadow rounded-xl p-4 flex items-start justify-between" data-id="${it.id}">
@@ -102,8 +120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="text-sm text-gray-500 flex items-center gap-2 mt-2">
               Qty:
               <button class="qty-btn px-2 py-1 bg-gray-200 rounded" data-action="decrease">−</button>
-              <input type="number" class="qty-input w-12 text-center border rounded" value="${it.qty || 0}" min="1">
-              <button class="qty-btn px-2 py-1 bg-gray-200 rounded" data-action="increase">+</button>
+              <input type="number" class="qty-input w-12 text-center border rounded" value="${it.qty || 0}" min="1" max="${stock}">
+              <button class="qty-btn px-2 py-1 bg-gray-200 rounded ${disableIncrease}" data-action="increase">+</button>
             </div>
           </div>
         </div>
@@ -127,133 +145,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     qs('#summary-total').textContent = formatRM(total);
   }
 
-  // initial render
   renderCheckout();
 
-  // Helper to mutate fallback storage item qty
-  function modifyStorageQty(id, deltaOrSetTo) {
-    try {
-      // find the right storage object
-      let keyToUse = ANON_KEY;
-      let raw = localStorage.getItem(ANON_KEY);
-      if (!raw) {
-        const userKey = findUserScopedKey();
-        if (userKey) {
-          keyToUse = userKey;
-          raw = localStorage.getItem(userKey);
-        }
-      }
-      const obj = raw ? JSON.parse(raw) : {};
-      const item = obj[String(id)];
-      if (!item) return;
-
-      if (typeof deltaOrSetTo === 'number') {
-        // if deltaOrSetTo is integer and we interpret as change
-        if (Number.isInteger(deltaOrSetTo) && deltaOrSetTo !== 0) {
-          item.qty = (Number(item.qty || 0) + deltaOrSetTo);
-        } else {
-          // set absolute
-          item.qty = deltaOrSetTo;
-        }
-      }
-
-      if (!item.qty || Number(item.qty) <= 0) {
-        delete obj[String(id)];
-      } else {
-        obj[String(id)] = item;
-      }
-      localStorage.setItem(keyToUse, JSON.stringify(obj));
-    } catch (e) {
-      console.error('modifyStorageQty failed', e);
-    }
-  }
-
-  // Delegate quantity + remove controls
   itemsContainer.addEventListener('click', e => {
     const btn = e.target.closest('button');
     if (!btn) return;
-
     const itemEl = e.target.closest('[data-id]');
     if (!itemEl) return;
-
     const id = itemEl.getAttribute('data-id');
     const action = btn.dataset.action;
 
-    // Prefer cartAPI operations if available
+    const items = window.cartAPI && typeof window.cartAPI.getItems === 'function'
+      ? window.cartAPI.getItems() || []
+      : [];
+    const item = items.find(i => String(i.id) === String(id));
+    const stock = item && typeof item.stock === 'number' ? item.stock : Infinity;
+
     if (window.cartAPI) {
       try {
         if (action === 'increase') {
-          if (typeof window.cartAPI.add === 'function') {
-            window.cartAPI.add({ id, qty: 1 });
-          } else if (typeof window.cartAPI.setQty === 'function') {
-            // read current then set
-            const current = (window.cartAPI.getItems() || []).find(i => String(i.id) === String(id));
-            const newQty = (current?.qty || 0) + 1;
-            window.cartAPI.setQty(id, newQty);
-          }
+          if ((item.qty || 0) >= stock) { alert(`Cannot exceed stock: ${stock}`); return; }
+          window.cartAPI.setQty(id, (item.qty || 0) + 1);
         } else if (action === 'decrease') {
-          if (typeof window.cartAPI.setQty === 'function') {
-            const current = (window.cartAPI.getItems() || []).find(i => String(i.id) === String(id));
-            const newQty = (current?.qty || 0) - 1;
-            window.cartAPI.setQty(id, newQty);
-          } else if (typeof window.cartAPI.add === 'function') {
-            window.cartAPI.add({ id, qty: -1 });
-          }
+          window.cartAPI.setQty(id, Math.max((item?.qty || 0) - 1, 0));
         } else if (action === 'remove') {
-          if (typeof window.cartAPI.setQty === 'function') {
-            window.cartAPI.setQty(id, 0);
-          } else if (typeof window.cartAPI.remove === 'function') {
-            window.cartAPI.remove(id);
-          } else {
-            // last resort: manipulate localStorage fallback
-            modifyStorageQty(id, 0);
-          }
+          window.cartAPI.setQty(id, 0);
         }
-      } catch (err) {
-        console.error('cartAPI operation failed', err);
-      }
+      } catch (err) { console.error('cartAPI operation failed', err); }
     } else {
-      // fallback direct localStorage manipulation
-      if (action === 'increase') modifyStorageQty(id, 1);
-      else if (action === 'decrease') modifyStorageQty(id, -1);
+      if (action === 'increase') {
+        if ((item?.qty || 0) >= stock) { alert(`Cannot exceed stock: ${stock}`); return; }
+        modifyStorageQty(id, 1);
+      } else if (action === 'decrease') modifyStorageQty(id, -1);
       else if (action === 'remove') modifyStorageQty(id, 0);
     }
 
-    // re-render (cart module should also re-render via its own listeners)
     renderCheckout();
   });
 
-  // Direct input quantity update
   itemsContainer.addEventListener('input', e => {
     const input = e.target;
     if (!input.classList.contains('qty-input')) return;
-
     const itemEl = input.closest('[data-id]');
     if (!itemEl) return;
-
     const id = itemEl.getAttribute('data-id');
     const val = parseInt(input.value, 10);
 
+    const items = window.cartAPI && typeof window.cartAPI.getItems === 'function'
+      ? window.cartAPI.getItems() || []
+      : [];
+    const item = items.find(i => String(i.id) === String(id));
+    const stock = item && typeof item.stock === 'number' ? item.stock : Infinity;
+
+    let clampedVal = Number.isNaN(val) || val < 1 ? 0 : Math.min(val, stock);
+    if (val > stock) alert(`Cannot exceed available stock: ${stock}`);
+
     if (window.cartAPI && typeof window.cartAPI.setQty === 'function') {
-      if (Number.isNaN(val) || val < 1) window.cartAPI.setQty(id, 0);
-      else window.cartAPI.setQty(id, val);
+      window.cartAPI.setQty(id, clampedVal);
     } else {
-      try {
-        if (Number.isNaN(val) || val < 1) modifyStorageQty(id, 0);
-        else modifyStorageQty(id, val);
-      } catch (err) { console.error(err); }
+      modifyStorageQty(id, clampedVal);
     }
 
+    input.value = clampedVal;
     renderCheckout();
   });
 
-  // Listen to external cart changes (e.g. navbar migration fallback dispatched 'cart:changed')
-  document.addEventListener('cart:changed', () => {
-    // re-render after a small delay to allow other code to finish moving storage
-    setTimeout(renderCheckout, 20);
-  });
+  document.addEventListener('cart:changed', () => setTimeout(renderCheckout, 20));
 
-  // ===== Modal for login/signup =====
   function showLoginModal() {
     let modal = document.getElementById('login-modal');
     if (!modal) {
@@ -274,45 +232,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.body.appendChild(modal);
 
       modal.querySelector('#modal-cancel').addEventListener('click', () => modal.remove());
-
       modal.querySelector('#modal-login').addEventListener('click', () => {
-        localStorage.setItem('redirectAfterLogin', window.location.href); // save current page
+        localStorage.setItem('redirectAfterLogin', window.location.href);
         window.location.href = 'signin.html';
       });
     }
   }
 
-  // ===== Place Order button ===== 
   const placeBtn = qs('#place-order-btn');
   if (placeBtn) {
     placeBtn.addEventListener('click', async () => {
       const items = getCartItems();
       if (!items || !items.length) { alert('Cart is empty.'); return; }
-
       const client = window.supabaseClient;
       if (!client) { alert('Supabase client not initialized.'); return; }
 
       try {
         const { data: { session }, error } = await client.auth.getSession();
         if (error) throw error;
+        if (!session) { showLoginModal(); return; }
 
-        if (!session) {
-          // Show login/signup modal if not logged in
-          showLoginModal();
-          return;
-        }
-
-        // User is logged in → save items for payment page (staging)
         localStorage.setItem('ys_cart_checkout', JSON.stringify(items));
-
-        // Redirect to payment page
         window.location.href = 'payment.html';
-
       } catch (err) {
         console.error('Auth check failed:', err);
         alert('Failed to verify login. Please try again.');
       }
     });
   }
-
 });

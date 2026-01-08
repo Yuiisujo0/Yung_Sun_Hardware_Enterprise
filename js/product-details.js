@@ -132,16 +132,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      const qty = parseInt(qtyInput.value, 10) || 1;
+      const qtyToAdd = parseInt(qtyInput.value, 10) || 1;
+
+      // Check existing quantity in cart
+      let existingQty = 0;
+      if (window.cartAPI && typeof window.cartAPI.getItems === 'function') {
+        const items = window.cartAPI.getItems();
+        const existingItem = items.find(i => i.id === product.id);
+        if (existingItem) existingQty = existingItem.qty || 0;
+      } else {
+        // fallback: localStorage
+        const store = JSON.parse(localStorage.getItem('ys_cart_v1') || '{}');
+        if (store[product.id]) existingQty = store[product.id].qty || 0;
+      }
+
+      // Calculate new quantity without exceeding stock
+      const finalQty = Math.min(existingQty + qtyToAdd, product.stock);
+
+      if (finalQty <= existingQty) {
+        alert(`You already have the maximum available stock (${product.stock}) in your cart.`);
+        return;
+      }
+
       const payload = {
         id: product.id,
         name: product.name,
         price: Number(product.price || 0),
         image_url: product.image_url || '',
-        qty
+        qty: finalQty - existingQty, // only add remaining allowed quantity
+        stock: product.stock
       };
 
-      // If cartAPI is available now, use it
       if (window.cartAPI && typeof window.cartAPI.add === 'function') {
         window.cartAPI.add(payload);
         return;

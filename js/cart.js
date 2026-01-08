@@ -166,7 +166,8 @@
       <div class="mt-3 flex items-center gap-2">
         <button class="qty-btn w-8 h-8 flex items-center justify-center border" data-action="decrease">-</button>
         <input type="text" inputmode="numeric" class="qty-input text-center border rounded px-1" value="${it.qty}" style="width:48px;">
-        <button class="qty-btn w-8 h-8 flex items-center justify-center border" data-action="increase">+</button>
+        <button class="qty-btn w-8 h-8 flex items-center justify-center border disabled:opacity-40" data-action="increase"
+        ${typeof it.stock === 'number' && it.qty >= it.stock ? 'disabled' : ''}>+</button>
       </div>
     </div>
   </div>
@@ -235,7 +236,8 @@
       name: product.name || product.title || `Item ${id}`,
       price: Number(product.price || 0),
       image_url: product.image_url || product.image || '',
-      qty: quantityToAdd
+      qty: quantityToAdd,
+      stock: typeof product.stock === 'number' ? product.stock : null
     };
   }
 
@@ -249,14 +251,27 @@
   /*Change quantity*/
   function setQty(id, qty) {
     id = String(id);
-    const q = Math.max(0, Number(qty) || 0);
-    if (!cart[id] && q > 0) return;
-    if (q <= 0) delete cart[id];
-    else cart[id].qty = q;
+    if (!cart[id]) return;
+
+    let q = Math.max(0, Number(qty) || 0);
+    const stock = cart[id].stock;
+
+    // 🔒 Enforce stock limit
+    if (typeof stock === 'number') {
+      q = Math.min(q, stock);
+    }
+
+    if (q <= 0) {
+      delete cart[id];
+    } else {
+      cart[id].qty = q;
+    }
+
     save();
     renderDrawer();
     notifyCartChanged();
   }
+
 
   /*Remove item*/
   function removeItem(id) {
@@ -327,9 +342,18 @@
       return;
     }
     if (target.closest('[data-action="increase"]')) {
-      setQty(pid, (cart[pid]?.qty || 0) + 1);
+    const item = cart[pid];
+      if (!item) return;
+      const stock = item.stock || Infinity;
+      if (item.qty >= stock) {
+        alert(`Maximum stock reached: ${stock}`);
+        return;
+      }
+      setQty(pid, item.qty + 1);
       return;
     }
+
+
     if (target.closest('[data-action="decrease"]')) {
       setQty(pid, (cart[pid]?.qty || 0) - 1);
       return;
@@ -342,8 +366,26 @@
     if (!itemEl) return;
     const pid = itemEl.getAttribute('data-product-id');
     const val = parseInt(input.value, 10);
-    if (Number.isNaN(val) || val <= 0) removeItem(pid);
-    else setQty(pid, val);
+    const item = cart[pid];
+    if (!item) return;
+      let newQty = Number.isNaN(val) || val <= 0 ? 0 : val;
+
+    const stock = item.stock || Infinity;
+    let clampedQty = Math.max(0, Math.min(newQty, stock));
+
+    if (clampedQty <= 0) {
+      removeItem(pid);
+      return;
+    }
+
+    if (clampedQty < newQty) {
+      alert(`Quantity cannot exceed available stock: ${stock}`);
+    }
+
+    setQty(pid, clampedQty);
+
+    // update input value to match clamped value
+    input.value = clampedQty;
   }
 
   /*Checkout Logic*/
