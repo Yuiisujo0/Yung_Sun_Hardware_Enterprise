@@ -128,11 +128,15 @@ function renderProducts(products) {
           </span>
 
           <button
-            class="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center hover:bg-orange-500 hover:text-white transition active:scale-95 add-to-cart-btn"
-            data-product-id="${escapeHtml(p.id)}"
-            data-name="${escapeHtml(p.name)}"
-            data-price="${Number(p.price).toFixed(2)}"
-            data-image="${escapeHtml(p.image_url)}">
+            class="w-12 h-12 rounded-full flex items-center justify-center transition active:scale-95 add-to-cart-btn
+              ${p.stock <= 0 
+              ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+              : 'bg-slate-200 hover:bg-orange-500 hover:text-white'}"
+              ${p.stock <= 0 ? 'disabled' : ''}
+              data-product-id="${escapeHtml(p.id)}"
+              data-name="${escapeHtml(p.name)}"
+              data-price="${Number(p.price).toFixed(2)}"
+              data-image="${escapeHtml(p.image_url)}">
             <i class="bx bx-cart text-xl"></i>
           </button>
         </div>
@@ -206,6 +210,10 @@ function handleAddToCartButtonClick(e) {
   if (!id) return;
 
   const product = (window.allProducts || []).find(p => String(p.id) === String(id));
+    if (product && Number(product.stock) <= 0) {
+      alert('Sorry, this product is out of stock.');
+    return;
+    }
 
   const payload = product || {
     id,

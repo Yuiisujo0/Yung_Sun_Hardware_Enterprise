@@ -205,28 +205,46 @@
   // Cart operations
   /*Add items*/
   function add(product) {
-    if (!product) return;
-    const id = String(product.id || product);
-    const quantityToAdd = Number(product.qty) || 1;
-    const existing = cart[id];
+  if (!product) return;
 
-    if (existing) {
-      existing.qty += quantityToAdd;
-    } else {
-      cart[id] = {
-        id,
-        name: product.name || product.title || `Item ${id}`,
-        price: Number(product.price || 0),
-        image_url: product.image_url || product.image || '',
-        qty: quantityToAdd
-     };
-    }
+  const id = String(product.id || product);
+  const quantityToAdd = Number(product.qty) || 1;
 
-    save();
-    renderDrawer();
-    notifyCartChanged();
-    open();
+  // 🔒 STOCK GUARD (defensive)
+  if (typeof product.stock === 'number' && product.stock <= 0) {
+    console.warn(`Product ${id} is out of stock. Add blocked.`);
+    return;
   }
+
+  const existing = cart[id];
+  const existingQty = existing?.qty || 0;
+
+  // 🔒 Prevent exceeding stock
+  if (typeof product.stock === 'number') {
+    if (existingQty + quantityToAdd > product.stock) {
+      console.warn(`Product ${id} exceeds available stock.`);
+      return;
+    }
+  }
+
+  if (existing) {
+    existing.qty += quantityToAdd;
+  } else {
+    cart[id] = {
+      id,
+      name: product.name || product.title || `Item ${id}`,
+      price: Number(product.price || 0),
+      image_url: product.image_url || product.image || '',
+      qty: quantityToAdd
+    };
+  }
+
+  save();
+  renderDrawer();
+  notifyCartChanged();
+  open();
+}
+
 
   /*Change quantity*/
   function setQty(id, qty) {

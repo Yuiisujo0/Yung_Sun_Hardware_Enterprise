@@ -72,18 +72,26 @@ document.addEventListener('DOMContentLoaded', async () => {
               <span class="font-medium">Quantity</span>
               <div class="flex items-center border rounded-lg overflow-hidden">
                 <button id="qty-decrease" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 transition">−</button>
-                <input id="qty-input" type="number" value="1" min="1" max="${product.stock || 99}" class="w-16 text-center focus:outline-none" />
+                <input id="qty-input" type="number"
+                  value="${product.stock > 0 ? 1 : 0}" min="1" max="${product.stock || 1}" ${product.stock <= 0 ? 'disabled' : ''}
+                  class="w-16 text-center focus:outline-none disabled:bg-gray-100 disabled:text-gray-400" />
                 <button id="qty-increase" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 transition">+</button>
               </div>
-              <span class="text-base text-gray-500">Stock: ${product.stock ?? '∞'}</span>
+              <span class="text-base font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-500'}">
+                ${product.stock > 0 ? `In Stock: ${product.stock}` : 'Out of Stock'}
+              </span>
             </div>
           </div>
 
-          <button id="add-to-cart-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition shadow-lg">
+          <button id="add-to-cart-btn"
+            ${product.stock <= 0 ? 'disabled' : ''}
+              class="w-full text-lg font-semibold py-4 rounded-xl flex items-center justify-center gap-3 transition shadow-lg
+            ${product.stock <= 0
+            ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+            : 'bg-orange-500 hover:bg-orange-600 text-white'}">
             <i class="bx bx-cart text-xl"></i>
-            Add to Cart
+            ${product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
           </button>
-
           <p class="text-sm text-gray-400 text-center mt-3">Secure transaction • High quality • Warranty included</p>
         </div>
       </div>
@@ -93,6 +101,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const qtyInput = document.getElementById('qty-input');
     const btnDecrease = document.getElementById('qty-decrease');
     const btnIncrease = document.getElementById('qty-increase');
+
+    // Disable quantity controls if out of stock
+    if (product.stock <= 0) {
+        btnDecrease.disabled = true;
+        btnIncrease.disabled = true;
+        btnDecrease.classList.add('opacity-40', 'cursor-not-allowed');
+        btnIncrease.classList.add('opacity-40', 'cursor-not-allowed');
+    }
 
     btnDecrease.addEventListener('click', () => {
       let val = parseInt(qtyInput.value, 10);
@@ -110,6 +126,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Add to cart (await cart readiness to avoid race)
     document.getElementById('add-to-cart-btn').addEventListener('click', async () => {
+      // 🚫 HARD BLOCK if out of stock
+      if (product.stock <= 0) {
+        alert('Sorry, this product is out of stock.');
+        return;
+      }
+
       const qty = parseInt(qtyInput.value, 10) || 1;
       const payload = {
         id: product.id,

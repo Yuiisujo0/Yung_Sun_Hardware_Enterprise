@@ -317,16 +317,22 @@
         if (p == null) return '';
         return 'RM ' + Number(p).toFixed(2);
       }
-      function renderStars(rating) {
+      function renderStars(rating, stock = 0) {
         const full = Math.floor(rating || 0);
         const half = (rating || 0) - full >= 0.5;
         let out = '';
+
         for (let i = 0; i < full; i++) out += '<i class="bx bxs-star"></i>';
         if (half) out += '<i class="bx bxs-star-half"></i>';
         for (let i = full + (half ? 1 : 0); i < 5; i++) out += '<i class="bx bx-star"></i>';
-        out += `<span class="text-gray-400 ml-2">(${Math.max(0, Math.round((rating || 0) * 20))})</span>`;
+
+        out += `<span class="text-gray-400 ml-2">
+                  (Stock: ${stock})
+                </span>
+        `;
         return out;
       }
+
 
       // ---------- Card renderer ----------
       function createCardElement(product) {
@@ -339,7 +345,11 @@
             <div class="absolute bottom-4 inset-x-0 flex justify-center gap-3 opacity-0 group-hover:opacity-100 transition">
               <a href="product-details.html?id=${encodeURIComponent(product.id)}" class="bg-white/90 backdrop-blur px-4 py-2 rounded-full text-sm font-semibold hover:bg-[#f8941e] hover:text-white transition">Quick View</a>
               <button
-                class="add-to-cart-btn bg-[#023f88] px-4 py-2 rounded-full text-sm font-semibold text-white hover:bg-blue-900 transition"
+                  ${product.stock <= 0 ? 'disabled' : ''}
+                    class="add-to-cart-btn px-4 py-2 rounded-full text-sm font-semibold transition
+                  ${product.stock <= 0 
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-[#023f88] text-white hover:bg-blue-900'}"
                 data-product-id="${escapeHtml(product.id)}"
                 data-name="${escapeHtml(product.name)}"
                 data-price="${Number(product.price || 0).toFixed(2)}"
@@ -352,7 +362,7 @@
           <div class="p-6 flex flex-col">
             <p class="text-xs uppercase tracking-wide text-[#f8941e] font-semibold mb-1">${escapeHtml(product.category || '')}</p>
             <h3 class="font-bold text-lg mb-2">${escapeHtml(product.name)}</h3>
-            <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">${renderStars(5)}</div>
+            <div class="flex items-center gap-1 text-orange-400 text-sm mb-4">${renderStars(5, product.stock)}</div>
             <div class="mt-auto flex items-center justify-between">
               <span class="text-2xl font-extrabold text-gray-900">${formatPrice(product.price)}</span>
               <span class="text-xs ${product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'} px-3 py-1 rounded-full">
