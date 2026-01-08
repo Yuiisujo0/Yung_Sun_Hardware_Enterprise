@@ -1,104 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard | Yung Sun Hardware</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Icons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <!-- Custom Styles -->
   <style>
+    html { scroll-behavior: smooth; }
+
     .shadow-soft { box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
     .text-primary { color: #023f88; }
     .bg-accent { background-color: #f8941e; }
     .bg-lowstock { background-color: #f72e2e; }
   </style>
 </head>
+
 <body class="bg-gray-100 font-sans">
 
+  <!-- Navbar -->
   <div id="navbar-root"></div>
 
+  <!-- Main Content -->
   <main class="max-w-7xl mx-auto p-6 mt-20 space-y-10">
-    <div>
+
+    <!-- Header -->
+    <header>
       <h1 class="text-3xl font-extrabold text-primary">Admin Dashboard</h1>
-      <p class="text-gray-500">Quick overview of store stats</p>
-    </div>
+      <p class="text-gray-500">Quick overview of store statistics</p>
+    </header>
 
-    <div class="flex flex-wrap gap-4">
-      <a href="inventory.html" class="bg-[#023f88] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-blue-700 transition flex items-center gap-2">
-        <i class="bx bx-package"></i> Manage Inventory
+    <!-- Quick Actions -->
+    <section class="flex flex-wrap gap-4">
+      <a href="inventory.html"
+         class="bg-[#023f88] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-blue-700 transition flex items-center gap-2">
+        <i class="bx bx-package"></i>
+        Manage Inventory
       </a>
-      <a href="sales.html" class="bg-[#f8941e] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-orange-600 transition flex items-center gap-2">
-        <i class="bx bx-line-chart"></i> View Sales Report
-      </a>
-    </div>
 
-    <!-- Stats cards -->
+      <a href="sales.html"
+         class="bg-[#f8941e] text-white font-semibold px-6 py-3 rounded-xl shadow-soft hover:bg-orange-600 transition flex items-center gap-2">
+        <i class="bx bx-line-chart"></i>
+        View Sales Report
+      </a>
+    </section>
+
+    <!-- Stats Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
+
+      <!-- Total Sales -->
+      <a href="sales.html"
+         class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden block hover:scale-[1.02] transition">
         <i class="bx bx-money text-3xl text-accent absolute right-4 top-4"></i>
         <p class="text-gray-500">Total Sales</p>
         <h2 id="sales" class="text-3xl font-bold text-primary">RM0</h2>
-      </div>
-      <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
+      </a>
+
+      <!-- Orders -->
+      <a href="#recent-orders"
+         class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden block hover:scale-[1.02] transition">
         <i class="bx bx-receipt text-3xl text-primary absolute right-4 top-4"></i>
         <p class="text-gray-500">Orders</p>
         <h2 id="orders" class="text-3xl font-bold text-primary">0</h2>
-      </div>
-      <div class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden">
+      </a>
+
+      <!-- Products -->
+      <a href="inventory.html"
+         class="relative bg-white rounded-2xl p-6 shadow-soft overflow-hidden block hover:scale-[1.02] transition">
         <i class="bx bx-package text-3xl text-primary absolute right-4 top-4"></i>
         <p class="text-gray-500">Products</p>
         <h2 id="products" class="text-3xl font-bold text-primary">0</h2>
-      </div>
-      <div class="relative bg-lowstock rounded-2xl p-6 shadow-soft text-white">
+      </a>
+
+      <!-- Low Stock -->
+      <a href="inventory.html"
+         id="lowStockCard"
+         class="relative bg-lowstock rounded-2xl p-6 shadow-soft text-white block hover:scale-[1.02] transition">
         <i class="bx bx-error text-3xl absolute right-4 top-4"></i>
         <p class="opacity-90">Low Stock</p>
         <h2 id="lowStock" class="text-3xl font-extrabold">0</h2>
-      </div>
+      </a>
+
     </section>
 
     <!-- Charts -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-soft">
         <h3 class="font-semibold text-lg mb-4">Sales Trend</h3>
         <canvas id="salesChart"></canvas>
       </div>
+
       <div class="bg-white rounded-2xl p-6 shadow-soft">
         <h3 class="font-semibold text-lg mb-4">Order Status</h3>
         <canvas id="ordersChart"></canvas>
       </div>
+
     </section>
 
-  
-  <!-- Recent Orders -->
-  <section class="mb-6 bg-white rounded-2xl shadow-soft p-4 sm:p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg sm:text-xl font-semibold">Recent Orders</h2>
-      <span class="text-sm text-gray-400">Last 7 days</span>
-    </div>
+    <!-- Recent Orders -->
+    <section id="recent-orders" class="bg-white rounded-2xl shadow-soft p-4 sm:p-6">
 
-    <div class="overflow-x-auto overflow-y-auto max-h-100 border border-gray-300 rounded-lg shadow-sm bg-white">
-      <table class="w-full text-sm sm:text-base border-collapse">
-        <thead class="bg-[#023f88] text-white sticky top-0 z-10">
-          <tr>
-            <th class="p-2 sm:p-4 text-left w-32">Order ID</th>
-            <th class="p-2 sm:p-4 text-left">Customer</th>
-            <th class="p-2 sm:p-4 text-center w-36">Date and Time</th>
-            <th class="p-2 sm:p-4 text-right w-32">Total (RM)</th>
-            <th class="p-2 sm:p-4 text-center w-32">Status</th>
-          </tr>
-        </thead>
-        <tbody id="ordersTable" class="divide-y"></tbody>
-      </table>
-    </div>
-  </section>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg sm:text-xl font-semibold">Recent Orders</h2>
+        <span class="text-sm text-gray-400">Last 7 days</span>
+      </div>
+
+      <div class="overflow-x-auto overflow-y-auto max-h-100 border border-gray-300 rounded-lg">
+        <table class="w-full text-sm sm:text-base border-collapse">
+          <thead class="bg-[#023f88] text-white sticky top-0 z-10">
+            <tr>
+              <th class="p-3 text-left w-32">Order ID</th>
+              <th class="p-3 text-left">Customer</th>
+              <th class="p-3 text-center w-40">Date & Time</th>
+              <th class="p-3 text-right w-32">Total (RM)</th>
+              <th class="p-3 text-center w-32">Status</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTable" class="divide-y"></tbody>
+        </table>
+      </div>
+
+    </section>
 
   </main>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/admin.js"></script>
+
 </body>
 </html>
