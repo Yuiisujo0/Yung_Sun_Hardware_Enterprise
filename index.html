@@ -121,12 +121,12 @@
     </div>
   </section>
 
-  <!-- ================= TOP HITS & HOT DEALS ================= -->
+  <!-- ================= SHOP BY CATEGORY ================= -->
   <section class="py-24 px-6 bg-gray-100">
     <div class="max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16">
         <div>
-          <h2 class="text-5xl font-extrabold tracking-tight mb-4">Top Hits & Hot Deals</h2>
+          <h2 class="text-5xl font-extrabold tracking-tight mb-4">Shop by Category</h2>
           <p class="text-gray-500 max-w-md text-lg">Discover our most popular tools and limited-time deals trusted by professionals.</p>
         </div>
 
@@ -414,7 +414,7 @@ async function loadBestsellersAndPromo() {
   try {
     // Step 1: Get top-selling product IDs from the view
     const { data: topSales, error: topErr } = await window.supabaseClient
-      .from('top_selling_products_view')
+      .from('top_selling_products_full_view')
       .select('product_id')
       .order('total_qty_sold', { ascending: false })
       .limit(3);
