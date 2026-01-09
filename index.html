@@ -399,85 +399,102 @@
         return wrapper;
       }
 
-      // ---------- Load bestsellers & promo ----------
-      async function loadBestsellersAndPromo() {
-        const bestsellerEl = document.getElementById('bestseller');
-        const promoLinkEl = document.getElementById('promo-link');
-        const promoImgEl = document.getElementById('promo-img');
+// ---------- Load bestsellers & promo ----------
+async function loadBestsellersAndPromo() {
+  const bestsellerEl = document.getElementById('bestseller');
+  const promoLinkEl = document.getElementById('promo-link');
+  const promoImgEl = document.getElementById('promo-img');
 
-        if (!bestsellerEl) return;
-        if (!window.supabaseClient) {
-          bestsellerEl.innerHTML = '<p class="col-span-full text-center text-red-500">Supabase not initialized.</p>';
-          return;
-        }
+  if (!bestsellerEl) return;
+  if (!window.supabaseClient) {
+    bestsellerEl.innerHTML = '<p class="col-span-full text-center text-red-500">Supabase not initialized.</p>';
+    return;
+  }
 
-        try {
-          const { data: items, error: itemsErr } = await window.supabaseClient.from('order_items').select('product_id, qty');
-          if (itemsErr) console.warn('order_items fetch failed', itemsErr);
+  try {
+    // Step 1: Get top-selling product IDs from the view
+    const { data: topSales, error: topErr } = await window.supabaseClient
+      .from('top_selling_products_view')
+      .select('product_id')
+      .order('total_qty_sold', { ascending: false })
+      .limit(3);
 
-          const totals = {};
-          (items || []).forEach(it => {
-            const pid = String(it.product_id);
-            const qty = Number(it.qty || 0);
-            totals[pid] = (totals[pid] || 0) + qty;
-          });
+    if (topErr) console.warn('Failed to fetch top-selling products view', topErr);
 
-          const sortedIds = Object.keys(totals).sort((a, b) => totals[b] - totals[a]).slice(0, 3);
+    const topIds = (topSales || []).map(p => p.product_id);
 
-          let products = [];
-          if (sortedIds.length) {
-            const { data: topProducts, error: prodErr } = await window.supabaseClient
-              .from('products')
-              .select('*')
-              .in('id', sortedIds);
-            if (prodErr) console.warn('products fetch failed', prodErr);
-            else {
-              const byId = {};
-              (topProducts || []).forEach(p => byId[String(p.id)] = p);
-              products = sortedIds.map(id => byId[id]).filter(Boolean);
-            }
-          } else {
-            const { data: recent, error: recentErr } = await window.supabaseClient.from('products').select('*').order('created_at', { ascending: false }).limit(3);
-            if (!recentErr && recent) products = recent;
-          }
+    let products = [];
 
-          bestsellerEl.innerHTML = '';
-          if (!products || products.length === 0) {
-            bestsellerEl.innerHTML = '<p class="col-span-full text-center text-gray-500">No bestseller data available yet.</p>';
-          } else {
-            products.forEach(p => bestsellerEl.appendChild(createCardElement(p)));
-          }
+    if (topIds.length) {
+      // Step 2: Fetch full product info for those IDs
+      const { data: topProducts, error: prodErr } = await window.supabaseClient
+        .from('products')
+        .select('*')
+        .in('id', topIds);
 
-          // PROMO lookup
-          try {
-            const promoSearchPattern = '%Adjustable Wrench 10%';
-            const { data: promoProduct, error: promoErr } = await window.supabaseClient.from('products').select('id, image_url').ilike('name', promoSearchPattern).limit(1).maybeSingle();
-            if (!promoErr && promoProduct && promoProduct.id) {
-              promoLinkEl?.setAttribute('href', `product-details.html?id=${encodeURIComponent(promoProduct.id)}`);
-              if (promoProduct.image_url && promoImgEl) promoImgEl.setAttribute('src', promoProduct.image_url);
-            } else {
-              promoLinkEl?.setAttribute('href', `product-details.html?name=${encodeURIComponent('Adjustable Wrench 10in')}`);
-            }
-          } catch (err) {
-            console.warn('promo lookup failed', err);
-          }
-
-          // bind promo buy (idempotent)
-          document.querySelectorAll('.promo-buy-btn').forEach(btn => {
-            if (btn._boundPromo) return;
-            btn.addEventListener('click', e => {
-              e.preventDefault();
-              const href = promoLinkEl?.getAttribute('href') || 'product-details.html';
-              window.location.href = href;
-            });
-            btn._boundPromo = true;
-          });
-
-        } catch (err) {
-          console.error('Error loading bestsellers/promos:', err);
-          bestsellerEl.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load bestsellers.</p>';
-        }
+      if (prodErr) console.warn('Failed to fetch product details', prodErr);
+      else {
+        const byId = {};
+        (topProducts || []).forEach(p => byId[String(p.id)] = p);
+        products = topIds.map(id => byId[id]).filter(Boolean);
       }
+    }
+
+    // Step 3: Fallback to recent products if no sales yet
+    if (!products.length) {
+      const { data: recent, error: recentErr } = await window.supabaseClient
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+      if (!recentErr && recent) products = recent;
+    }
+
+    // Step 4: Render the products
+    bestsellerEl.innerHTML = '';
+    if (!products.length) {
+      bestsellerEl.innerHTML = '<p class="col-span-full text-center text-gray-500">No bestseller data available yet.</p>';
+    } else {
+      products.forEach(p => bestsellerEl.appendChild(createCardElement(p)));
+    }
+
+    // ---------- PROMO lookup ----------
+    try {
+      const promoSearchPattern = '%Adjustable Wrench 10%';
+      const { data: promoProduct, error: promoErr } = await window.supabaseClient
+        .from('products')
+        .select('id, image_url')
+        .ilike('name', promoSearchPattern)
+        .limit(1)
+        .maybeSingle();
+
+      if (!promoErr && promoProduct && promoProduct.id) {
+        promoLinkEl?.setAttribute('href', `product-details.html?id=${encodeURIComponent(promoProduct.id)}`);
+        if (promoProduct.image_url && promoImgEl) promoImgEl.setAttribute('src', promoProduct.image_url);
+      } else {
+        promoLinkEl?.setAttribute('href', `product-details.html?name=${encodeURIComponent('Adjustable Wrench 10in')}`);
+      }
+    } catch (err) {
+      console.warn('Promo lookup failed', err);
+    }
+
+    // Bind promo buy buttons
+    document.querySelectorAll('.promo-buy-btn').forEach(btn => {
+      if (btn._boundPromo) return;
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        const href = promoLinkEl?.getAttribute('href') || 'product-details.html';
+        window.location.href = href;
+      });
+      btn._boundPromo = true;
+    });
+
+  } catch (err) {
+    console.error('Error loading bestsellers/promos:', err);
+    bestsellerEl.innerHTML = '<p class="col-span-full text-center text-red-500">Failed to load bestsellers.</p>';
+  }
+}
+
 
       // ---------- CART Handling ----------
       // Key used in localStorage
